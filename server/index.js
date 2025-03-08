@@ -23,7 +23,7 @@ app.use(passport.session());
 passport.use(new MicrosoftStrategy({
   clientID: 'b124aa58-71a9-43fd-9962-6c81b6281dc8',
   clientSecret: 'Nqj8Q~aPxN8YZCT_GMkAp5whzcQMAMf5b2m6raXn',
-  callbackURL: 'http://localhost:3000/api/auth/callback',
+  callbackURL: 'https://itface.onrender.com/api/auth/callback',
   scope: ['user.read'],
   tenant: '3011a54b-0a5d-4929-bf02-a00787877c6a',
   authorizationURL: 'https://login.microsoftonline.com/3011a54b-0a5d-4929-bf02-a00787877c6a/oauth2/v2.0/authorize',
