@@ -1,0 +1,89 @@
+.action-buttons {
+    display: flex;
+    flex-direction: row; 
+    align-items: center; 
+    justify-content: center;
+    gap: 8px; 
+    height: 100%;
+  }
+
+  .icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .icon-button.edit {
+    color: #28a745; /* Màu xanh lá */
+  }
+
+  .icon-button.delete {
+    color: #dc3545; /* Màu đỏ */
+  }
+
+  .icon-button:hover {
+    opacity: 0.8; /* Giảm độ trong suốt khi hover */
+    transform: scale(1.1); /* Tăng nhẹ kích thước khi hover */
+  }
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+  }
+
+  input:checked + .slider {
+    background-color: #ffbe98;
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(14px);
+  }
+
+  .slider.round {
+    border-radius: 34px;
+  }
+
+  .slider.round:before {
+    border-radius: 50%;
+  }
+    .tab-container .nav-item a:hover {
+      color: #6B63FF !important; /* Màu chữ khi di chuột vào tab */
+    }
+
+    .tab-container .nav-item a.active {
+      background-color: #6B63FF !important; /* Màu nền khi tab được chọn */
+      color: #fff !important; /* Màu chữ khi tab được chọn */
+    }

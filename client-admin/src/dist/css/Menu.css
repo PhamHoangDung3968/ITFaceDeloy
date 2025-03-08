@@ -1,0 +1,13 @@
+/* Menu.css */
+@media (max-width: 768px) {
+    .sidebar-collapse .main-sidebar {
+      margin-left: -250px;
+    }
+  }
+  
+  @media (min-width: 769px) {
+    .sidebar-collapse .main-sidebar {
+      margin-left: 0;
+    }
+  }
+  
