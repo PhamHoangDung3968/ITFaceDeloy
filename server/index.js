@@ -146,15 +146,15 @@ app.get('/auth/microsoft', passport.authenticate('microsoft'));
 //     res.redirect('http://localhost:3001/admin/home');
 //   });
 app.get('/api/auth/callback',
-  passport.authenticate('microsoft', { failureRedirect: 'http://localhost:3001/admin?error=login_failed' }),
+  passport.authenticate('microsoft', { failureRedirect: 'https://itface.onrender.com/admin?error=login_failed' }),
   (req, res) => {
-    res.redirect('http://localhost:3001/admin/home');
+    res.redirect('https://itface.onrender.com/admin/home');
   });
 
 app.get('/logout', (req, res, next) => {
   req.logout((err) => {
     if (err) { return next(err); }
-    res.redirect('http://localhost:3001/admin');
+    res.redirect('https://itface.onrender.com/admin');
   });
 });
 

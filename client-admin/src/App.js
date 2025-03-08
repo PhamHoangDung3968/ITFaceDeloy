@@ -63,7 +63,7 @@ const App = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false); // State for logout confirmation modal
 
   const handleLogin = () => {
-    window.location.href = 'http://localhost:3000/auth/microsoft';
+    window.location.href = 'https://itface.onrender.com/auth/microsoft';
   };
 
   const handleLogout = () => {
@@ -71,10 +71,10 @@ const App = () => {
   };
 
   const confirmLogout = () => {
-    axios.get('http://localhost:3001/logout')
+    axios.get('https://itface.onrender.com/logout')
       .then(response => {
         setUser(null);
-        window.location.href = 'http://localhost:3001/admin';
+        window.location.href = 'https://itface.onrender.com/admin';
       })
       .catch(error => {
         console.error('Logout error:', error);
