@@ -22,12 +22,6 @@ const AttendanceStudent = ({ userID }) => {
   const [subjectInfo, setSubjectInfo] = useState({ lesson: [] });
   const [currentPage, setCurrentPage] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [qrCodeValue, setQrCodeValue] = useState('');
-  const [showModalProfile, setShowModalProfile] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [showModalDelete, setShowModalDelete] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
   const sectionsPerPage = 50;
   const [attendanceDates, setAttendanceDates] = useState([]);
   const [attendanceDetails, setAttendanceDetails] = useState([]);
@@ -112,6 +106,18 @@ useEffect(() => {
 
   const mapClassType = (classType) => {
     return classType === 0 ? 'Lý thuyết' : 'Thực hành';
+  };
+  const countColumnsWithTime = () => {
+    let count = 0;
+    attendanceDetails.forEach(record => {
+      if (record.time) {
+        count++;
+      }
+    });
+    return count;
+  };
+  const countTotalDateColumns = () => {
+    return attendanceDates.length;
   };
 
   return (
@@ -216,32 +222,14 @@ useEffect(() => {
     </table>
   </div>
 </div>
+<div>
+          <strong>Số buổi tham dự:</strong> {countColumnsWithTime()}/{countTotalDateColumns()}
+        </div>
+        
 
       <ToastContainer />
       </section>
-       {showModalProfile && selectedUser && (
-  <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-    <div className="modal-dialog">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title">Thông tin sinh viên</h5>
-          <button type="button" className="close" onClick={() => setShowModalProfile(false)}>
-            <span>&times;</span>
-          </button>
-        </div>
-        <div className="modal-body">
-          <p><strong>Mã số SV:</strong> {selectedUser.userCode || 'Chưa cập nhật'}</p>
-          <p><strong>Email:</strong> {selectedUser.email}</p>
-          <p><strong>Họ tên:</strong> {selectedUser.fullName || selectedUser.displayName || 'Chưa cập nhật'}</p>
-          <p><strong>SĐT:</strong> {selectedUser.phone || 'Chưa cập nhật'}</p>
-        </div>
-        <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-          <button type="button" className="btn btn-secondary" onClick={() => setShowModalProfile(false)}>Đóng</button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+       
     </div>
   );
 };

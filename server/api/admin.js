@@ -1215,7 +1215,7 @@ router.get('/studentclass/allstudent/:classCode', async (req, res) => {
     res.status(500).json({ message: 'Error fetching users by classCode', error });
   }
 });
-
+//lấy thông tin điểm danh của 1 sinh viên
 router.get('/studentclass/onestudent/:classCode/:studentID', async (req, res) => {
   try {
     const { classCode, studentID } = req.params;
@@ -1312,6 +1312,7 @@ router.post('/studentclass/dateattendancing/:classCode', async (req, res) => {
   }
 });
 
+//Đổi status từ vắng có phép sang hỗ trợ và ngược lại
 router.post('/studentclass/changestatus/:classCode', async (req, res) => {
   try {
     const { classCode } = req.params;
@@ -1325,6 +1326,7 @@ router.post('/studentclass/changestatus/:classCode', async (req, res) => {
   }
 });
 
+//Lấy các status của người dùng khi đã điểm danh
 router.get('/studentclass/getstatusattendance/:classCode', async (req, res) => {
   try {
     const { classCode } = req.params;
@@ -1375,12 +1377,17 @@ router.get('/export-attendance/:classCode', async (req, res) => {
 //     res.status(500).json({ message: 'Error calling Python API', error });
 //   }
 // });
+
+
+
+//-----Xử lý FaceID-----
+//Đăng ký FaceID lần đầu
 router.post('/register_user', async (req, res) => {
   try {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user registration...');
-    const response = await axios.post('https://020d-222-254-170-42.ngrok-free.app/api/register', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/register', { name, image });
 
     console.log('Received response from Python API:', response.data);
 
@@ -1399,12 +1406,13 @@ router.post('/register_user', async (req, res) => {
   }
 });
 
+//Đăng ký faceID lại
 router.post('/re_register_user', async (req, res) => {
   try {
     const { name, image } = req.body;
 
     console.log('Gửi yêu cầu đến API Python để đăng ký lại người dùng...');
-    const response = await axios.post('https://020d-222-254-170-42.ngrok-free.app/api/re_register', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/re_register', { name, image });
 
     console.log('Nhận phản hồi từ API Python:', response.data);
 
@@ -1423,6 +1431,7 @@ router.post('/re_register_user', async (req, res) => {
   }
 });
 
+//Lưu hình ảnh khi người dùng đăng kí lại
 router.get('/user_images/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -1484,13 +1493,13 @@ router.get('/user_images/:userId', async (req, res) => {
 //   }
 // });
 
-
+//điểm danh bằng khuôn mặt
 router.post('/login_user', async (req, res) => {
   try {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user login...');
-    const response = await axios.post('https://020d-222-254-170-42.ngrok-free.app/api/login', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/login', { name, image });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1514,13 +1523,13 @@ router.post('/login_user', async (req, res) => {
   }
 });
 
-
+//kiểm tra người dùng có đăng kí faceID chưa
 router.post('/check_user', async (req, res) => {
   try {
     const { name } = req.body;
 
     console.log('Sending request to Python API to check user registration...');
-    const response = await axios.post('https://020d-222-254-170-42.ngrok-free.app/api/check_user', { name });
+    const response = await axios.post('http://127.0.0.1:5000/api/check_user', { name });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1543,6 +1552,17 @@ router.post('/check_user', async (req, res) => {
 });
 
 
+
+
+
+//Gửi email khi điểm danh thành công
+router.post('/send-email', (req, res) => {
+  const { email, date, time, image, classcode } = req.body;
+
+  EmailUtil.send(email, date, time, image, classcode)
+    .then(() => res.status(200).send('Email sent successfully'))
+    .catch((err) => res.status(500).send(err.toString()));
+});
 
 // category
 // router.get('/categories', JwtUtil.checkToken, async function (req, res) {

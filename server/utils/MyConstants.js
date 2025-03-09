@@ -5,13 +5,8 @@ const MyConstants = {
   DB_PASS : 'dung123456',
   DB_DATABASE : 'StudentAttendance_FaceID',
   EMAIL_USER : 'karatedocutetyteo@gmail.com', // Microsoft mail service
-  EMAIL_PASS : 'ardfqooxmleqwgqm',
+  EMAIL_PASS : 'imxe hvrj uutt mium',
   JWT_SECRET : 'dung123456',
-
- 
- 
- 
- 
   JWT_EXPIRES : 60 * 60 * 1000, // in milliseconds
   };
 module.exports = MyConstants ;

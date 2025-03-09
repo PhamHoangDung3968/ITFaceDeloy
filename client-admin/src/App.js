@@ -195,8 +195,16 @@ const App = () => {
       { path: '/admin/attendance-student/:classCode', element: <AttendanceStudent userRole={user?.role} userID={user?._id}/> },
       { path: '/admin/classsections/:subjecttermID', element: <Classsection userRole={user?.role} /> },
       { path: '/admin/faceid_registration', element: <RegistFaceID userRole={user?.role} userID={user?._id} userCode={user?.userCode} /> },
-      // { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} /> }, // Sử dụng ProtectedRoute
-      { path: '/admin/haha', element: <DisplayInfo userCode={user?.userCode} userID={user?._id} /> }, // Sử dụng ProtectedRoute
+      { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
+      // { path: '/admin/haha', element: <DisplayInfo userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
+      
+      //nhớ xóa
+      { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> }, 
+      { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
+      { path: '/admin/attendance/:classCode', element: <Attendance /> },
+
+
+
 
 
     ],
@@ -425,7 +433,7 @@ const AppContent = ({
                           </ul>
                         </li> */}
                         
-                        {user.role !== 'Sinh viên' && (
+                        {user.role !== '' && (
                               <li className={`nav-item has-treeview ${isCourseMenuOpen ? 'menu-open' : ''}`}>
                               <a href="#" className="nav-link" onClick={toggleCourseMenu} style={sidebarTextStyle}>
                                 <i className="nav-icon fas fa-book"></i>
@@ -441,7 +449,7 @@ const AppContent = ({
                                     <p>LHP</p>
                                   </Link>
                                 </li>
-                                {user.role !== 'Sinh viên' && (
+                                {user.role !== '' && (
                                   <li className="nav-item">
                                   <Link to="/admin/assignmentlist" className="nav-link" style={location.pathname === '/admin/assignmentlist' ? activeLinkStyle : sidebarTextStyle}>
                                     <i className="fas fa-dot-circle nav-icon"></i>

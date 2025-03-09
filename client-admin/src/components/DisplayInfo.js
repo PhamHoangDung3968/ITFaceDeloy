@@ -41,11 +41,17 @@ import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const DisplayInfo = ({ userCode, userID }) => {
+const DisplayInfo = ({ userCode, userID, userEmail }) => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const classcode = queryParams.get('classcode');
     const day = queryParams.get('day');
+    const formatDate = (dateString) => {
+        const [day, month, year] = dateString.split('-');
+        return `${day}/${month}/${year}`;
+    };
+
+    const formattedDay = day ? formatDate(day) : '';
 
     useEffect(() => {
         return () => {
@@ -56,11 +62,11 @@ const DisplayInfo = ({ userCode, userID }) => {
     useEffect(() => {
         console.log('usercode:', userCode); // Log the classcode for debugging
         console.log('userID:', userID); // Log the classcode for debugging
-    }, [userCode, userID]);
+        console.log('userEmail:', userEmail); // Log the classcode for debugging
+    }, [userCode, userID, userEmail]);
 
     const [isWebcamOpen, setIsWebcamOpen] = useState(false);
     const [webcamImage, setWebcamImage] = useState(null);
-    const [isUserRegistered, setIsUserRegistered] = useState(false);
     const videoRef = useRef(null);
 
     const handleOpenWebcam = () => {
@@ -91,43 +97,123 @@ const DisplayInfo = ({ userCode, userID }) => {
         showToast('Tắt camera thành công!');
     };
 
-    const handleLoginUser = () => {
-        if (!videoRef.current) return;
+const handleLoginUser = () => {
+    if (!videoRef.current) return;
 
-        const canvas = document.createElement('canvas');
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        const context = canvas.getContext('2d');
-        context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        const image = canvas.toDataURL('image/jpeg');
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const context = canvas.getContext('2d');
+    context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    const image = canvas.toDataURL('image/jpeg');
 
-        setWebcamImage(image);
+    setWebcamImage(image);
 
-        axios.post('/api/admin/login_user', {
-            name: userCode,
-            image: image.split(',')[1] // Remove the data URL prefix
-        })
-        .then(response => {
-            showToast(response.data.message);
-        })
-        .catch(error => {
-            if (error.response) {
-                console.log('Error status:', error.response.status);
-                console.error('Error logging in user:', error.response.data);
+    axios.post('/api/admin/login_user', {
+        name: userCode,
+        image: image.split(',')[1] // Remove the data URL prefix
+    })
+    .then(response => {
+        showToast(response.data.message);
+        if (response.status === 200) {
+            const today = new Date();
+            const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+            const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
 
-                if (error.response.status === 403) {
-                    showErrorToast('Hãy trung thực!');
-                } else if (error.response.status === 401) {
-                    showErrorToast('Thất bại vui lòng thử lại!');
-                } else {
-                    showErrorToast('Đăng nhập thất bại');
-                }
-            } else {
-                console.error('Error logging in user:', error);
-                showErrorToast('Error logging in user');
+            if (formattedDay > formattedToday) {
+                showErrorToast('Điểm danh thất bại: Ngày điểm danh chưa tới.');
+                return;
             }
-        });
-    };
+
+            axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
+                studentId: userID,
+                date: formattedDay,
+                status: 'Có mặt' // or any other status you want to set
+            })
+            .then(attendanceResponse => {
+                showToast('Điểm danh thành công!');
+                // Call the /send-email API
+                axios.post('/api/admin/send-email', {
+                    classcode: classcode,
+                    email: userEmail, // Replace with the actual email address
+                    date: formattedToday,
+                    time: currentTime,
+                    image: image.split(',')[1] // Remove the data URL prefix
+                })
+                .catch(emailError => {
+                    console.error('Error sending email:', emailError);
+                });
+            })
+            .catch(attendanceError => {
+                console.error('Error updating attendance:', attendanceError);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error logging in user:', error);
+        showErrorToast('Error logging in user');
+    });
+};
+
+// const handleLoginUser = () => {
+//     if (!videoRef.current) return;
+
+//     const canvas = document.createElement('canvas');
+//     canvas.width = videoRef.current.videoWidth;
+//     canvas.height = videoRef.current.videoHeight;
+//     const context = canvas.getContext('2d');
+//     context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+//     const image = canvas.toDataURL('image/jpeg');
+
+//     setWebcamImage(image);
+
+//     axios.post('/api/admin/login_user', {
+//         name: userCode,
+//         image: image.split(',')[1] // Remove the data URL prefix
+//     })
+//     .then(response => {
+//         showToast(response.data.message);
+//         if (response.status === 200) {
+//             const today = new Date();
+//             const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+//             const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
+
+//             if (formattedDay > formattedToday) {
+//                 showErrorToast('Điểm danh thất bại: Ngày điểm danh chưa tới.');
+//                 return;
+//             }
+
+//             axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
+//                 userID,
+//                 date: formattedDay,
+//                 status: 'Có mặt' // or any other status you want to set
+//             })
+//             .then(attendanceResponse => {
+//                 showToast('Điểm danh thành công!');
+//                 // Call the /send-email API
+//                 axios.post('/api/admin/send-email', {
+//                     email: userEmail, // Replace with the actual email address
+//                     date: formattedToday,
+//                     time: currentTime,
+//                     image: image.split(',')[1] // Remove the data URL prefix
+//                 })
+//                 .then(() => showToast('Email sent successfully'))
+//                 .catch(emailError => {
+//                     console.error('Error sending email:', emailError);
+//                     showErrorToast('Error sending email');
+//                 });
+//             })
+//             .catch(attendanceError => {
+//                 console.error('Error updating attendance:', attendanceError);
+//                 showErrorToast('Error updating attendance');
+//             });
+//         }
+//     })
+//     .catch(error => {
+//         console.error('Error logging in user:', error);
+//         showErrorToast('Error logging in user');
+//     });
+// };
 
 
     const showToast = (message) => {
@@ -167,7 +253,7 @@ const DisplayInfo = ({ userCode, userID }) => {
                             <div className="card">
                                 <div className="card-body">
                                 <p style={{fontSize:'20px'}}>Mã lớp: {classcode}</p> {/* Hiển thị classcode */}
-                                <p style={{fontSize:'20px'}}>Ngày: {day}</p> {/* Hiển thị ngày */}
+                                <p style={{fontSize:'20px'}}>Ngày: {formattedDay}</p> {/* Hiển thị ngày */}
                                 {/* Nội dung khác của component */}
                                     <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', height: '450px', marginTop: '10px' }}>
                                         <video ref={videoRef} style={{ width: '100%', maxWidth: '600px', height: '100%' }}></video>
@@ -190,29 +276,25 @@ const DisplayInfo = ({ userCode, userID }) => {
                                             Tắt camera
                                         </button>
 
-                                        {!isUserRegistered && (
                                             <button 
                                                 onClick={handleLoginUser}
                                                 style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: 'linear-gradient(45deg, #2196F3, #64B5F6)', color: 'white', border: 'none' }}
                                             >
                                                 Điểm danh
                                             </button>
-                                        )}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Thông báo đã đăng ký */}
-                            {isUserRegistered && (
-                                <span>Bạn đã đăng ký FaceID rồi!</span>
-                            )}
+                           
                         </div>
 
                         {/* Cột chứa hướng dẫn */}
                         <div className="col-lg-6">
                             <div className="card">
                                 <div className="card-body">
-                                    <h4>Hướng dẫn đăng ký khuôn mặt</h4>
+                                    <h4>Hướng dẫn điểm danh khuôn mặt</h4>
 
                                     <h5>Chuẩn bị:</h5>
                                     <ul>

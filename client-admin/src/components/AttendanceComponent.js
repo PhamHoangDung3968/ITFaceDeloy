@@ -491,7 +491,13 @@ const handleAttendanceClick = async (studentId, date) => {
 };
 
 const toggleStatus = async (studentId, date, currentStatus) => {
-  let newStatus = currentStatus === "Vắng có phép" ? "Hỗ trợ" : "Vắng có phép";
+  let newStatus = currentStatus;
+
+  if (currentStatus === "Vắng có phép") {
+    newStatus = "Hỗ trợ";
+  } else if (currentStatus === "Hỗ trợ") {
+    newStatus = "Vắng có phép";
+  }
 
   console.log("New Status:", newStatus);
 
@@ -516,7 +522,13 @@ const toggleStatus = async (studentId, date, currentStatus) => {
     console.error("Error toggling status:", error);
   }
 };
+const countTotalDateColumns = () => {
+  return attendanceDates.length;
+};
 
+const countAttendanceForStudent = (studentID) => {
+  return attendanceDetails.filter(record => record.studentID === studentID && record.time).length;
+};
 return (
   <div>
     <section className="content-header">
@@ -603,8 +615,7 @@ return (
   {/* Hàng 2: Danh sách gạch đầu dòng */}
   <ul style={{ listStyleType: 'none', paddingLeft: '25px', margin: '5px 0 0 25px' }}>
     <li>- Giảng viên click vào thời gian để hiển thị QR code điểm</li>
-    <li>- Chào bạn một ngày mới tốt đẹp</li>
-    <li>- .......................................................</li>
+    <li>- Giảng viên có thể hỗ trợ điểm danh cho sinh viên bằng cách bấm trực tiếp vào nút "Điểm danh". Khi đó, chữ "Hỗ trợ" sẽ hiển thị mặc định. Giảng viên có thể bấm vào chữ "Hỗ trợ" để chuyển trạng thái thành "Vắng có phép" và ngược lại.</li>
   </ul>
 </div>
 
@@ -673,7 +684,7 @@ return (
             </div>
           </th>
         ))}
-        <th></th>
+        <th>Số buổi tham dự</th>
       </tr>
     </thead>
     <tbody>
@@ -698,54 +709,60 @@ return (
 
             return (
               <td key={dateIndex} style={{ textAlign: 'center', verticalAlign: 'middle' }}>
-                {attendanceRecord ? (
-                  <>
-                    {attendanceRecord.time ? (
-                      <>
-                        {attendanceRecord.time}
-                        <br />
-                        <span
-                          onClick={() => toggleStatus(section._id, date, attendanceRecord.status)}
-                          style={{ cursor: 'pointer', color: '#da2864' }}
-                        >
-                          {attendanceRecord.status || ""}
-                        </span>
-                      </>
-                    ) : (
-                      <button
-                        onClick={() => handleAttendanceClick(section._id, date)}
-                        style={{
-                          backgroundColor:
-                            new Date(date).toDateString() === new Date().toDateString()
-                              ? '#da2864'
-                              : new Date(date) < new Date()
-                              ? '#808080'
-                              : '#9400D3',
-                          borderColor:
-                            new Date(date).toDateString() === new Date().toDateString()
-                              ? '#da2864'
-                              : new Date(date) < new Date()
-                              ? '#808080'
-                              : '#9400D3',
-                          color: '#ffffff',
-                          borderRadius: '4px',
-                          padding: '6px 10px',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                          width: '100px'
-                        }}
-                      >
-                        Điểm danh
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  ""
-                )}
-              </td>
+  {attendanceRecord ? (
+    <>
+      {attendanceRecord.time ? (
+        <>
+          {attendanceRecord.time}
+          <br />
+          {attendanceRecord.status === "Vắng có phép" || attendanceRecord.status === "Hỗ trợ" ? (
+            <span
+              onClick={() => toggleStatus(section._id, date, attendanceRecord.status)}
+              style={{ cursor: 'pointer', color: '#da2864' }}
+            >
+              {attendanceRecord.status || ""}
+            </span>
+          ) : (
+            <span>{attendanceRecord.status || ""}</span>
+          )}
+        </>
+      ) : (
+        <button
+          onClick={() => handleAttendanceClick(section._id, date)}
+          style={{
+            backgroundColor:
+              new Date(date).toDateString() === new Date().toDateString()
+                ? '#da2864'
+                : new Date(date) < new Date()
+                ? '#808080'
+                : '#9400D3',
+            borderColor:
+              new Date(date).toDateString() === new Date().toDateString()
+                ? '#da2864'
+                : new Date(date) < new Date()
+                ? '#808080'
+                : '#9400D3',
+            color: '#ffffff',
+            borderRadius: '4px',
+            padding: '6px 10px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            width: '100px'
+          }}
+        >
+          Điểm danh
+        </button>
+      )}
+    </>
+  ) : (
+    ""
+  )}
+</td>
             );
           })}
-          <td></td>
+          <td style={{ textAlign: 'center', minWidth: '120px' }}>
+                    {countAttendanceForStudent(section._id)}/{countTotalDateColumns()}
+                  </td>
         </tr>
       ))}
       {currentClassSections.length === 0 && (
