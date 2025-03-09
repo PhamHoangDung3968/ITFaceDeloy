@@ -97,63 +97,63 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
         showToast('Tắt camera thành công!');
     };
 
-const handleLoginUser = () => {
-    if (!videoRef.current) return;
+// const handleLoginUser = () => {
+//     if (!videoRef.current) return;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const context = canvas.getContext('2d');
-    context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    const image = canvas.toDataURL('image/jpeg');
+//     const canvas = document.createElement('canvas');
+//     canvas.width = videoRef.current.videoWidth;
+//     canvas.height = videoRef.current.videoHeight;
+//     const context = canvas.getContext('2d');
+//     context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+//     const image = canvas.toDataURL('image/jpeg');
 
-    setWebcamImage(image);
+//     setWebcamImage(image);
 
-    axios.post('/api/admin/login_user', {
-        name: userCode,
-        image: image.split(',')[1] // Remove the data URL prefix
-    })
-    .then(response => {
-        showToast(response.data.message);
-        if (response.status === 200) {
-            const today = new Date();
-            const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
-            const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
+//     axios.post('/api/admin/login_user', {
+//         name: userCode,
+//         image: image.split(',')[1] // Remove the data URL prefix
+//     })
+//     .then(response => {
+//         showToast(response.data.message);
+//         if (response.status === 200) {
+//             const today = new Date();
+//             const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+//             const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
 
-            if (formattedDay > formattedToday) {
-                showErrorToast('Điểm danh thất bại: Ngày điểm danh chưa tới.');
-                return;
-            }
+//             if (formattedDay > formattedToday) {
+//                 showErrorToast('Điểm danh thất bại: Ngày điểm danh chưa tới.');
+//                 return;
+//             }
 
-            axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
-                studentId: userID,
-                date: formattedDay,
-                status: 'Có mặt' // or any other status you want to set
-            })
-            .then(attendanceResponse => {
-                showToast('Điểm danh thành công!');
-                // Call the /send-email API
-                axios.post('/api/admin/send-email', {
-                    classcode: classcode,
-                    email: userEmail, // Replace with the actual email address
-                    date: formattedToday,
-                    time: currentTime,
-                    image: image.split(',')[1] // Remove the data URL prefix
-                })
-                .catch(emailError => {
-                    console.error('Error sending email:', emailError);
-                });
-            })
-            .catch(attendanceError => {
-                console.error('Error updating attendance:', attendanceError);
-            });
-        }
-    })
-    .catch(error => {
-        console.error('Error logging in user:', error);
-        showErrorToast('Error logging in user');
-    });
-};
+//             axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
+//                 studentId: userID,
+//                 date: formattedDay,
+//                 status: 'Có mặt' // or any other status you want to set
+//             })
+//             .then(attendanceResponse => {
+//                 showToast('Điểm danh thành công!');
+//                 // Call the /send-email API
+//                 axios.post('/api/admin/send-email', {
+//                     classcode: classcode,
+//                     email: userEmail, // Replace with the actual email address
+//                     date: formattedToday,
+//                     time: currentTime,
+//                     image: image.split(',')[1] // Remove the data URL prefix
+//                 })
+//                 .catch(emailError => {
+//                     console.error('Error sending email:', emailError);
+//                 });
+//             })
+//             .catch(attendanceError => {
+//                 console.error('Error updating attendance:', attendanceError);
+//             });
+//         }
+//     })
+//     .catch(error => {
+//         console.error('Error logging in user:', error);
+//         showErrorToast('Error logging in user');
+//     });
+// };
 
 // const handleLoginUser = () => {
 //     if (!videoRef.current) return;
@@ -215,7 +215,89 @@ const handleLoginUser = () => {
 //     });
 // };
 
+const handleLoginUser = () => {
+    if (!videoRef.current) return;
 
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const context = canvas.getContext('2d');
+    context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    const image = canvas.toDataURL('image/jpeg');
+
+    setWebcamImage(image);
+
+    axios.post('/api/admin/login_user', {
+        name: userCode,
+        image: image.split(',')[1] // Remove the data URL prefix
+    })
+    .then(response => {
+        showToast(response.data.message);
+        if (response.status === 200) {
+            const today = new Date();
+            const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+            const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
+
+            if (formattedDay > formattedToday) {
+                showErrorToast('Điểm danh thất bại: Ngày điểm danh chưa tới.');
+                return;
+            }
+
+            axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
+                studentId: userID,
+                date: formattedDay,
+                status: 'Có mặt' // or any other status you want to set
+            })
+            .then(attendanceResponse => {
+                showToast('Điểm danh thành công!');
+
+                // Chuyển đổi ảnh sang PNG và lưu tạm thời
+                const { createCanvas, loadImage } = require('canvas');
+                const fs = require('fs');
+                const tempFilePath = './temp_image.png';
+
+                loadImage(`data:image/jpeg;base64,${image.split(',')[1]}`).then((img) => {
+                    const canvas = createCanvas(img.width, img.height);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+
+                    const out = fs.createWriteStream(tempFilePath);
+                    const stream = canvas.createPNGStream();
+                    stream.pipe(out);
+                    out.on('finish', () => {
+                        // Gửi email với ảnh PNG
+                        axios.post('/api/admin/send-email', {
+                            classcode: classcode,
+                            email: userEmail, // Replace with the actual email address
+                            date: formattedToday,
+                            time: currentTime,
+                            image: fs.readFileSync(tempFilePath, { encoding: 'base64' }) // Đọc ảnh PNG và chuyển đổi sang base64
+                        })
+                        .then(() => {
+                            showToast('Email sent successfully');
+                            // Xóa file tạm sau khi gửi email
+                            fs.unlinkSync(tempFilePath);
+                        })
+                        .catch(emailError => {
+                            console.error('Error sending email:', emailError);
+                            // Xóa file tạm nếu có lỗi
+                            fs.unlinkSync(tempFilePath);
+                        });
+                    });
+                }).catch(err => {
+                    console.error('Error loading image:', err);
+                });
+            })
+            .catch(attendanceError => {
+                console.error('Error updating attendance:', attendanceError);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error logging in user:', error);
+        showErrorToast('Error logging in user');
+    });
+};
     const showToast = (message) => {
         toast.success(message, { position: "top-right" });
     };
