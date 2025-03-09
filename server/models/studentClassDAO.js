@@ -625,7 +625,7 @@ async updateAttendanceWithCurrentTimeAndStatus(classCode, studentId, date, statu
       const providedDateString = providedDate.toISOString().split('T')[0];
 
       // Update the time and status for the specified date in the attendance records
-      const currentTime = new Date().toLocaleTimeString();
+      const currentTime = new Date().toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
       let recordToUpdate = attendance.attendanceRecords.find(record => record.date.toISOString().split('T')[0] === providedDateString);
       
       if (recordToUpdate) {
