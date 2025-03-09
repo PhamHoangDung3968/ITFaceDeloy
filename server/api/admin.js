@@ -1557,11 +1557,39 @@ router.post('/check_user', async (req, res) => {
 
 //Gửi email khi điểm danh thành công
 router.post('/send-email', (req, res) => {
-  const { email, date, time, image, classcode } = req.body;
+  const { email, classcode, date, time, image } = req.body;
+  const tempFilePath = './temp_image.png';
 
-  EmailUtil.send(email, date, time, image, classcode)
-    .then(() => res.status(200).send('Email sent successfully'))
-    .catch((err) => res.status(500).send(err.toString()));
+  loadImage(`data:image/jpeg;base64,${image}`).then((img) => {
+    const canvas = createCanvas(img.width, img.height);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+
+    const out = fs.createWriteStream(tempFilePath);
+    const stream = canvas.createPNGStream();
+    stream.pipe(out);
+    out.on('finish', () => {
+      // Đọc ảnh PNG và chuyển đổi sang base64
+      const imageBase64 = fs.readFileSync(tempFilePath, { encoding: 'base64' });
+
+      // Gửi email với ảnh PNG
+      EmailUtil.send(email, classcode, date, time, imageBase64)
+        .then(() => {
+          res.status(200).send('Email sent successfully');
+          // Xóa file tạm sau khi gửi email
+          fs.unlinkSync(tempFilePath);
+        })
+        .catch((err) => {
+          console.error('Error sending email:', err);
+          // Xóa file tạm nếu có lỗi
+          fs.unlinkSync(tempFilePath);
+          res.status(500).send(err.toString());
+        });
+    });
+  }).catch(err => {
+    console.error('Error loading image:', err);
+    res.status(500).send(err.toString());
+  });
 });
 
 // category
