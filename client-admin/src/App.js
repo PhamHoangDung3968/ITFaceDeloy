@@ -339,7 +339,7 @@ const AppContent = ({
                   <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right show" style={{ minWidth: '100px' }}>
                     <div className="dropdown-divider"></div>
                     
-                     <Link to="#" className="dropdown-item" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#000000' }}>
+                     <Link to="/admin/profile" className="dropdown-item" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#000000' }}>
                        <i className="fas fa-user mr-2"></i>Hồ sơ
                      </Link>
                     <div className="dropdown-divider"></div>
