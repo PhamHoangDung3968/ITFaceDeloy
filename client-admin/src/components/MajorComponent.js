@@ -245,7 +245,10 @@ class Major extends Component {
 
   handleSearch = () => {
     const { searchKeyword, majors } = this.state;
-    const filteredMajors = majors.filter(major => major.majorName.toLowerCase().includes(searchKeyword.toLowerCase()));
+    const filteredMajors = majors.filter(major => 
+      major.majorName.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+      major.majorCode.toLowerCase().includes(searchKeyword.toLowerCase())
+    );
     this.setState({ filteredMajors, currentPage: 0 });
   };
 

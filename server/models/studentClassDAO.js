@@ -361,6 +361,86 @@ const studentClassDAO = {
 
 
 
+  // async getAttendanceDetailsByClassCode(classCode) {
+  //   try {
+  //     // Tìm classSection dựa trên classCode
+  //     const classSection = await Classsection.findOne({ classCode });
+  //     if (!classSection) {
+  //       throw new Error('Class section not found');
+  //     }
+  
+  //     // Tìm tất cả các bản ghi studentClass có classsectionID trùng
+  //     const studentClasses = await studentClass.find({ classsectionID: classSection._id });
+  
+  //     // Tạo một mảng để lưu trữ thông tin điểm danh
+  //     const attendanceDetails = [];
+  
+  //     // Lấy thông tin time và status từ các bản ghi Attendance
+  //     for (const studentClassEntry of studentClasses) {
+  //       const attendance = await Attendance.findOne({ studentclasssection: studentClassEntry._id });
+  //       if (attendance) {
+  //         for (const record of attendance.attendanceRecords) {
+  //           attendanceDetails.push({
+  //             studentID: studentClassEntry.studentID,
+  //             date: record.date,
+  //             time: record.time,
+  //             status: record.status
+  //           });
+  //         }
+  //       }
+  //     }
+  
+  //     return attendanceDetails;
+  //   } catch (error) {
+  //     console.error('Error fetching attendance details by classCode:', error);
+  //     throw error;
+  //   }
+  // },
+  // async countNonNullTimesByClassCode(classCode) {
+  //   try {
+  //     const attendanceDetails = await this.getAttendanceDetailsByClassCode(classCode);
+  //     return this.countNonNullTimes(attendanceDetails);
+  //   } catch (error) {
+  //     console.error('Error counting non-null times by classCode:', error);
+  //     throw error;
+  //   }
+  // },
+  // countNonNullTimes(attendanceDetails) {
+  //   const studentIDs = [...new Set(attendanceDetails.map(detail => detail.studentID))];
+  //   const timeCount = studentIDs.reduce((acc, studentID) => {
+  //     acc[studentID] = 0;
+  //     return acc;
+  //   }, {});
+  //   attendanceDetails.forEach(detail => {
+  //     if (detail.time !== null) {
+  //       timeCount[detail.studentID]++;
+  //     }
+  //   });
+  //   return timeCount;
+  // },
+
+  // async countStatusByClassCode(classCode, status) {
+  //   try {
+  //     const attendanceDetails = await this.getAttendanceDetailsByClassCode(classCode);
+  //     return this.countStatus(attendanceDetails, status);
+  //   } catch (error) {
+  //     console.error(`Error counting status "${status}" by classCode:`, error);
+  //     throw error;
+  //   }
+  // },
+  // countStatus(attendanceDetails, status) {
+  //   const studentIDs = [...new Set(attendanceDetails.map(detail => detail.studentID))];
+  //   const statusCount = studentIDs.reduce((acc, studentID) => {
+  //     acc[studentID] = 0;
+  //     return acc;
+  //   }, {});
+  //   attendanceDetails.forEach(detail => {
+  //     if (detail.status === status) {
+  //       statusCount[detail.studentID]++;
+  //     }
+  //   });
+  //   return statusCount;
+  // },
   async getAttendanceDetailsByClassCode(classCode) {
     try {
       // Tìm classSection dựa trên classCode
@@ -368,16 +448,16 @@ const studentClassDAO = {
       if (!classSection) {
         throw new Error('Class section not found');
       }
-  
+
       // Tìm tất cả các bản ghi studentClass có classsectionID trùng
       const studentClasses = await studentClass.find({ classsectionID: classSection._id });
-  
+
       // Tạo một mảng để lưu trữ thông tin điểm danh
       const attendanceDetails = [];
-  
+
       // Lấy thông tin time và status từ các bản ghi Attendance
       for (const studentClassEntry of studentClasses) {
-        const attendance = await Attendance.findOne({ studentclasssection: studentClassEntry._id });
+        const attendance = await Attendance.findOne({ studentclasssection: studentClassEntry._id }, 'studentclasssection attendanceRecords');
         if (attendance) {
           for (const record of attendance.attendanceRecords) {
             attendanceDetails.push({
@@ -389,7 +469,7 @@ const studentClassDAO = {
           }
         }
       }
-  
+
       return attendanceDetails;
     } catch (error) {
       console.error('Error fetching attendance details by classCode:', error);
@@ -397,7 +477,110 @@ const studentClassDAO = {
     }
   },
 
+  async countNonNullTimesByClassCode(classCode) {
+    try {
+      const attendanceDetails = await this.getAttendanceDetailsByClassCode(classCode);
+      return this.countNonNullTimes(attendanceDetails);
+    } catch (error) {
+      console.error('Error counting non-null times by classCode:', error);
+      throw error;
+    }
+  },
 
+  countNonNullTimes(attendanceDetails) {
+    const studentIDs = [...new Set(attendanceDetails.map(detail => detail.studentID))];
+    const timeCount = studentIDs.reduce((acc, studentID) => {
+      acc[studentID] = 0;
+      return acc;
+    }, {});
+    attendanceDetails.forEach(detail => {
+      if (detail.time !== null) {
+        timeCount[detail.studentID]++;
+      }
+    });
+    return timeCount;
+  },
+
+  async countStatusByClassCode(classCode, status) {
+    try {
+      const attendanceDetails = await this.getAttendanceDetailsByClassCode(classCode);
+      return this.countStatus(attendanceDetails, status);
+    } catch (error) {
+      console.error(`Error counting status "${status}" by classCode:`, error);
+      throw error;
+    }
+  },
+
+  countStatus(attendanceDetails, status) {
+    const studentIDs = [...new Set(attendanceDetails.map(detail => detail.studentID))];
+    const statusCount = studentIDs.reduce((acc, studentID) => {
+      acc[studentID] = 0;
+      return acc;
+    }, {});
+    attendanceDetails.forEach(detail => {
+      if (detail.status === status) {
+        statusCount[detail.studentID]++;
+      }
+    });
+    return statusCount;
+  },
+
+
+  // async getAttendanceDetailsByClassCodeAndStudentID(classCode, studentID) {
+  //   try {
+  //     // Tìm classSection dựa trên classCode
+  //     const classSection = await Classsection.findOne({ classCode });
+  //     if (!classSection) {
+  //       throw new Error('Class section not found');
+  //     }
+  
+  //     // Tìm tất cả các bản ghi studentClass có classsectionID trùng và studentID trùng
+  //     const studentClasses = await studentClass.find({ classsectionID: classSection._id, studentID: studentID });
+  
+  //     // Tạo một mảng để lưu trữ thông tin điểm danh
+  //     const attendanceDetails = [];
+  
+  //     // Lấy thông tin time và status từ các bản ghi Attendance
+  //     for (const studentClassEntry of studentClasses) {
+  //       const attendance = await Attendance.findOne({ studentclasssection: studentClassEntry._id });
+  //       if (attendance) {
+  //         for (const record of attendance.attendanceRecords) {
+  //           attendanceDetails.push({
+  //             studentID: studentClassEntry.studentID,
+  //             date: record.date,
+  //             time: record.time,
+  //             status: record.status
+  //           });
+  //         }
+  //       }
+  //     }
+  
+  //     return attendanceDetails;
+  //   } catch (error) {
+  //     console.error('Error fetching attendance details by classCode and studentID:', error);
+  //     throw error;
+  //   }
+  // },
+
+  // async countNonNullTimesByClassCodeAndStudentID(classCode, studentID) {
+  //   try {
+  //     const attendanceDetails = await this.getAttendanceDetailsByClassCodeAndStudentID(classCode, studentID);
+  //     return this.countNonNullTimes(attendanceDetails);
+  //   } catch (error) {
+  //     console.error('Error counting non-null times by classCode and studentID:', error);
+  //     throw error;
+  //   }
+  // },
+
+  // async countStatusByClassCodeAndStudentID(classCode, studentID, status) {
+  //   try {
+  //     const attendanceDetails = await this.getAttendanceDetailsByClassCodeAndStudentID(classCode, studentID);
+  //     return this.countStatus(attendanceDetails, status);
+  //   } catch (error) {
+  //     console.error(`Error counting status "${status}" by classCode and studentID:`, error);
+  //     throw error;
+  //   }
+  // },
   async getAttendanceDetailsByClassCodeAndStudentID(classCode, studentID) {
     try {
       // Tìm classSection dựa trên classCode
@@ -405,13 +588,10 @@ const studentClassDAO = {
       if (!classSection) {
         throw new Error('Class section not found');
       }
-  
       // Tìm tất cả các bản ghi studentClass có classsectionID trùng và studentID trùng
       const studentClasses = await studentClass.find({ classsectionID: classSection._id, studentID: studentID });
-  
       // Tạo một mảng để lưu trữ thông tin điểm danh
       const attendanceDetails = [];
-  
       // Lấy thông tin time và status từ các bản ghi Attendance
       for (const studentClassEntry of studentClasses) {
         const attendance = await Attendance.findOne({ studentclasssection: studentClassEntry._id });
@@ -426,13 +606,62 @@ const studentClassDAO = {
           }
         }
       }
-  
       return attendanceDetails;
     } catch (error) {
       console.error('Error fetching attendance details by classCode and studentID:', error);
       throw error;
     }
   },
+
+  async countNonNullTimesByClassCodeAndStudentID(classCode, studentID) {
+    try {
+      const attendanceDetails = await this.getAttendanceDetailsByClassCodeAndStudentID(classCode, studentID);
+      return this.countNonNullTimes(attendanceDetails);
+    } catch (error) {
+      console.error('Error counting non-null times by classCode and studentID:', error);
+      throw error;
+    }
+  },
+
+  async countStatusByClassCodeAndStudentID(classCode, studentID, status) {
+    try {
+      const attendanceDetails = await this.getAttendanceDetailsByClassCodeAndStudentID(classCode, studentID);
+      return this.countStatus(attendanceDetails, status);
+    } catch (error) {
+      console.error(`Error counting status "${status}" by classCode and studentID:`, error);
+      throw error;
+    }
+  },
+
+  countNonNullTimes(attendanceDetails) {
+    const studentIDs = [...new Set(attendanceDetails.map(detail => detail.studentID))];
+    const timeCount = studentIDs.reduce((acc, studentID) => {
+      acc[studentID] = 0;
+      return acc;
+    }, {});
+    attendanceDetails.forEach(detail => {
+      if (detail.time !== null) {
+        timeCount[detail.studentID]++;
+      }
+    });
+    return timeCount;
+  },
+
+  countStatus(attendanceDetails, status) {
+    const studentIDs = [...new Set(attendanceDetails.map(detail => detail.studentID))];
+    const statusCount = studentIDs.reduce((acc, studentID) => {
+      acc[studentID] = 0;
+      return acc;
+    }, {});
+    attendanceDetails.forEach(detail => {
+      if (detail.status === status) {
+        statusCount[detail.studentID]++;
+      }
+    });
+    return statusCount;
+  },
+  
+  
   // async addStudentToClass(classCode, email) {
   //   try {
   //     const mongoose = require('mongoose');
@@ -625,7 +854,9 @@ async updateAttendanceWithCurrentTimeAndStatus(classCode, studentId, date, statu
       const providedDateString = providedDate.toISOString().split('T')[0];
 
       // Update the time and status for the specified date in the attendance records
+      
       const currentTime = new Date().toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+      // const currentTime = new Date().toLocaleTimeString();
       let recordToUpdate = attendance.attendanceRecords.find(record => record.date.toISOString().split('T')[0] === providedDateString);
       
       if (recordToUpdate) {

@@ -196,7 +196,8 @@ class TKBStudent extends Component {
       2: '4-6',
       3: '7-9',
       4: '10-12',
-      5: '13-15'
+      5: '13-15',
+      6: 'Không có'
     };
 
     const filteredsubjectterms = selectedSemester

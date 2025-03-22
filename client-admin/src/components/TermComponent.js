@@ -172,35 +172,79 @@ class Term extends Component {
     }
   };
 
+  // validateTerm = (term) => {
+  //   let isValid = true;
+  //   const errors = {};
+
+  //   if (!term.term || typeof term.term !== 'string' || !term.term.trim()) {
+  //     errors.errorTerm = 'Học kỳ không được để trống';
+  //     isValid = false;
+  //   }
+
+  //   if (!term.endDate || typeof term.endDate !== 'string' || !term.endDate.trim()) {
+  //     errors.errorendDate = 'Ngày kết thúc không được để trống';
+  //     isValid = false;
+  //   }
+
+  //   if (!term.startYear || typeof term.startYear !== 'string' || !term.startYear.trim()) {
+  //     errors.errorStartYear = 'Năm học không được để trống';
+  //     isValid = false;
+  //   }
+
+  //   if (!term.endYear || typeof term.endYear !== 'string' || !term.endYear.trim()) {
+  //     errors.errorEndYear = 'Năm kết thúc không được để trống';
+  //     isValid = false;
+  //   }
+
+  //   if (!term.startDate || typeof term.startDate !== 'string' || !term.startDate.trim()) {
+  //     errors.errorStartDate = 'Ngày bắt đầu không được để trống';
+  //     isValid = false;
+  //   }
+
+  //   this.setState(errors);
+  //   return isValid;
+  // };
   validateTerm = (term) => {
     let isValid = true;
     const errors = {};
-
+  
     if (!term.term || typeof term.term !== 'string' || !term.term.trim()) {
       errors.errorTerm = 'Học kỳ không được để trống';
       isValid = false;
     }
-
+  
     if (!term.endDate || typeof term.endDate !== 'string' || !term.endDate.trim()) {
-      errors.errorendDate = 'Ngày kết thúc không được để trống';
+      errors.errorEndDate = 'Ngày kết thúc không được để trống';
       isValid = false;
     }
-
+  
     if (!term.startYear || typeof term.startYear !== 'string' || !term.startYear.trim()) {
       errors.errorStartYear = 'Năm học không được để trống';
       isValid = false;
     }
-
+  
     if (!term.endYear || typeof term.endYear !== 'string' || !term.endYear.trim()) {
       errors.errorEndYear = 'Năm kết thúc không được để trống';
       isValid = false;
     }
-
+  
     if (!term.startDate || typeof term.startDate !== 'string' || !term.startDate.trim()) {
       errors.errorStartDate = 'Ngày bắt đầu không được để trống';
       isValid = false;
     }
-
+  
+    // Kiểm tra nếu startDate lớn hơn endDate
+    if (term.startDate && term.endDate && new Date(term.startDate) > new Date(term.endDate)) {
+      errors.errorDateRange = 'Ngày bắt đầu không được lớn hơn ngày kết thúc';
+      isValid = false;
+    }
+  
+    // Kiểm tra nếu endDate nhỏ hơn startDate
+    if (term.startDate && term.endDate && new Date(term.endDate) < new Date(term.startDate)) {
+      errors.errorDateRange = 'Ngày kết thúc không được nhỏ hơn ngày bắt đầu';
+      isValid = false;
+    }
+  
     this.setState(errors);
     return isValid;
   };
@@ -258,9 +302,50 @@ class Term extends Component {
     });
   };
 
+  // handleUpdateTerm = async (e) => {
+  //   e.preventDefault();
+  //   const { editingTerm, editingTermId } = this.state;
+  
+  //   try {
+  //     console.log('Updating term with ID:', editingTermId);
+  //     console.log('Payload:', editingTerm);
+  
+  //     const formattedStartDate = new Date(editingTerm.startDate).toISOString();
+  //     const formattedEndDate = new Date(editingTerm.endDate).toISOString();
+  //     const termData = {
+  //       term: editingTerm.term,
+  //       startYear: editingTerm.startYear,
+  //       endYear: editingTerm.endYear,
+  //       startDate: formattedStartDate,
+  //       endDate: formattedEndDate,
+  //     };
+  
+  //     const response = await axios.put(`/api/admin/terms/edit/${editingTermId}`, termData);
+  //     console.log('Response:', response);
+  
+  //     if (response.data) {
+  //       console.log('Updated term:', response.data);
+  //       this.showToast('Cập nhật thành công!');
+  //       this.apiGetTerms();
+  //       this.toggleModalEditTerm();
+  //     } else {
+  //       this.showErrorToast('Có lỗi xảy ra');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error updating term:', error);
+  //     this.showErrorToast('Có lỗi xảy ra');
+  //   }
+  // };
+  
   handleUpdateTerm = async (e) => {
     e.preventDefault();
     const { editingTerm, editingTermId } = this.state;
+  
+    // Kiểm tra nếu startDate lớn hơn endDate
+    if (new Date(editingTerm.startDate) > new Date(editingTerm.endDate)) {
+      this.showErrorToast('Ngày bắt đầu không được lớn hơn ngày kết thúc');
+      return;
+    }
   
     try {
       console.log('Updating term with ID:', editingTermId);
@@ -338,7 +423,7 @@ class Term extends Component {
         });
       };
   render() {
-    const { currentPage, majorsPerPage, filteredTerms, activeTab, showModalDelete, termToDelete,showModalAddTerm, showModalEditTerm, newTerm, editingTerm, errorTerm, errorendDate, errorStartYear, errorEndYear, errorStartDate } = this.state;
+    const { currentPage, majorsPerPage, filteredTerms, activeTab, showModalDelete, termToDelete,showModalAddTerm, showModalEditTerm, newTerm, editingTerm, errorTerm, errorendDate, errorStartYear, errorDateRange, errorStartDate } = this.state;
     const offset = currentPage * majorsPerPage;
     const currentPageTerms = filteredTerms.slice(offset, offset + majorsPerPage);
     const { userRole } = this.props;
@@ -475,7 +560,7 @@ class Term extends Component {
                     </div>
                   </div>
                 </div>
-                {showModalAddTerm && (
+                {/* {showModalAddTerm && (
                   <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog">
                       <div className="modal-content">
@@ -587,7 +672,103 @@ class Term extends Component {
                       </div>
                     </div>
                   </div>
-                )}
+                )} */}
+                {showModalAddTerm && (
+                <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                  <div className="modal-dialog">
+                    <div className="modal-content">
+                      <div className="modal-header">
+                        <h5 className="modal-title">Thêm mới học kỳ</h5>
+                        <button type="button" className="close" onClick={this.toggleModalAddTerm}>
+                          <span>&times;</span>
+                        </button>
+                      </div>
+                      <div className="modal-body">
+                        <form onSubmit={this.handleAddNewTerm}>
+                          <div className="row">
+                            <div className="col-sm-6">
+                              <div className="form-group">
+                                <label>Học kỳ</label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  name="term"
+                                  value={newTerm.term}
+                                  onChange={this.handleNewTermChange}
+                                  placeholder="Nhập học kỳ..."
+                                />
+                                {errorTerm && <span className="text-danger">{errorTerm}</span>}
+                              </div>
+                            </div>
+                            <div className="col-sm-6">
+                              <div className="form-group">
+                                <label>Năm học</label>
+                                <select
+                                  className="form-control"
+                                  name="startYear"
+                                  value={`${newTerm.startYear}-${newTerm.endYear}`}
+                                  onChange={this.handleNewTermChange}
+                                >
+                                  <option value="">Chọn năm học...</option>
+                                  {Array.from({ length: 10 }, (_, i) => {
+                                    const startYear = new Date().getFullYear() - i;
+                                    const endYear = startYear + 1;
+                                    return <option key={startYear} value={`${startYear}-${endYear}`}>{`${startYear}-${endYear}`}</option>;
+                                  })}
+                                </select>
+                                {errorStartYear && <span className="text-danger">{errorStartYear}</span>}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="row">
+                            <div className="col-sm-6">
+                              <div className="form-group">
+                                <label>Ngày bắt đầu</label>
+                                <div className="input-group">
+                                  <div className="input-group-prepend">
+                                    <span className="input-group-text"><i className="far fa-calendar-alt"></i></span>
+                                  </div>
+                                  <input
+                                    type="date"
+                                    className="form-control"
+                                    name="startDate"
+                                    value={newTerm.startDate}
+                                    onChange={this.handleNewTermChange}
+                                  />
+                                </div>
+                                {errorStartDate && <span className="text-danger">{errorStartDate}</span>}
+                              </div>
+                            </div>
+                            <div className="col-sm-6">
+                              <div className="form-group">
+                                <label>Ngày kết thúc</label>
+                                <div className="input-group">
+                                  <div className="input-group-prepend">
+                                    <span className="input-group-text"><i className="far fa-calendar-alt"></i></span>
+                                  </div>
+                                  <input
+                                    type="date"
+                                    className="form-control"
+                                    name="endDate"
+                                    value={newTerm.endDate}
+                                    onChange={this.handleNewTermChange}
+                                  />
+                                </div>
+                                {errorendDate && <span className="text-danger">{errorendDate}</span>}
+                              </div>
+                            </div>
+                          </div>
+                          {errorDateRange && <div className="text-danger">{errorDateRange}</div>}
+                          <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                            <button type="button" className="btn btn-danger" onClick={this.toggleModalAddTerm}>Hủy</button>
+                            <button type="submit" className="btn btn-info" style={{ backgroundColor: '#6B63FF', borderColor: '#6B63FF' }}>Xác nhận</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
                 
                 {showModalEditTerm && (
   <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>

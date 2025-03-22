@@ -19,184 +19,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import QRCode from 'qrcode.react';
 import { QRCodeCanvas } from 'qrcode.react';
 
-// const Attendance = ({ userRole }) => {
-//   const [classcode, setClasscode] = useState('');
-//   const [classSections, setClassSections] = useState([]);
-//   const [subjectInfo, setSubjectInfo] = useState({ lesson: [] });
-//   const [currentPage, setCurrentPage] = useState(0);
-//   const [searchKeyword, setSearchKeyword] = useState('');
-//   const [newEmail, setNewEmail] = useState('');
-//   const [qrCodeValue, setQrCodeValue] = useState('');
-//   const [showModalProfile, setShowModalProfile] = useState(false);
-//   const [selectedUser, setSelectedUser] = useState(null);
-//   const [showModalDelete, setShowModalDelete] = useState(false);
-//   const [deleteId, setDeleteId] = useState(null);
-//   const sectionsPerPage = 50;
-//   const [attendanceDates, setAttendanceDates] = useState([]);
-//   const [attendanceDetails, setAttendanceDetails] = useState([]);
-//   const [selectedStatus, setSelectedStatus] = useState('Hỗ trợ'); // Add this line
-
-//   const [selectedDate, setSelectedDate] = useState(null);
-//   const [selectedStudentId, setSelectedStudentId] = useState(null);
-//   const [token, setToken] = useState('');
-//   const [scanSuccess, setScanSuccess] = useState(false);
-//   const [countdown, setCountdown] = useState(10); // Thêm state cho bộ đếm thời gian
-
-//   const defaultUrl = window.location.origin;
-//   const deviceUUID = uuidv4(); // Tạo UUID duy nhất cho thiết bị
-
-//   useEffect(() => {
-//     const url = window.location.href;
-//     const extractedClasscode = url.split('/').pop(); // Adjust this as needed
-//     if (extractedClasscode) {
-//       setClasscode(extractedClasscode);
-//     } else {
-//       console.error('Failed to extract classcode from URL');
-//     }
-//   }, []);
-
-//   useEffect(() => {
-//     console.log('Classcode:', classcode); // Log the classcode for debugging
-
-//     if (classcode) {
-//       apiGetClassSections();
-//     }
-//   }, [classcode]);
-
-//   useEffect(() => {
-//     const fetchAttendanceData = async () => {
-//       try {
-//         const [datesResponse, detailsResponse] = await Promise.all([
-//           axios.get(`/api/admin/studentclass/dateattendance/${classcode}`),
-//           axios.get(`/api/admin/studentclass/dateattendance/detail/${classcode}`)
-//         ]);
-//         setAttendanceDates(datesResponse.data);
-//         setAttendanceDetails(detailsResponse.data);
-//       } catch (error) {
-//         console.error('Error fetching attendance data:', error);
-//       }
-//     };
-
-//     if (classcode) {
-//       fetchAttendanceData();
-//     }
-//   }, [classcode]);
-
-//   const apiGetClassSections = async () => {
-//     try {
-//       const response = await axios.get(`/api/admin/studentclass/allstudent/${classcode}`);
-//       console.log('All students response:', response.data); // Log the response for all students
-//       setClassSections(response.data);
-
-//       const subjectResponse = await axios.get(`/api/admin/studentclass/allvalue/${classcode}`);
-//       console.log('Subject info response:', subjectResponse.data); // Log the response for subject info
-//       setSubjectInfo(subjectResponse.data);
-//     } catch (error) {
-//       console.error('Error fetching class sections:', error);
-//     }
-//   };
-
-//   const formatDate = (dateString) => {
-//     const date = new Date(dateString);
-//     const day = String(date.getDate()).padStart(2, '0');
-//     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-//     const year = date.getFullYear();
-//     return `${day}-${month}-${year}`;
-//   };
-//   // const generateQrCode = async (date) => {
-//   //   try {
-//   //     const response = await axios.post(`/api/admin/generate/${classcode}/${formatDate(date)}`, {
-//   //       url: window.location.origin
-//   //     });
-//   //     setToken(response.data.token);
-//   //     setQrCodeValue(response.data.qrCodeImage);
-//   //     localStorage.setItem('token', response.data.token);
-//   //     localStorage.setItem('deviceUUID', response.data.deviceUUID); // Lưu UUID vào localStorage
-//   //     localStorage.setItem('day', response.data.day); // Lưu ngày tháng vào localStorage
-//   //     setCountdown(10); // Đặt lại bộ đếm thời gian khi mã QR được tạo
-//   //   } catch (error) {
-//   //     console.error('Error generating QR code:', error);
-//   //   }
-//   // };
-
-//   // const fetchQrCode = async () => {
-//   //   try {
-//   //     const response = await axios.get(`/api/admin/generate/${classcode}/${localStorage.getItem('day')}/qr`, {
-//   //       params: { url: defaultUrl }
-//   //     });
-//   //     setQrCodeValue(response.data.qrCodeImage);
-//   //     setCountdown(10); // Đặt lại bộ đếm thời gian mỗi khi mã QR được cập nhật
-//   //   } catch (error) {
-//   //     console.error('Error fetching QR code:', error);
-//   //   }
-//   // };
-
-//   // useEffect(() => {
-//   //   if (token) {
-//   //     const interval = setInterval(fetchQrCode, 10000*360); // Lấy mã QR mới mỗi 10 giây
-//   //     return () => clearInterval(interval); // Xóa interval khi component unmount
-//   //   }
-//   // }, [token]);
-
-//   // useEffect(() => {
-//   //   if (token) {
-//   //     const countdownInterval = setInterval(() => {
-//   //       setCountdown(prevCountdown => prevCountdown > 0 ? prevCountdown - 1 : 10);
-//   //     }, 1000); // Giảm bộ đếm thời gian mỗi giây
-
-//   //     return () => clearInterval(countdownInterval); // Xóa interval khi component unmount
-//   //   }
-//   // }, [token]);
-//   const generateQrCode = async (date) => {
-//     try {
-//       const response = await axios.post(`/api/admin/generate/${classcode}/${formatDate(date)}`, {
-//         url: window.location.origin
-//       });
-//       localStorage.removeItem('token'); // Xóa token cũ
-//       localStorage.removeItem('deviceUUID'); // Xóa UUID cũ
-//       localStorage.removeItem('day'); // Xóa ngày cũ
-  
-//       setToken(response.data.token);
-//       setQrCodeValue(response.data.qrCodeImage);
-//       localStorage.setItem('token', response.data.token);
-//       localStorage.setItem('deviceUUID', response.data.deviceUUID); // Lưu UUID vào localStorage
-//       localStorage.setItem('day', response.data.day); // Lưu ngày tháng vào localStorage
-//       setCountdown(10); // Đặt lại bộ đếm thời gian khi mã QR được tạo
-//     } catch (error) {
-//       console.error('Error generating QR code:', error);
-//     }
-//   };
-  
-//   const fetchQrCode = async () => {
-//     try {
-//       const response = await axios.get(`/api/admin/generate/${classcode}/${localStorage.getItem('day')}/qr`, {
-//         params: { url: defaultUrl }
-//       });
-//       localStorage.setItem('token', response.data.token); // Lưu token mới vào localStorage
-  
-//       setQrCodeValue(response.data.qrCodeImage);
-//       setCountdown(10); // Đặt lại bộ đếm thời gian mỗi khi mã QR được cập nhật
-//     } catch (error) {
-//       console.error('Error fetching QR code:', error);
-//     }
-//   };
-  
-//   useEffect(() => {
-//     if (token) {
-//       const interval = setInterval(fetchQrCode, 10000); // Lấy mã QR mới mỗi 10 giây
-//       return () => clearInterval(interval); // Xóa interval khi component unmount
-//     }
-//   }, [token]);
-  
-//   useEffect(() => {
-//     if (token) {
-//       const countdownInterval = setInterval(() => {
-//         setCountdown(prevCountdown => prevCountdown > 0 ? prevCountdown - 1 : 10);
-//       }, 1000); // Giảm bộ đếm thời gian mỗi giây
-  
-//       return () => clearInterval(countdownInterval); // Xóa interval khi component unmount
-//     }
-//   }, [token]);
 const Attendance = ({ userRole }) => {
   const [classcode, setClasscode] = useState('');
   const [classSections, setClassSections] = useState([]);
@@ -217,7 +39,11 @@ const Attendance = ({ userRole }) => {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [token, setToken] = useState('');
   const [scanSuccess, setScanSuccess] = useState(false);
-  const [countdown, setCountdown] = useState(10);
+  // const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(5);
+  const [attendanceCounts, setAttendanceCounts] = useState({});
+  const [excusedAbsenceCounts, setExcusedAbsenceCounts] = useState({});
+  const [isZoomed, setIsZoomed] = useState(false);
 
   const defaultUrl = window.location.origin;
   const deviceUUID = uuidv4();
@@ -288,7 +114,8 @@ const Attendance = ({ userRole }) => {
 
       setToken(response.data.token);
       setQrCodeValue(response.data.qrCodeImage);
-      setCountdown(10);
+      // setCountdown(10);
+      setCountdown(5);
     } catch (error) {
       console.error('Error generating QR code:', error);
     }
@@ -302,7 +129,8 @@ const Attendance = ({ userRole }) => {
 
       setToken(response.data.token);
       setQrCodeValue(response.data.qrCodeImage);
-      setCountdown(10);
+      // setCountdown(10);
+      setCountdown(5);
     } catch (error) {
       console.error('Error fetching QR code:', error);
     }
@@ -310,7 +138,8 @@ const Attendance = ({ userRole }) => {
 
   useEffect(() => {
     if (token) {
-      const interval = setInterval(fetchQrCode, 10000);
+      // const interval = setInterval(fetchQrCode, 10000);
+      const interval = setInterval(fetchQrCode, 5000);
       return () => clearInterval(interval);
     }
   }, [token]);
@@ -318,35 +147,28 @@ const Attendance = ({ userRole }) => {
   useEffect(() => {
     if (token) {
       const countdownInterval = setInterval(() => {
-        setCountdown(prevCountdown => prevCountdown > 0 ? prevCountdown - 1 : 10);
+      //   setCountdown(prevCountdown => prevCountdown > 0 ? prevCountdown - 1 : 10);
+      // }, 1000);
+      setCountdown(prevCountdown => prevCountdown > 0 ? prevCountdown - 1 : 10);
       }, 1000);
 
       return () => clearInterval(countdownInterval);
     }
   }, [token]);
-  const scanQrCode = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      console.log('Token:', token); // Log the token for debugging
   
-      const response = await axios.post(`/api/admin/scan/${classcode}/${localStorage.getItem('day')}`, {
-        url: window.location.origin,
-        deviceUUID: localStorage.getItem('deviceUUID') // Gửi UUID cùng với yêu cầu
-      }, {
-        headers: {
-          'x-access-token': token
-        }
-      });
-      console.log('Scan response:', response);
-  
-      if (response.status === 200) {
-        setScanSuccess(true);
-        localStorage.removeItem('token'); // Xóa token khỏi localStorage sau khi sử dụng
+  useEffect(() => {
+    const fetchAttendanceCounts = async () => {
+      try {
+        const response = await axios.get(`/api/admin/studentclass/dateattendance/detail/count/${classcode}`);
+        setAttendanceCounts(response.data.timeCountByStudentID);
+        setExcusedAbsenceCounts(response.data.statusCountByStudentID);
+      } catch (error) {
+        console.error('Error fetching attendance counts:', error);
       }
-    } catch (error) {
-      console.error('Error scanning QR code:', error);
-    }
-  };
+    };
+    fetchAttendanceCounts();
+  }, [classcode, attendanceDetails]); // Thêm attendanceDetails làm dependency
+
 
   const handleDateClick = (date) => {
     setSelectedDate(date);
@@ -387,6 +209,8 @@ const Attendance = ({ userRole }) => {
         return '10-12';
       case 5:
         return '13-15';
+      case 6:
+        return 'Không có';
       default:
         return lesson;
     }
@@ -527,8 +351,26 @@ const countTotalDateColumns = () => {
 };
 
 const countAttendanceForStudent = (studentID) => {
-  return attendanceDetails.filter(record => record.studentID === studentID && record.time).length;
+    return attendanceCounts[studentID] || 0; // Use API data or default to 0
+  };
+
+  
+// const countExcusedAbsencesForStudent = (studentID) => {
+//   return attendanceDetails.filter(record => record.studentID === studentID && record.status === "Vắng có phép").length;
+// };
+const countExcusedAbsencesForStudent = (studentID) => {
+  return excusedAbsenceCounts[studentID] || 0;
 };
+
+
+const handleQrCodeClick = () => {
+  setIsZoomed(true);
+};
+
+const handleCloseModal = () => {
+  setIsZoomed(false);
+};
+
 return (
   <div>
     <section className="content-header">
@@ -577,12 +419,25 @@ return (
       {selectedDate && (
       <div style={{ textAlign: 'center', margin: '10px 0',fontSize:'19px' }}>
         <p>Ngày: {formatDate(selectedDate)}</p> {/* Hiển thị ngày đã chọn */}
-        {qrCodeValue && (
+        {/* {qrCodeValue && (
           <div>
             <img src={qrCodeValue} alt="QR Code" width="200" height="200" style={{marginTop:'-15px'}}/>
-            <p>QR code sẽ thay đổi trong: {countdown} giây</p> {/* Hiển thị bộ đếm thời gian */}
+            <p>QR code sẽ thay đổi trong: {countdown} giây</p>
           </div>
-        )}
+        )} */}
+        {qrCodeValue && (
+                      <div>
+                        <img
+                          src={qrCodeValue}
+                          alt="QR Code"
+                          width="200"
+                          height="200"
+                          style={{ marginTop: '-15px' }}
+                          onClick={handleQrCodeClick}
+                        />
+                        <p>QR code sẽ thay đổi trong: {countdown} giây</p>
+                      </div>
+                    )}
         {scanSuccess && (
           <Link to='/admin/test1'>Go to Test1</Link>
         )}
@@ -614,8 +469,9 @@ return (
 
   {/* Hàng 2: Danh sách gạch đầu dòng */}
   <ul style={{ listStyleType: 'none', paddingLeft: '25px', margin: '5px 0 0 25px' }}>
-    <li>- Giảng viên click vào thời gian để hiển thị QR code điểm</li>
-    <li>- Giảng viên có thể hỗ trợ điểm danh cho sinh viên bằng cách bấm trực tiếp vào nút "Điểm danh". Khi đó, chữ "Hỗ trợ" sẽ hiển thị mặc định. Giảng viên có thể bấm vào chữ "Hỗ trợ" để chuyển trạng thái thành "Vắng có phép" và ngược lại.</li>
+    <li>- GV click vào biểu tượng QR để hiển thị hình QR cho buổi điểm danh</li>
+    <li>- GV có thể click vào hình QR code để phóng to</li>
+    <li>- GV có thể điểm danh giúp SV bằng cách click vào nút "Điểm danh" và có thể click vào chữ "Hỗ trợ" để chuyển trạng thái thành "Vắng có phép" và ngược lại</li>
   </ul>
 </div>
 
@@ -668,9 +524,14 @@ return (
   <table className="table table-hover text-nowrap" style={{ borderCollapse: 'collapse', width: '100%' }}>
     <thead>
       <tr>
-        <th style={{ position: 'sticky', left: 0, background: 'white', zIndex: 2, textAlign: 'center' }}>STT</th>
-        <th style={{ position: 'sticky', left: 50, background: 'white', zIndex: 2, textAlign: 'center' }}>Mã số SV</th>
-        <th style={{ position: 'sticky', left: 150, background: 'white', zIndex: 2, textAlign: 'center' }}>Họ tên</th>
+      <th style={{ position: 'sticky', left: 0, background: 'white', zIndex: 2, textAlign: 'center', width: '50px' }}>STT</th>
+      <th style={{ position: 'sticky', left: '65px', background: 'white', zIndex: 2, textAlign: 'center', width: '100px' }}>Mã số SV</th>
+      <th style={{ position: 'sticky', left: '200px', background: 'white', zIndex: 2, textAlign: 'center', width: '200px' }}>Họ tên</th>
+      <th style={{ position: 'sticky', left: '430px', background: 'white', zIndex: 2, textAlign: 'center', width: '150px' }}>
+  Số buổi<br />tham dự
+</th>
+      <th style={{ position: 'sticky', left: '540px', background: 'white', zIndex: 2, textAlign: 'center', width: '150px' }}>Số buổi  <br/>VCP</th>
+
 
         {attendanceDates.map((date, index) => (
           <th key={index} onClick={() => handleDateClick(date)} style={{ textAlign: 'center', minWidth: '120px' }}>
@@ -684,7 +545,7 @@ return (
             </div>
           </th>
         ))}
-        <th>Số buổi tham dự</th>
+        
       </tr>
     </thead>
     <tbody>
@@ -693,12 +554,18 @@ return (
           <td style={{ position: 'sticky', left: 0, background: 'white', zIndex: 1, textAlign: 'center' }}>
             {offset + index + 1}
           </td>
-          <td style={{ position: 'sticky', left: 50, background: 'white', zIndex: 1, textAlign: 'center' }}>
+          <td style={{ position: 'sticky', left: '65px', background: 'white', zIndex: 1, textAlign: 'center' }}>
             {section.userCode || 'Chưa cập nhật'}
           </td>
-          <td style={{ position: 'sticky', left: 150, background: 'white', zIndex: 1, textAlign: 'center' }}>
+          <td style={{ position: 'sticky', left: '200px', background: 'white', zIndex: 1, textAlign: 'center' }}>
             {section.fullName || section.displayName || 'Chưa cập nhật'}
           </td>
+          <td style={{ textAlign: 'center', minWidth: '120px',position: 'sticky', background: 'white', zIndex: 1,left: '430px' }}>
+                  {countAttendanceForStudent(section._id)}/{countTotalDateColumns()}
+                </td>
+                <td style={{ textAlign: 'center', minWidth: '120px',position: 'sticky', background: 'white', zIndex: 1,left: '540px'  }}>
+                  {countExcusedAbsencesForStudent(section._id)}
+                </td>
 
           {attendanceDates.map((date, dateIndex) => {
             const attendanceRecord = attendanceDetails.find(
@@ -712,20 +579,37 @@ return (
   {attendanceRecord ? (
     <>
       {attendanceRecord.time ? (
+        // <>
+        //   {attendanceRecord.time}
+        //   <br />
+        //   {attendanceRecord.status === "Vắng có phép" || attendanceRecord.status === "Hỗ trợ" ? (
+        //     <span
+        //       onClick={() => toggleStatus(section._id, date, attendanceRecord.status)}
+        //       style={{ cursor: 'pointer', color: '#da2864' }}
+        //     >
+        //       {attendanceRecord.status || ""}
+        //     </span>
+        //   ) : (
+        //     <span>{attendanceRecord.status || ""}</span>
+        //   )}
+        // </>
         <>
-          {attendanceRecord.time}
-          <br />
-          {attendanceRecord.status === "Vắng có phép" || attendanceRecord.status === "Hỗ trợ" ? (
-            <span
-              onClick={() => toggleStatus(section._id, date, attendanceRecord.status)}
-              style={{ cursor: 'pointer', color: '#da2864' }}
-            >
-              {attendanceRecord.status || ""}
-            </span>
-          ) : (
-            <span>{attendanceRecord.status || ""}</span>
-          )}
-        </>
+        {attendanceRecord.time}
+        <br />
+        {attendanceRecord.status === "Vắng có phép" || attendanceRecord.status === "Hỗ trợ" ? (
+          <span
+            onClick={() => toggleStatus(section._id, date, attendanceRecord.status)}
+            style={{
+              cursor: 'pointer',
+              color: attendanceRecord.status === "Vắng có phép" ? '#FF8C00' : '#da2864'
+            }}
+          >
+            {attendanceRecord.status || ""}
+          </span>
+        ) : (
+          <span>{attendanceRecord.status || ""}</span>
+        )}
+      </>
       ) : (
         <button
           onClick={() => handleAttendanceClick(section._id, date)}
@@ -760,9 +644,7 @@ return (
 </td>
             );
           })}
-          <td style={{ textAlign: 'center', minWidth: '120px' }}>
-                    {countAttendanceForStudent(section._id)}/{countTotalDateColumns()}
-                  </td>
+          
         </tr>
       ))}
       {currentClassSections.length === 0 && (
@@ -822,6 +704,27 @@ return (
   </div>
 </div>
 )}
+{isZoomed && (
+        <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title"><b></b>Mã QR được phóng to</h5>
+                <button type="button" className="close" onClick={handleCloseModal}>
+                  <span>&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                <h4 style={{ textAlign:'center' }}>{formatDate(selectedDate)}</h4>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <img src={qrCodeValue} alt="Zoomed QR Code" style={{ width: '450px', height: '450px' }} />
+                </div>
+                <h4 style={{ textAlign:'center' }}>{countdown}</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
   </div>
 );
 };

@@ -27,143 +27,23 @@ const teachingAssignmentDAO = require('../models/teachingAssignmentDAO');
 const ClasssectionDAO = require('../models/ClasssectionDAO'); 
 const studentClassDAO = require('../models/studentClassDAO'); 
 const registrationImageDAO = require('../models/registrationImageDAO'); 
+const StatisticDAO = require('../models/StatisticDAO'); 
 
 
-
+//-----Xử lý Qr Code-----
 const secretKey = 'dung123456'; // Khóa bí mật để mã hóa token
 const validQrCodes = {}; // Giả lập cơ sở dữ liệu mã QR hợp lệ
-
-//-------------------------------------------------ver01---------------------------------------
-// router.post('/generate/:classcode', (req, res) => {
-//   const classcode = req.params.classcode;
-//   const { url } = req.body; // Get the URL from the request body
-//   const token = jwt.sign({ classcode }, secretKey, { expiresIn: '30m' });
-
-//   qrcode.toDataURL(url, (err, qr) => {
-//     if (err) return res.status(500).json({ error: 'Error generating QR code' });
-
-//     // Return the QR code image and token as JSON
-//     res.json({
-//       token,
-//       qrCodeImage: qr
-//     });
-//   });
-
-//   // Save the QR code to a mock database
-//   validQrCodes[classcode] = token;
-// });
-//-------------------------------------------------ver02---------------------------------------
 const tokens = {}; // Định nghĩa biến tokens ở phạm vi toàn cục
-// router.post('/generate/:classcode', (req, res) => {
-//     const classcode = req.params.classcode;
-//     const { url } = req.body;
-//     const token = jwt.sign({ classcode }, secretKey, { expiresIn: '30m' });
-//     const deviceUUID = uuidv4(); // Tạo UUID duy nhất cho thiết bị
-
-//     tokens[token] = { classcode, used: false, deviceUUID }; // Lưu trữ token và UUID
-
-//     qrcode.toDataURL(url, (err, qr) => {
-//         if (err) return res.status(500).json({ error: 'Error generating QR code' });
-
-//         res.json({
-//             token,
-//             qrCodeImage: qr,
-//             deviceUUID // Trả về UUID cho thiết bị
-//         });
-//     });
-// });
-//-------------------------------------------------ver03---------------------------------------
-// router.post('/generate/:classcode/:day', (req, res) => {
-//   const classcode = req.params.classcode;
-//   const day = req.params.day; // Nhận ngày từ URL
-//   const { url } = req.body;
-//   const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '30m' });
-//   const deviceUUID = uuidv4(); // Tạo UUID duy nhất cho thiết bị
-
-//   tokens[token] = { classcode, used: false, deviceUUID, day }; // Lưu trữ token, UUID và ngày tháng
-
-//   qrcode.toDataURL(url, (err, qr) => {
-//       if (err) return res.status(500).json({ error: 'Error generating QR code' });
-
-//       res.json({
-//           token,
-//           qrCodeImage: qr,
-//           deviceUUID, // Trả về UUID cho thiết bị
-//           day // Trả về ngày tháng
-//       });
-//   });
-// });
-
-
-
-
-
-// router.post('/generate/:classcode/:day', (req, res) => {
-//   const classcode = req.params.classcode;
-//   const day = req.params.day; // Nhận ngày từ URL
-//   const { url } = req.body;
-//   const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '30m' });
-//   const deviceUUID = uuidv4(); // Tạo UUID duy nhất cho thiết bị
-
-//   tokens[token] = { classcode, used: false, deviceUUID, day }; // Lưu trữ token, UUID và ngày tháng
-
-//   // Include the day in the URL for QR code generation
-//   const qrData = `${url}?day=${day}`;
-
-//   qrcode.toDataURL(qrData, (err, qr) => {
-//       if (err) return res.status(500).json({ error: 'Error generating QR code' });
-
-//       res.json({
-//           token,
-//           qrCodeImage: qr,
-//           deviceUUID, // Trả về UUID cho thiết bị
-//           day // Trả về ngày tháng
-//       });
-//   });
-// });
-// router.post('/generate/:classcode/:day', (req, res) => {
-//   const classcode = req.params.classcode;
-//   const day = req.params.day; // Nhận ngày từ URL
-//   const { url } = req.body;
-//   const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
-//   const deviceUUID = uuidv4(); // Tạo UUID duy nhất cho thiết bị
-
-//   tokens[token] = { classcode, used: false, deviceUUID, day }; // Lưu trữ token, UUID và ngày tháng
-
-//   const qrData = `${url}/admin/?classcode=${classcode}&day=${day}&timestamp=${Date.now()}`;
-//   qrcode.toDataURL(qrData, (err, qr) => {
-//     if (err) return res.status(500).json({ error: 'Error generating QR code' });
-//     res.json({
-//       token,
-//       qrCodeImage: qr,
-//       deviceUUID, // Trả về UUID cho thiết bị
-//       day // Trả về ngày tháng
-//     });
-//   });
-// });
-
-// router.get('/generate/:classcode/:day/qr', (req, res) => {
-//   const classcode = req.params.classcode;
-//   const day = req.params.day; // Nhận ngày từ URL
-//   const { url } = req.query;
-
-//   const qrData = `${url}/admin/?classcode=${classcode}&day=${day}&timestamp=${Date.now()}`;
-//   qrcode.toDataURL(qrData, (err, qr) => {
-//     if (err) return res.status(500).json({ error: 'Error generating QR code' });
-//     res.json({
-//       qrCodeImage: qr,
-//       day // Trả về ngày tháng
-//     });
-//   });
-// });
+//Sinh mã qr code lần đâu
 router.post('/generate/:classcode/:day', (req, res) => {
   const classcode = req.params.classcode;
-  const day = req.params.day; // Nhận ngày từ URL
+  const day = req.params.day;
   const { url } = req.body;
-  const deviceUUID = uuidv4(); // Tạo UUID duy nhất cho thiết bị
+  const deviceUUID = uuidv4(); 
 
-  const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
-  tokens[token] = { classcode, used: false, deviceUUID, day }; // Lưu trữ token, UUID và ngày tháng
+  // const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
+  const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '5s' });
+  tokens[token] = { classcode, used: false, deviceUUID, day };
 
   const qrData = `${url}/admin/?classcode=${classcode}&day=${day}&token=${token}`;
   qrcode.toDataURL(qrData, (err, qr) => {
@@ -172,19 +52,21 @@ router.post('/generate/:classcode/:day', (req, res) => {
     res.json({
       token,
       qrCodeImage: qr,
-      deviceUUID, // Trả về UUID cho thiết bị
-      day // Trả về ngày tháng
+      deviceUUID,
+      day 
     });
   });
 });
 
+//Sinh mã qr code lần sau
 router.get('/generate/:classcode/:day/qr', (req, res) => {
   const classcode = req.params.classcode;
-  const day = req.params.day; // Nhận ngày từ URL
+  const day = req.params.day; 
   const { url } = req.query;
 
-  const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
-  tokens[token] = { classcode, used: false, deviceUUID: uuidv4(), day }; // Lưu trữ token, UUID và ngày tháng
+  // const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
+  const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '5s' });
+  tokens[token] = { classcode, used: false, deviceUUID: uuidv4(), day }; 
 
   const qrData = `${url}/admin/?classcode=${classcode}&day=${day}&token=${token}`;
   qrcode.toDataURL(qrData, (err, qr) => {
@@ -198,95 +80,7 @@ router.get('/generate/:classcode/:day/qr', (req, res) => {
   });
 });
 
-
-//-------------------------------------------------ver01---------------------------------------
-// router.post('/scan/:classcode', (req, res) => {
-//   const classcode = req.params.classcode;
-//   const token = req.headers['x-access-token'];
-//   const { url } = req.body; // Get the URL from the request body
-
-//   if (!token) {
-//     return res.status(403).send('No token provided.');
-//   }
-
-//   try {
-//     // Log the received token for debugging
-//     console.log('Received token:', token);
-
-//     // Verify the token
-//     const decoded = jwt.verify(token, secretKey);
-
-//     // Log the decoded token for debugging
-//     console.log('Decoded token:', decoded);
-
-//     if (decoded.classcode === classcode && validQrCodes[classcode] === token) {
-//       res.redirect(url); // Redirect to the URL provided in the request body
-//     } else {
-//       res.status(400).send('Invalid QR code');
-//     }
-//   } catch (error) {
-//     console.error('Token verification error:', error);
-//     res.status(400).send('QR code has expired or is invalid');
-//   }
-// });
-//-------------------------------------------------ver02---------------------------------------
-// router.post('/scan/:classcode', (req, res) => {
-//   const classcode = req.params.classcode;
-//   const token = req.headers['x-access-token'];
-//   const { url, deviceUUID } = req.body; // Nhận UUID từ yêu cầu
-
-//   if (!token) {
-//       return res.status(403).send('No token provided.');
-//   }
-
-//   try {
-//       console.log('Received token:', token);
-//       const decoded = jwt.verify(token, secretKey);
-//       console.log('Decoded token:', decoded);
-
-//       if (tokens[token] && tokens[token].classcode === classcode && !tokens[token].used && tokens[token].deviceUUID === deviceUUID) {
-//           tokens[token].used = true; // Đánh dấu token là đã sử dụng
-//           res.redirect(url);
-//       } else {
-//           res.status(400).send('Invalid or already used QR code');
-//       }
-//   } catch (error) {
-//       console.error('Token verification error:', error);
-//       res.status(400).send('QR code has expired or is invalid');
-//   }
-// });
-
-
-
-
-// router.post('/scan/:classcode/:day', (req, res) => {
-//   const classcode = req.params.classcode;
-//   const day = req.params.day; // Nhận ngày từ URL
-//   const token = req.headers['x-access-token'];
-//   const { url, deviceUUID } = req.body; // Nhận UUID từ yêu cầu
-
-//   if (!token) {
-//       return res.status(403).send('No token provided.');
-//   }
-
-//   try {
-//       console.log('Received token:', token);
-//       const decoded = jwt.verify(token, secretKey);
-//       console.log('Decoded token:', decoded);
-
-//       if (tokens[token] && tokens[token].classcode === classcode && !tokens[token].used && tokens[token].deviceUUID === deviceUUID && tokens[token].day === day) {
-//           tokens[token].used = true; // Đánh dấu token là đã sử dụng
-//           res.redirect(url);
-//       } else {
-//           res.status(400).send('Invalid or already used QR code');
-//       }
-//   } catch (error) {
-//       console.error('Token verification error:', error);
-//       res.status(400).send('QR code has expired or is invalid');
-//   }
-// });
-
-
+//Quét test QR code
 router.post('/scan/:classcode/:day', (req, res) => {
   const classcode = req.params.classcode;
   const day = req.params.day; // Nhận ngày từ URL
@@ -314,13 +108,13 @@ router.post('/scan/:classcode/:day', (req, res) => {
   }
 });
 
+//Xác thực QR code
 router.post('/verify-token', (req, res) => {
   const token = req.headers['x-access-token'];
 
   if (!token) {
       return res.status(403).send('No token provided.');
   }
-
   try {
       jwt.verify(token, secretKey);
       res.sendStatus(200);
@@ -331,7 +125,7 @@ router.post('/verify-token', (req, res) => {
 });
 
 
-
+//-----Xử lý upload file-----
 //test file import
 router.post('/upload/test', upload.single('file'), (req, res) => {
   try {
@@ -388,6 +182,8 @@ router.post('/upload/student/:classcode', upload.single('file'), async (req, res
   }
 });
 
+
+
 //-----Xử lý người dùng-----
 //lấy tất cả người dùng
 router.get('/users', async (req, res) => {
@@ -406,6 +202,7 @@ router.get('/users/unstudent', async (req, res) => {
     res.status(500).json({ message: 'Error fetching users', error });
   }
 });
+
 //lấy tất cả sinh viên
 router.get('/users/student', async (req, res) => {
   try {
@@ -415,6 +212,7 @@ router.get('/users/student', async (req, res) => {
     res.status(500).json({ message: 'Error fetching users', error });
   }
 });
+
 //lấy tất cả giảng viên
 router.get('/users/lecturer', async (req, res) => {
   try {
@@ -425,7 +223,15 @@ router.get('/users/lecturer', async (req, res) => {
   }
 });
 
-
+//lấy tất cả admin và bcnk
+router.get('/users/adminandbcnk', async (req, res) => {
+  try {
+    const users = await UserDAO.selectAdminAndBCNK();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching users', error });
+  }
+});
 
 //Lấy ra các giảng viên đã được đăng ký môn
 router.get('/users/lecturer/registed', async (req, res) => {
@@ -459,6 +265,7 @@ router.post('/users', async (req, res) => {
     res.status(500).json({ message: 'Error inserting user', error });
   }
 });
+
 //xóa người dùng
 router.delete('/users/:id', async (req, res) => {
   try {
@@ -469,6 +276,7 @@ router.delete('/users/:id', async (req, res) => {
     res.status(500).json({ message: 'Error deleting user', error });
   }
 });
+
 //chỉnh sửa quyền và trạng thái người dùng
 router.put('/users/:id', async (req, res) => {
   try {
@@ -494,6 +302,7 @@ router.put('/users/:id', async (req, res) => {
     res.status(500).json({ message: 'Error updating user', error });
   }
 });
+
 //Lấy thông tin người dùng theo id
 router.get('/users/profile/:id', async (req, res) => {
   try {
@@ -504,6 +313,7 @@ router.get('/users/profile/:id', async (req, res) => {
     res.status(500).json({ message: 'Error fetching user by ID', error });
   }
 });
+
 //Chỉnh sửa thông tin người dùng
 router.put('/users/edit/:id', async (req, res) => {
   try {
@@ -540,6 +350,7 @@ router.get('/roles/unstudent', async (req, res) => {
     res.status(500).json({ message: 'Error fetching roles', error });
   }
 });
+
 // Thêm vai trò mới
 router.post('/roles', async (req, res) => {
   try {
@@ -551,6 +362,7 @@ router.post('/roles', async (req, res) => {
     res.status(500).json({ message: 'Error inserting role', error });
   }
 });
+
 // Cập nhật vai trò
 router.put('/roles/:id', async (req, res) => {
   try {
@@ -563,6 +375,7 @@ router.put('/roles/:id', async (req, res) => {
     res.status(500).json({ message: 'Error updating role', error });
   }
 });
+
 // Lấy vai trò theo ID
 router.get('/roles/:id', async (req, res) => {
   try {
@@ -573,6 +386,7 @@ router.get('/roles/:id', async (req, res) => {
     res.status(500).json({ message: 'Error fetching role by ID', error });
   }
 });
+
 // Xóa vai trò
 router.delete('/roles/:id', async (req, res) => {
   try {
@@ -595,6 +409,7 @@ router.get('/majors', async (req, res) => {
     res.status(500).json({ message: 'Error fetching majors', error });
   }
 });
+
 //Thêm mới ngành học
 router.post('/majors', async (req, res) => {
   try {
@@ -608,6 +423,7 @@ router.post('/majors', async (req, res) => {
     res.status(500).json({ message: 'Error inserting major', error });
   }
 });
+
 //Chỉnh sửa trạng thái của ngành học
 router.put('/majors/:id', async (req, res) => {
   try {
@@ -630,6 +446,7 @@ router.put('/majors/:id', async (req, res) => {
     res.status(500).json({ message: 'Error updating major', error });
   }
 });
+
 //Xóa ngành học
 router.delete('/majors/:id', async (req, res) => {
   try {
@@ -640,6 +457,7 @@ router.delete('/majors/:id', async (req, res) => {
     res.status(500).json({ message: 'Error deleting major', error });
   }
 });
+
 //Lấy thông tin ngành học theo ID
 router.get('/majors/:id', async (req, res) => {
   try {
@@ -650,6 +468,7 @@ router.get('/majors/:id', async (req, res) => {
     res.status(500).json({ message: 'Error fetching major by ID', error });
   }
 });
+
 //Chỉnh sửa thông tin ngành học
 router.put('/majors/edit/:id', async (req, res) => {
   try {
@@ -663,6 +482,7 @@ router.put('/majors/edit/:id', async (req, res) => {
     res.status(500).json({ message: 'Error updating major', error });
   }
 });
+
 //kiểm tra ràng buộc
 router.get('/major', async (req, res) => {
   try {
@@ -679,6 +499,7 @@ router.get('/major', async (req, res) => {
   }
 });
 
+
 //-----Xử lý học kỳ-----
 //Lấy tất cả học kỳ
 router.get('/terms', async (req, res) => {
@@ -689,6 +510,7 @@ router.get('/terms', async (req, res) => {
     res.status(500).json({ message: 'Error fetching terms', error });
   }
 });
+
 //Thêm mới học kỳ
 router.post('/terms', async (req, res) => {
   try {
@@ -704,6 +526,7 @@ router.post('/terms', async (req, res) => {
     res.status(500).json({ message: 'Error inserting terms', error });
   }
 });
+
 //Thay đổi trạng thái của học kỳ
 router.put('/terms/:id', async (req, res) => {
   try {
@@ -726,6 +549,7 @@ router.put('/terms/:id', async (req, res) => {
     res.status(500).json({ message: 'Error updating term', error });
   }
 });
+
 //Xóa học kỳ
 router.delete('/terms/:id', async (req, res) => {
   try {
@@ -736,6 +560,7 @@ router.delete('/terms/:id', async (req, res) => {
     res.status(500).json({ message: 'Error deleting term', error });
   }
 });
+
 //Lấy thông tin học kỳ theo ID
 router.get('/terms/:id', async (req, res) => {
   try {
@@ -746,6 +571,7 @@ router.get('/terms/:id', async (req, res) => {
     res.status(500).json({ message: 'Error fetching term by ID', error });
   }
 });
+
 //Chỉnh sửa học kỳ
 router.put('/terms/edit/:id', async (req, res) => {
   try {
@@ -762,6 +588,7 @@ router.put('/terms/edit/:id', async (req, res) => {
     res.status(500).json({ message: 'Error updating term', error });
   }
 });
+
 //kiểm tra ràng buộc
 router.get('/term', async (req, res) => {
   try {
@@ -789,6 +616,7 @@ router.get('/subjects', async (req, res) => {
     res.status(500).json({ message: 'Error fetching subjects', error });
   }
 });
+
 //Thêm mới môn học
 router.post('/subjects', async (req, res) => {
   try {
@@ -803,6 +631,7 @@ router.post('/subjects', async (req, res) => {
     res.status(500).json({ message: 'Error inserting subjects', error });
   }
 });
+
 //Xóa môn học
 router.delete('/subjects/:id', async (req, res) => {
   try {
@@ -813,6 +642,7 @@ router.delete('/subjects/:id', async (req, res) => {
     res.status(500).json({ message: 'Error deleting subject', error });
   }
 });
+
 //Lấy thông môn học theo ID
 router.get('/subjects/:id', async (req, res) => {
   try {
@@ -823,6 +653,7 @@ router.get('/subjects/:id', async (req, res) => {
     res.status(500).json({ message: 'Error fetching subject by ID', error });
   }
 });
+
 //Chỉnh sửa môn học
 router.put('/subjects/edit/:id', async (req, res) => {
   try {
@@ -845,8 +676,6 @@ router.get('/subject', async (req, res) => {
     if (!subjectCode) {
       return res.status(400).json({ message: 'Mã môn học là bắt buộc' });
     }
-
-    // Tìm kiếm mã môn học trong cơ sở dữ liệu
     const subjects = await SubjectDAO.selectBySubjectCode(subjectCode);
     res.json(subjects);
   } catch (error) {
@@ -856,14 +685,8 @@ router.get('/subject', async (req, res) => {
 });
 
 
-
-
-
-
-
-
-
-
+//-----Xử lý môn học & học kỳ-----
+//Lấy tất cả môn học & học kỳ
 router.get('/subjectterms', async (req, res) => {
   try {
     const subjectterms = await SubjectTermDAO.selectAll();
@@ -873,6 +696,7 @@ router.get('/subjectterms', async (req, res) => {
   }
 });
 
+//Tạo môn học & học kỳ
 router.post('/subjectterm', async (req, res) => {
   try {
     const { subjectTermCode, subjectID, termID } = req.body;
@@ -886,6 +710,8 @@ router.post('/subjectterm', async (req, res) => {
     res.status(500).json({ message: 'Error inserting subject terms', error });
   }
 });
+
+//lấy môn học & học kỳ theo id
 router.get('/subjectterms/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -895,6 +721,8 @@ router.get('/subjectterms/:id', async (req, res) => {
     res.status(500).json({ message: 'Error fetching subject term by ID', error });
   }
 });
+
+//Sửa môn học & học kỳ
 router.put('/subjectterms/edit/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -908,6 +736,8 @@ router.put('/subjectterms/edit/:id', async (req, res) => {
     res.status(500).json({ message: 'Error updating subject term', error });
   }
 });
+
+//xóa môn học & học kỳ
 router.delete('/subjectterms/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -917,6 +747,8 @@ router.delete('/subjectterms/:id', async (req, res) => {
     res.status(500).json({ message: 'Error deleting subject term', error });
   }
 });
+
+//lấy tất cả môn học trong môn học & học kỳ theo id
 router.get('/subjectterms/allvalue/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -928,20 +760,8 @@ router.get('/subjectterms/allvalue/:id', async (req, res) => {
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 //-----Xử lý đăng ký môn học cho giảng viên-----
+//lấy tất cả thông tin phân công
 router.get('/teachingassignments', async (req, res) => {
   try {
     const teachingassignments = await teachingAssignmentDAO.selectAll();
@@ -950,6 +770,7 @@ router.get('/teachingassignments', async (req, res) => {
     res.status(500).json({ message: 'Error fetching teachingassignments', error });
   }
 });
+
 //Thêm mới đăng ký môn học 
 router.post('/teachingAssignments', async (req, res) => {
   try {
@@ -964,6 +785,7 @@ router.post('/teachingAssignments', async (req, res) => {
     res.status(500).json({ message: 'Error inserting teaching assignments', error });
   }
 });
+
 //Thực hiện đăng ký 
 router.get('/unregisteredLecturers/:subjecttermID', async (req, res) => {
   try {
@@ -978,6 +800,7 @@ router.get('/unregisteredLecturers/:subjecttermID', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 //Lấy thông tin đăng kí theo ID
 router.get('/teacherassignments/:subjecttermID', async (req, res) => {
   try {
@@ -988,6 +811,7 @@ router.get('/teacherassignments/:subjecttermID', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 //Xóa môn học đã đăng kí cho GV
 router.delete('/teacherassignments/:id', async (req, res) => {
   const { id } = req.params;
@@ -998,6 +822,7 @@ router.delete('/teacherassignments/:id', async (req, res) => {
     res.status(500).json({ message: 'Error deleting assignment', error: error.message });
   }
 });
+
 //đăng kí môn dạy cho GV
 router.post('/teacherassignments/:subjecttermID/:teacherID/register', async (req, res) => {
   const { subjecttermID, teacherID } = req.params;
@@ -1012,21 +837,9 @@ router.post('/teacherassignments/:subjecttermID/:teacherID/register', async (req
   }
 });
 
-
-// router.get('/classsections/unregist/:subjectID', async (req, res) => {
-//   const { subjectID } = req.params;
-
-//   try {
-//     const availableClassSections = await teachingAssignmentDAO.getUnassignedClassSections(subjectID);
-//     res.status(200).json(availableClassSections);
-//   } catch (error) {
-//     console.error('Error fetching class sections:', error);
-//     res.status(500).send('Error fetching class sections');
-//   }
-// });
+//Lấy ra các môn học chưa được đăng ký
 router.get('/classsections/unregist/:subjecttermID/:subjectTermCode', async (req, res) => {
   const { subjecttermID, subjectTermCode } = req.params;
-
   try {
     const availableClassSections = await teachingAssignmentDAO.getUnassignedClassSections(subjecttermID, subjectTermCode);
     res.status(200).json(availableClassSections);
@@ -1048,6 +861,8 @@ router.get('/classsections', async (req, res) => {
     res.status(500).json({ message: 'Error fetching subjects', error });
   }
 });
+
+//Lấy lớp học phần theo mã môn học & học kỳ
 router.get('/classsections/:subjecttermID', async (req, res) => {
   try {
     const { subjecttermID } = req.params;
@@ -1057,6 +872,7 @@ router.get('/classsections/:subjecttermID', async (req, res) => {
     res.status(500).json({  message: error.message });
   }
 });
+
 //Thêm mới môn học
 router.post('/classsections', async (req, res) => {
   try {
@@ -1071,6 +887,7 @@ router.post('/classsections', async (req, res) => {
     res.status(500).json({ message: 'Error inserting class sections', error });
   }
 });
+
 //Chỉnh sửa lớp học phần
 router.put('/classsections/edit/:id', async (req, res) => {
   try {
@@ -1085,6 +902,7 @@ router.put('/classsections/edit/:id', async (req, res) => {
     res.status(500).json({ message: 'Error updating class section', error });
   }
 });
+
 //Lấy tất cả lớp thực hành theo mã lớp
 router.get('/classsections/practice/:classCode', async (req, res) => {
   try {
@@ -1097,6 +915,7 @@ router.get('/classsections/practice/:classCode', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
 //Xóa lớp thực hành
 router.delete('/classsections/practice/:id', async (req, res) => {
   const { id } = req.params;
@@ -1107,6 +926,7 @@ router.delete('/classsections/practice/:id', async (req, res) => {
     res.status(500).json({ message: 'Error deleting practical', error: error.message });
   }
 });
+
 //Xóa lớp học phần
 router.delete('/classsections/:id', async (req, res) => {
   const { id } = req.params;
@@ -1117,6 +937,7 @@ router.delete('/classsections/:id', async (req, res) => {
     res.status(500).json({ message: 'Error deleting class section', error: error.message });
   }
 });
+
 //Lấy tất cả thông tin giảng viên và các môn học mà giảng viên đang dạy
 router.get('/teacherassignments/teacher/getall/:teacherID', async (req, res) => {
   try {
@@ -1127,6 +948,7 @@ router.get('/teacherassignments/teacher/getall/:teacherID', async (req, res) => 
     res.status(500).json({ message: 'Error fetching class sections', error });
   }
 });
+
 //Xóa môn dạy đã đăng ký cho giảng viên
 router.delete('/teacherassignments/removeclasssection/:teacherID/:classsectionID', async (req, res) => {
   const { teacherID, classsectionID } = req.params;
@@ -1140,45 +962,7 @@ router.delete('/teacherassignments/removeclasssection/:teacherID/:classsectionID
 });
 
 
-//-----Xử lý Thời khóa biểu-----
-router.get('/user-by-classcode/:classCode', async (req, res) => {
-  const { classCode } = req.params;
-  try {
-    const user = await teachingAssignmentDAO.getUserByClassCode(classCode);
-    res.status(200).json(user);
-  } catch (error) {
-    console.error('Error fetching user by classCode:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-//lấy các lớp của GV
-router.get('/classsections/teacher/:teacherID', async (req, res) => {
-  const { teacherID } = req.params;
-
-  try {
-    const result = await teachingAssignmentDAO.getClassSectionsByTeacherIDTKB(teacherID);
-    res.status(200).json(result);
-  } catch (error) {
-    console.error('Error fetching class sections:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-//lấy các lớp của SV
-router.get('/classsections/student/:studentID', async (req, res) => {
-  const { studentID } = req.params;
-
-  try {
-    const result = await teachingAssignmentDAO.getClassSectionsByStudentIDTKB(studentID);
-    res.status(200).json(result);
-  } catch (error) {
-    console.error('Error fetching class sections:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
-
-//-----Xử lý lớp học cho từng sinh viên-----
+//-----Xử lý điểm danh và lớp học cho từng sinh viên-----
 //thêm sinh viên
 router.post('/studentclass', async (req, res) => {
   try {
@@ -1193,6 +977,7 @@ router.post('/studentclass', async (req, res) => {
     res.status(500).json({ message: 'Error inserting student Class', error });
   }
 });
+
 //lấy thông tin của lớp học
 router.get('/studentclass/allvalue/:classCode', async (req, res) => {
   try {
@@ -1204,6 +989,7 @@ router.get('/studentclass/allvalue/:classCode', async (req, res) => {
     res.status(500).json({ message: 'Error fetching class section by classCode', error });
   }
 });
+
 //lấy tất cả sinh viên dựa vào classcode
 router.get('/studentclass/allstudent/:classCode', async (req, res) => {
   try {
@@ -1215,6 +1001,7 @@ router.get('/studentclass/allstudent/:classCode', async (req, res) => {
     res.status(500).json({ message: 'Error fetching users by classCode', error });
   }
 });
+
 //lấy thông tin điểm danh của 1 sinh viên
 router.get('/studentclass/onestudent/:classCode/:studentID', async (req, res) => {
   try {
@@ -1226,6 +1013,7 @@ router.get('/studentclass/onestudent/:classCode/:studentID', async (req, res) =>
     res.status(500).json({ message: 'Error fetching users by classCode and studentID', error });
   }
 });
+
 //Thêm email sinh viên vào lớp học
 router.post('/studentclass/:classCode', async (req, res) => {
   try {
@@ -1238,6 +1026,7 @@ router.post('/studentclass/:classCode', async (req, res) => {
     res.status(500).json({ message: 'Error adding student to class', error });
   }
 });
+
 //xóa sinh viên ra khỏi lớp học
 router.delete('/studentclass/remove/:classCode/:studentID', async (req, res) => {
   try {
@@ -1286,6 +1075,19 @@ router.get('/studentclass/dateattendance/detail/:classCode', async (req, res) =>
   }
 });
 
+//lấy ra và đếm ngày học và ngày vắng có phép
+router.get('/studentclass/dateattendance/detail/count/:classCode', async (req, res) => {
+  try {
+    const { classCode } = req.params;
+    const timeCountByStudentID = await studentClassDAO.countNonNullTimesByClassCode(classCode);
+    const statusCountByStudentID = await studentClassDAO.countStatusByClassCode(classCode, 'Vắng có phép');
+    res.json({ timeCountByStudentID, statusCountByStudentID });
+  } catch (error) {
+    console.error('Error fetching counts by classCode:', error);
+    res.status(500).json({ message: 'Error fetching counts by classCode', error });
+  }
+});
+
 //lấy dữ liệu điểm danh của một sinh viên
 router.get('/studentclass/dateattendance-student/detail/:classCode/:studentID', async (req, res) => {
   try {
@@ -1295,6 +1097,17 @@ router.get('/studentclass/dateattendance-student/detail/:classCode/:studentID', 
   } catch (error) {
     console.error('Error fetching attendance details by classCode and studentID:', error);
     res.status(500).json({ message: 'Error fetching attendance details by classCode and studentID', error });
+  }
+});
+router.get('/studentclass/dateattendance-student/detail/count/:classCode/:studentID', async (req, res) => {
+  try {
+    const { classCode, studentID } = req.params;
+    const totalTimes = await studentClassDAO.countNonNullTimesByClassCodeAndStudentID(classCode, studentID);
+    const excusedAbsences = await studentClassDAO.countStatusByClassCodeAndStudentID(classCode, studentID, "Vắng có phép");
+    res.json({ totalTimes, excusedAbsences });
+  } catch (error) {
+    console.error('Error fetching attendance count by classCode and studentID:', error);
+    res.status(500).json({ message: 'Error fetching attendance count by classCode and studentID', error });
   }
 });
 
@@ -1361,24 +1174,133 @@ router.get('/export-attendance/:classCode', async (req, res) => {
   }
 });
 
+router.get('/export-tk-teacher/:teacherID', async (req, res) => {
+  try {
+      const { teacherID } = req.params; // Corrected parameter name
 
-// router.post('/register_user', async (req, res) => {
+      // Export the class sections to an Excel buffer
+      const buffer = await StatisticDAO.exportTKClassSectionsToExcel(teacherID);
+
+      // Create a readable stream from the buffer
+      const stream = new Readable();
+      stream.push(buffer);
+      stream.push(null);
+
+      // Set headers and send the file
+      res.setHeader('Content-Disposition', `attachment; filename=attendance_${teacherID}.xlsx`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      stream.pipe(res);
+  } catch (error) {
+      console.error('Error exporting attendance:', error);
+      res.status(500).json({ message: 'Error exporting attendance', error });
+  }
+});
+
+
+router.get('/export-tk-bcnk', async (req, res) => {
+  try {
+      // Export the class sections to an Excel buffer
+      const buffer = await StatisticDAO.exportTKClassSectionsToExcelWithoutTeacherID();
+
+      // Create a readable stream from the buffer
+      const stream = new Readable();
+      stream.push(buffer);
+      stream.push(null);
+
+      // Set headers and send the file
+      res.setHeader('Content-Disposition', 'attachment; filename=statistic_attendance.xlsx');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      stream.pipe(res);
+  } catch (error) {
+      console.error('Error exporting attendance:', error);
+      res.status(500).json({ message: 'Error exporting attendance', error });
+  }
+});
+
+//(Có thể sẽ bỏ)
+// router.get('/export-tk-average-participation', async (req, res) => {
 //   try {
-//     const { name, image } = req.body;
+//       // Export the class sections to an Excel buffer
+//       const buffer = await StatisticDAO.exportTKAverageParticipationExcel();
 
-//     console.log('Sending request to Python API for user registration...');
-//     const response = await axios.post('http://127.0.0.1:5000/api/register', { name, image
-//     });
+//       // Create a readable stream from the buffer
+//       const stream = new Readable();
+//       stream.push(buffer);
+//       stream.push(null);
 
-//     console.log('Received response from Python API:', response.data);
-//     res.json(response.data);
+//       // Set headers and send the file
+//       res.setHeader('Content-Disposition', 'attachment; filename=class_sections.xlsx');
+//       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+//       stream.pipe(res);
 //   } catch (error) {
-//     console.error('Error calling Python API:', error);
-//     res.status(500).json({ message: 'Error calling Python API', error });
+//       console.error('Error exporting class sections:', error);
+//       res.status(500).json({ message: 'Error exporting class sections', error });
 //   }
 // });
 
 
+
+router.get('/export-tk-average-absent', async (req, res) => {
+  try {
+      // Export the class sections to an Excel buffer
+      const buffer = await StatisticDAO.exportTKAverageAbsentExcel();
+
+      // Create a readable stream from the buffer
+      const stream = new Readable();
+      stream.push(buffer);
+      stream.push(null);
+
+      // Set headers and send the file
+      res.setHeader('Content-Disposition', 'attachment; filename=class_sections.xlsx');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      stream.pipe(res);
+  } catch (error) {
+      console.error('Error exporting class sections:', error);
+      res.status(500).json({ message: 'Error exporting class sections', error });
+  }
+});
+
+router.get('/export-tk-totallhp/:teacherID', async (req, res) => {
+  try {
+      const teacherID = req.params.teacherID; // Lấy teacherID từ params
+
+      // Export the class sections to an Excel buffer
+      const buffer = await StatisticDAO.exportClassSectionsAndDatesWithNonNullTimesToExcel(teacherID);
+
+      // Create a readable stream from the buffer
+      const stream = new Readable();
+      stream.push(buffer);
+      stream.push(null);
+
+      // Set headers and send the file
+      res.setHeader('Content-Disposition', 'attachment; filename=total_class_sections.xlsx');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      stream.pipe(res);
+  } catch (error) {
+      console.error('Error exporting class sections:', error);
+      res.status(500).json({ message: 'Error exporting class sections', error });
+  }
+});
+
+router.get('/export-tk-bcnk-totallhp', async (req, res) => {
+  try {
+      // Export the class sections to an Excel buffer
+      const buffer = await StatisticDAO.exportAllClassSectionsAndDatesWithNonNullTimesToExcel();
+
+      // Create a readable stream from the buffer
+      const stream = new Readable();
+      stream.push(buffer);
+      stream.push(null);
+
+      // Set headers and send the file
+      res.setHeader('Content-Disposition', 'attachment; filename=total_average_class_sections.xlsx');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      stream.pipe(res);
+  } catch (error) {
+      console.error('Error exporting class sections:', error);
+      res.status(500).json({ message: 'Error exporting class sections', error });
+  }
+});
 
 //-----Xử lý FaceID-----
 //Đăng ký FaceID lần đầu
@@ -1387,7 +1309,7 @@ router.post('/register_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user registration...');
-    const response = await axios.post('https://1146-2001-ee0-4fc3-36f0-f8e8-1bdd-841-7210.ngrok-free.app/api/register', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/register', { name, image });
 
     console.log('Received response from Python API:', response.data);
 
@@ -1412,7 +1334,7 @@ router.post('/re_register_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Gửi yêu cầu đến API Python để đăng ký lại người dùng...');
-    const response = await axios.post('https://1146-2001-ee0-4fc3-36f0-f8e8-1bdd-841-7210.ngrok-free.app/api/re_register', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/re_register', { name, image });
 
     console.log('Nhận phản hồi từ API Python:', response.data);
 
@@ -1443,63 +1365,13 @@ router.get('/user_images/:userId', async (req, res) => {
   }
 });
 
-// router.post('/login_user', async (req, res) => {
-//   try {
-//     const { image } = req.body;
-
-//     console.log('Sending request to Python API for user login...');
-//     const response = await axios.post('http://127.0.0.1:5000/api/login', { image });
-
-//     console.log('Received response from Python API:', response.data);
-//     res.json(response.data);
-//   } catch (error) {
-//     console.error('Error calling Python API:', error);
-//     res.status(500).json({ message: 'Error calling Python API', error });
-//   }
-// });
-
-
-
-
-
-
-
-// router.post('/login_user', async (req, res) => {
-//   try {
-//     const { image } = req.body;
-
-//     console.log('Sending request to Python API for user login...');
-//     const response = await axios.post('http://127.0.0.1:5000/api/login', { image });
-
-//     console.log('Received response from Python API:', response.data);
-//     res.json(response.data);
-//   } catch (error) {
-//     console.error('Error calling Python API:', error);
-
-//     if (error.response) {
-//       console.log('Error status:', error.response.status);
-//       console.log('Error response data:', error.response.data);
-
-//       if (error.response.status === 403) {
-//         res.status(403).json({ message: 'You are fake' });
-//       } else if (error.response.status === 401) {
-//         res.status(401).json({ message: 'Unknown user. Please register new user or try again.' });
-//       } else {
-//         res.status(error.response.status).json({ message: 'Error calling Python API', error: error.response.data });
-//       }
-//     } else {
-//       res.status(500).json({ message: 'Error calling Python API', error });
-//     }
-//   }
-// });
-
 //điểm danh bằng khuôn mặt
 router.post('/login_user', async (req, res) => {
   try {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user login...');
-    const response = await axios.post('https://1146-2001-ee0-4fc3-36f0-f8e8-1bdd-841-7210.ngrok-free.app/api/login', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/login', { name, image });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1529,7 +1401,7 @@ router.post('/check_user', async (req, res) => {
     const { name } = req.body;
 
     console.log('Sending request to Python API to check user registration...');
-    const response = await axios.post('https://1146-2001-ee0-4fc3-36f0-f8e8-1bdd-841-7210.ngrok-free.app/api/check_user', { name });
+    const response = await axios.post('http://127.0.0.1:5000/api/check_user', { name });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1551,8 +1423,193 @@ router.post('/check_user', async (req, res) => {
   }
 });
 
+//Thống kê kiểm tra bao nhiêu người dùng đăng kí
+router.get('/count_users_regist', async (req, res) => {
+  try {
+    console.log('Sending request to Python API to count pickle files...');
+    const response = await axios.get('http://127.0.0.1:5000/api/count-pickle-files');
+
+    console.log('Received response from Python API:', response.data);
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error calling Python API:', error);
+
+    if (error.response) {
+      console.log('Error status:', error.response.status);
+      console.log('Error response data:', error.response.data);
+
+      res.status(error.response.status).json({ message: 'Error calling Python API', error: error.response.data });
+    } else {
+      res.status(500).json({ message: 'Error calling Python API', error });
+    }
+  }
+});
 
 
+//-----Xử lý Thời khóa biểu-----
+//Lấy ra tất cả các lớp học phần
+router.get('/user-by-classcode/:classCode', async (req, res) => {
+  const { classCode } = req.params;
+  try {
+    const user = await teachingAssignmentDAO.getUserByClassCode(classCode);
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Error fetching user by classCode:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+//lấy các lớp của GV
+router.get('/classsections/teacher/:teacherID', async (req, res) => {
+  const { teacherID } = req.params;
+
+  try {
+    const result = await teachingAssignmentDAO.getClassSectionsByTeacherIDTKB(teacherID);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching class sections:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+//lấy các lớp của SV
+router.get('/classsections/student/:studentID', async (req, res) => {
+  const { studentID } = req.params;
+
+  try {
+    const result = await teachingAssignmentDAO.getClassSectionsByStudentIDTKB(studentID);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching class sections:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+//-----Xử lý thống kê-----
+//Thống kê cho học sinh
+router.get('/classsections/student/totalstudyday/:studentID', async (req, res) => {
+  const { studentID } = req.params;
+
+  try {
+    const result = await StatisticDAO.getClassSectionsAndTotalDatesByStudentID(studentID);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching class sections and total study days:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+//Thống kê cho ban chủ nhiệm khoa (có thể sẽ bỏ)
+// router.get('/classsections/allstudent/totalstudyday', async (req, res) => {
+//   try {
+//     const result = await StatisticDAO.getAllClassSectionsAndTotalDates();
+//     res.status(200).json(result);
+//   } catch (error) {
+//     console.error('Error fetching class sections and total study days:', error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
+
+//Thống kê cho giảng viên
+router.get('/classsections/teacher/totalteachday/:teacherID', async (req, res) => {
+  const { teacherID } = req.params;
+
+  try {
+    const result = await StatisticDAO.getClassSectionsAndTotalDatesByTeacherID(teacherID);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching class sections and total teach days:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.get('/classsections/teacher/quantitystudentinday/:teacherID', async (req, res) => {
+  const { teacherID } = req.params;
+
+  try {
+    const result = await StatisticDAO.getClassSectionsAndDatesWithNonNullTimesByTeacherID(teacherID);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching class sections and total teach days:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.get('/classsections/bcnk/quantitystudentinday', async (req, res) => {
+  try {
+      const result = await StatisticDAO.getAllClassSectionsAndDatesWithNonNullTimes();
+      res.status(200).json(result);
+  } catch (error) {
+      console.error('Error fetching class sections and total teach days:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+router.get('/classsections/bcnk/totalteacherday', async (req, res) => {
+  try {
+    const result = await StatisticDAO.getClassSectionsAndTotalDates();
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching class sections and total teach days:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+//thống kê Tổng SL buổi điểm danh trong 5 tuần gần đây
+router.get('/thongke-soluong-diemdanh/fiveweeks', async (req, res) => {
+  try {
+    const result = await StatisticDAO.getAttendanceStatistics();
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching attendance statistics:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+//Thống kê Tổng SL SV tham gia điểm danh FaceID trong 5 tuần gần đây
+router.get('/thongke-soluong-diemdanh-faceid/fiveweeks', async (req, res) => {
+  try {
+    const result = await StatisticDAO.getFaceIDAttendanceStatistics();
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching FaceID attendance statistics:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+//Thống kê Tổng SL SV đi học trong học kỳ hiện tại
+router.get('/thongke-soluong-sinhvien-hocky-hientai', async (req, res) => {
+  try {
+    const result = await StatisticDAO.getCurrentTermStudentCount();
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching current term student count:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.get('/thongke-soluong-sinhvien-sudungfaceid-diemdanh-thanhcong', async (req, res) => {
+  try {
+    const result = await StatisticDAO.getAllSuccessAttendanceFaceIDStudentCount();
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching current term student count:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+//Thống kê top các lớp học phần có số lượng sv vắng học nhiều
+router.get('/thongke-top-vanghoc', async (req, res) => {
+  try {
+    const result = await StatisticDAO.getTopAbsentClasses();
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching top absent classes:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
 //Gửi email khi điểm danh thành công
@@ -1564,122 +1621,4 @@ router.post('/send-email', (req, res) => {
     .catch((err) => res.status(500).send(err.toString()));
 });
 
-// category
-// router.get('/categories', JwtUtil.checkToken, async function (req, res) {
-//   const categories = await CategoryDAO.selectAll();
-//   res.json(categories);
-// });
-
-// // category
-// router.post('/categories', JwtUtil.checkToken, async function (req, res) {
-//   const name = req.body.name;
-//   const category = { name: name };
-//   const result = await CategoryDAO.insert(category);
-//   res.json(result);
-// });
-// // category
-// router.put('/categories/:id', JwtUtil.checkToken, async function (req, res) {
-//   const _id = req.params.id;
-//   const name = req.body.name;
-//   const category = { _id: _id, name: name };
-//   const result = await CategoryDAO.update(category);
-//   res.json(result);
-// });
-// // category
-// router.delete('/categories/:id', JwtUtil.checkToken, async function (req, res) {
-//   const _id = req.params.id;
-//   const result = await CategoryDAO.delete(_id);
-//   res.json(result);
-// });
-// // product
-// router.get('/products', JwtUtil.checkToken, async function (req, res) {
-//   // get data
-//   var products = await ProductDAO.selectAll();
-//   // pagination
-//   const sizePage = 4;
-//   const noPages = Math.ceil(products.length / sizePage);
-//   var curPage = 1;
-//   if (req.query.page) curPage = parseInt(req.query.page); // /products?page=xxx
-//   const offset = (curPage - 1) * sizePage;
-//   products = products.slice(offset, offset + sizePage);
-//   // return
-//   const result = { products: products, noPages: noPages, curPage: curPage };
-//   res.json(result);
-// });
-// // product
-// router.post('/products', JwtUtil.checkToken, async function (req, res) {
-//   const name = req.body.name;
-//   const price = req.body.price;
-//   const cid = req.body.category;
-//   const image = req.body.image;
-//   const now = new Date().getTime(); // milliseconds
-//   const category = await CategoryDAO.selectByID(cid);
-//   const product = { name: name, price: price, image: image, cdate: now, category: category };
-//   const result = await ProductDAO.insert(product);
-//   res.json(result);
-// });
-// // product
-// router.put('/products/:id', JwtUtil.checkToken, async function (req, res) {
-//   const _id = req.params.id;
-//   const name = req.body.name;
-//   const price = req.body.price;
-//   const cid = req.body.category;
-//   const image = req.body.image;
-//   const now = new Date().getTime(); // milliseconds
-//   const category = await CategoryDAO.selectByID(cid);
-//   const product = { _id: _id, name: name, price: price, image: image, cdate: now, category: category };
-//   const result = await ProductDAO.update(product);
-//   res.json(result);
-// });
-// // product
-// router.delete('/products/:id', JwtUtil.checkToken, async function (req, res) {
-//   const _id = req.params.id;
-//   const result = await ProductDAO.delete(_id);
-//   res.json(result);
-// });
-// // order
-// router.get('/orders', JwtUtil.checkToken, async function (req, res) {
-//   const orders = await OrderDAO.selectAll();
-//   res.json(orders);
-// });
-// // order
-// router.put('/orders/status/:id', JwtUtil.checkToken, async function (req, res) {
-//   const _id = req.params.id;
-//   const newStatus = req.body.status;
-//   const result = await OrderDAO.update(_id, newStatus);
-//   res.json(result);
-// });
-// // order
-// router.get('/orders/customer/:cid', JwtUtil.checkToken, async function (req, res) {
-//   const _cid = req.params.cid;
-//   const orders = await OrderDAO.selectByCustID(_cid);
-//   res.json(orders);
-// });
-// // customer
-// router.get('/customers', JwtUtil.checkToken, async function (req, res) {
-//   const customers = await CustomerDAO.selectAll();
-//   res.json(customers);
-// });
-// // customer
-// router.put('/customers/deactive/:id', JwtUtil.checkToken, async function (req, res) {
-//   const _id = req.params.id;
-//   const token = req.body.token;
-//   const result = await CustomerDAO.active(_id, token, 0);
-//   res.json(result);
-// });
-// // customer
-// router.get('/customers/sendmail/:id', JwtUtil.checkToken, async function (req, res) {
-//   const _id = req.params.id;
-//   const cust = await CustomerDAO.selectByID(_id);
-//   if (cust) {
-//     const send = await EmailUtil.send(cust.email, cust._id, cust.token);
-//     if (send) {
-//       res.json({ success: true, message: 'Please check email' });
-//     } else {
-//       res.json({ success: false, message: 'Email failure' });
-//     }
-//   } else {
-//     res.json({ success: false, message: 'Not exists customer' });
-//   }
-// });
 module.exports = router;

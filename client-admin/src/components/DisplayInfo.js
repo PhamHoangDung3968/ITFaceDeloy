@@ -52,6 +52,8 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
     };
 
     const formattedDay = day ? formatDate(day) : '';
+    const [isProcessing, setIsProcessing] = useState(false);
+
 
     useEffect(() => {
         return () => {
@@ -97,64 +99,7 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
         showToast('Tắt camera thành công!');
     };
 
-const handleLoginUser = () => {
-    if (!videoRef.current) return;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const context = canvas.getContext('2d');
-    context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    const image = canvas.toDataURL('image/jpeg');
-
-    setWebcamImage(image);
-
-    axios.post('/api/admin/login_user', {
-        name: userCode,
-        image: image.split(',')[1] // Remove the data URL prefix
-    })
-    .then(response => {
-        showToast(response.data.message);
-        if (response.status === 200) {
-            const today = new Date();
-            const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
-            const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
-
-            if (formattedDay > formattedToday) {
-                showErrorToast('Điểm danh thất bại: Ngày điểm danh chưa tới.');
-                return;
-            }
-
-            axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
-                studentId: userID,
-                date: formattedDay,
-                status: 'Có mặt' // or any other status you want to set
-            })
-            .then(attendanceResponse => {
-                showToast('Điểm danh thành công!');
-                // Call the /send-email API
-                axios.post('/api/admin/send-email', {
-                    classcode: classcode,
-                    email: userEmail, // Replace with the actual email address
-                    date: formattedToday,
-                    time: currentTime,
-                    image: image.split(',')[1] // Remove the data URL prefix
-                })
-                .catch(emailError => {
-                    console.error('Error sending email:', emailError);
-                });
-            })
-            .catch(attendanceError => {
-                console.error('Error updating attendance:', attendanceError);
-            });
-        }
-    })
-    .catch(error => {
-        console.error('Error logging in user:', error);
-        showErrorToast('Error logging in user');
-    });
-};
-
+//hàm login ban đầu
 // const handleLoginUser = () => {
 //     if (!videoRef.current) return;
 
@@ -184,7 +129,7 @@ const handleLoginUser = () => {
 //             }
 
 //             axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
-//                 userID,
+//                 studentId: userID,
 //                 date: formattedDay,
 //                 status: 'Có mặt' // or any other status you want to set
 //             })
@@ -192,20 +137,18 @@ const handleLoginUser = () => {
 //                 showToast('Điểm danh thành công!');
 //                 // Call the /send-email API
 //                 axios.post('/api/admin/send-email', {
+//                     classcode: classcode,
 //                     email: userEmail, // Replace with the actual email address
 //                     date: formattedToday,
 //                     time: currentTime,
 //                     image: image.split(',')[1] // Remove the data URL prefix
 //                 })
-//                 .then(() => showToast('Email sent successfully'))
 //                 .catch(emailError => {
 //                     console.error('Error sending email:', emailError);
-//                     showErrorToast('Error sending email');
 //                 });
 //             })
 //             .catch(attendanceError => {
 //                 console.error('Error updating attendance:', attendanceError);
-//                 showErrorToast('Error updating attendance');
 //             });
 //         }
 //     })
@@ -215,6 +158,151 @@ const handleLoginUser = () => {
 //     });
 // };
 
+
+//Lấy tọa độ test
+// const handleLoginUser = () => {
+//     if (!videoRef.current) return;
+
+//     const canvas = document.createElement('canvas');
+//     canvas.width = videoRef.current.videoWidth;
+//     canvas.height = videoRef.current.videoHeight;
+//     const context = canvas.getContext('2d');
+//     context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+//     const image = canvas.toDataURL('image/jpeg');
+
+//     setWebcamImage(image);
+
+//     axios.post('/api/admin/login_user', {
+//         name: userCode,
+//         image: image.split(',')[1] // Remove the data URL prefix
+//     })
+//     .then(response => {
+//         showToast(response.data.message);
+//         if (response.status === 200) {
+//             const today = new Date();
+//             const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+//             const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
+
+//             if (formattedDay > formattedToday) {
+//                 showErrorToast('Điểm danh thất bại: Ngày điểm danh chưa tới.');
+//                 return;
+//             }
+
+//             axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
+//                 studentId: userID,
+//                 date: formattedDay,
+//                 status: 'Có mặt' // or any other status you want to set
+//             })
+//             .then(attendanceResponse => {
+//                 showToast('Điểm danh thành công!');
+//                 // Call the /send-email API
+//                 axios.post('/api/admin/send-email', {
+//                     classcode: classcode,
+//                     email: userEmail, // Replace with the actual email address
+//                     date: formattedToday,
+//                     time: currentTime,
+//                     image: image.split(',')[1] // Remove the data URL prefix
+//                 })
+//                 .then(() => {
+//                     // Get the device's location
+//                     if (navigator.geolocation) {
+//                         navigator.geolocation.getCurrentPosition(position => {
+//                             const { latitude, longitude } = position.coords;
+//                             console.log('Device location:', `Latitude: ${latitude}, Longitude: ${longitude}`);
+//                         }, error => {
+//                             console.error('Error getting location:', error);
+//                         });
+//                     } else {
+//                         console.error('Geolocation is not supported by this browser.');
+//                     }
+//                 })
+//                 .catch(emailError => {
+//                     console.error('Error sending email:', emailError);
+//                 });
+//             })
+//             .catch(attendanceError => {
+//                 console.error('Error updating attendance:', attendanceError);
+//             });
+//         }
+//     })
+//     .catch(error => {
+//         console.error('Error logging in user:', error);
+//         showErrorToast('Error logging in user');
+//     });
+// };
+
+const handleLoginUser = () => {
+    if (isProcessing) return; // Ngăn chặn việc nhấp nhiều lần
+    setIsProcessing(true);
+  
+    if (!videoRef.current) {
+      setIsProcessing(false);
+      return;
+    }
+  
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const context = canvas.getContext('2d');
+    context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    const image = canvas.toDataURL('image/jpeg');
+  
+    setWebcamImage(image);
+  
+    axios.post('/api/admin/login_user', {
+      name: userCode,
+      image: image.split(',')[1] // Loại bỏ tiền tố data URL
+    })
+    .then(response => {
+      showToast(response.data.message);
+      if (response.status === 200) {
+        const today = new Date();
+        const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+        const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
+  
+        if (formattedDay > formattedToday) {
+          showErrorToast('Điểm danh thất bại: Ngày điểm danh chưa tới.');
+          setIsProcessing(false);
+          return;
+        }
+  
+        axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
+          studentId: userID,
+          date: formattedDay,
+          status: 'Có mặt' // hoặc bất kỳ trạng thái nào bạn muốn đặt
+        })
+        .then(attendanceResponse => {
+          showToast('Điểm danh thành công!');
+          // Gọi API /send-email
+          axios.post('/api/admin/send-email', {
+            classcode: classcode,
+            email: userEmail, // Thay thế bằng địa chỉ email thực tế
+            date: formattedToday,
+            time: currentTime,
+            image: image.split(',')[1] // Loại bỏ tiền tố data URL
+          })
+          .catch(emailError => {
+            console.error('Lỗi khi gửi email:', emailError);
+          })
+          .finally(() => {
+            setIsProcessing(false);
+          });
+        })
+        .catch(attendanceError => {
+          console.error('Lỗi khi cập nhật điểm danh:', attendanceError);
+          setIsProcessing(false);
+        });
+      } else {
+        setIsProcessing(false);
+      }
+    })
+    .catch(error => {
+      console.error('Lỗi khi đăng nhập người dùng:', error);
+      showErrorToast('Lỗi khi đăng nhập người dùng');
+      setIsProcessing(false);
+    });
+  };
+  
 
     const showToast = (message) => {
         toast.success(message, { position: "top-right" });
@@ -252,10 +340,14 @@ const handleLoginUser = () => {
                         <div className="col-lg-6">
                             <div className="card">
                                 <div className="card-body">
+                                <h5><b>Chú ý:</b> Hình ảnh cá nhân của bạn được thu thập từ ITFace sẽ được bảo mật tuyệt đối và không sử dụng cho bất kỳ mục đích thương mại nào, cũng như không làm ảnh hưởng đến danh dự cá nhân của bạn.</h5>              
+                                {/* <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', height: '450px', marginTop: '10px' }}> */}
                                 <p style={{fontSize:'20px'}}>Mã lớp: {classcode}</p> {/* Hiển thị classcode */}
                                 <p style={{fontSize:'20px'}}>Ngày: {formattedDay}</p> {/* Hiển thị ngày */}
                                 {/* Nội dung khác của component */}
-                                    <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', height: '450px', marginTop: '10px' }}>
+                                    {/* <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', height: '450px', marginTop: '10px' }}> */}
+                                    <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', marginTop: '10px' }}>
+
                                         <video ref={videoRef} style={{ width: '100%', maxWidth: '600px', height: '100%' }}></video>
                                     </div>
                                     {/* Các nút nằm dưới khung hình, căn giữa */}
@@ -276,12 +368,24 @@ const handleLoginUser = () => {
                                             Tắt camera
                                         </button>
 
-                                            <button 
-                                                onClick={handleLoginUser}
-                                                style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: 'linear-gradient(45deg, #2196F3, #64B5F6)', color: 'white', border: 'none' }}
-                                            >
-                                                Điểm danh
-                                            </button>
+                                        <button 
+                                            onClick={handleLoginUser}
+                                            disabled={isProcessing}
+                                            style={{ 
+                                              display: isProcessing ? 'none' : 'block', // Ẩn nút khi đang xử lý
+                                              fontSize: '16px', 
+                                              fontWeight: 'bold', 
+                                              padding: '10px 20px', 
+                                              borderRadius: '8px', 
+                                              cursor: 'pointer', 
+                                              transition: 'all 0.3s ease', 
+                                              background: 'linear-gradient(45deg, #2196F3, #64B5F6)', 
+                                              color: 'white', 
+                                              border: 'none' 
+                                            }}
+                                          >
+                                            Điểm danh
+                                          </button>
                                     </div>
                                 </div>
                             </div>

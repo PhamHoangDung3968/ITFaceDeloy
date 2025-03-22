@@ -188,6 +188,8 @@ const ClassSectionDetail = ({ userRole }) => {
         return '10-12';
       case 5:
         return '13-15';
+      case 6:
+        return 'Không có';
       default:
         return lesson;
     }

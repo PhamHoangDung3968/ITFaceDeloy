@@ -439,6 +439,8 @@ class RegistFaceID extends Component {
     webcamImage: null,
     isUserRegistered: false,
     showModalHistory: false,
+    isProcessing: false,
+    isProcessing1: false,
     userImages: []
   };
 
@@ -475,8 +477,39 @@ class RegistFaceID extends Component {
     this.showToast('Tắt camera thành công!');
   };
 
+  // handleRegisterUser = () => {
+  //   if (!this.videoRef.current) return;
+
+  //   const canvas = document.createElement('canvas');
+  //   canvas.width = this.videoRef.current.videoWidth;
+  //   canvas.height = this.videoRef.current.videoHeight;
+  //   const context = canvas.getContext('2d');
+  //   context.drawImage(this.videoRef.current, 0, 0, canvas.width, canvas.height);
+  //   const image = canvas.toDataURL('image/jpeg');
+
+  //   this.setState({ webcamImage: image });
+
+  //   axios.post('/api/admin/register_user', {
+  //     name: this.props.userCode,
+  //     image: image.split(',')[1]
+  //   })
+  //     .then(() => {
+  //       this.showToast('Đăng ký thành công!');
+  //       this.checkUserRegistration();
+  //     })
+  //     .catch(error => {
+  //       console.error('Error registering user:', error);
+  //       this.showErrorToast('Đăng ký thất bại');
+  //     });
+  // };
   handleRegisterUser = () => {
-    if (!this.videoRef.current) return;
+    if (this.state.isProcessing) return; // Ngăn chặn việc nhấp nhiều lần
+    this.setState({ isProcessing: true });
+
+    if (!this.videoRef.current) {
+      this.setState({ isProcessing: false });
+      return;
+    }
 
     const canvas = document.createElement('canvas');
     canvas.width = this.videoRef.current.videoWidth;
@@ -498,10 +531,44 @@ class RegistFaceID extends Component {
       .catch(error => {
         console.error('Error registering user:', error);
         this.showErrorToast('Đăng ký thất bại');
+      })
+      .finally(() => {
+        this.setState({ isProcessing: false });
       });
   };
+  // handleReRegisterUser = () => {
+  //   if (!this.videoRef.current) return;
+
+  //   const canvas = document.createElement('canvas');
+  //   canvas.width = this.videoRef.current.videoWidth;
+  //   canvas.height = this.videoRef.current.videoHeight;
+  //   const context = canvas.getContext('2d');
+  //   context.drawImage(this.videoRef.current, 0, 0, canvas.width, canvas.height);
+  //   const image = canvas.toDataURL('image/jpeg');
+
+  //   this.setState({ webcamImage: image });
+
+  //   axios.post('/api/admin/re_register_user', {
+  //     name: this.props.userCode,
+  //     image: image.split(',')[1]
+  //   })
+  //     .then(() => {
+  //       this.showToast('Đăng ký lại thành công!');
+  //       this.checkUserRegistration();
+  //     })
+  //     .catch(error => {
+  //       console.error('Error re-registering user:', error);
+  //       this.showErrorToast('Đăng ký lại thất bại');
+  //     });
+  // };
   handleReRegisterUser = () => {
-    if (!this.videoRef.current) return;
+    if (this.state.isProcessing1) return; // Ngăn chặn việc nhấp nhiều lần
+    this.setState({ isProcessing1: true });
+
+    if (!this.videoRef.current) {
+      this.setState({ isProcessing1: false });
+      return;
+    }
 
     const canvas = document.createElement('canvas');
     canvas.width = this.videoRef.current.videoWidth;
@@ -523,6 +590,9 @@ class RegistFaceID extends Component {
       .catch(error => {
         console.error('Error re-registering user:', error);
         this.showErrorToast('Đăng ký lại thất bại');
+      })
+      .finally(() => {
+        this.setState({ isProcessing1: false });
       });
   };
 
@@ -592,58 +662,111 @@ class RegistFaceID extends Component {
             <div className="col-lg-6">
             <div className="card">
             <div className="card-body">
-              <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', height: '450px', marginTop: '10px' }}>
+            <h5><b>Chú ý:</b> Hình ảnh cá nhân của bạn được thu thập từ ITFace sẽ được bảo mật tuyệt đối và không sử dụng cho bất kỳ mục đích thương mại nào, cũng như không làm ảnh hưởng đến danh dự cá nhân của bạn.</h5>              
+            {/* <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', height: '450px', marginTop: '10px' }}> */}
+              <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', marginTop: '20px' }}>
+
                 <video ref={this.videoRef} style={{ width: '100%', maxWidth: '600px', height: '100%' }}></video>
               </div>
               {/* Các nút nằm dưới khung hình, căn giữa */}
-              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                <button 
-                  onClick={this.handleOpenWebcam} 
-                  disabled={this.state.isWebcamOpen}
-                  style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: this.state.isWebcamOpen ? '#ddd' : 'linear-gradient(45deg, #4CAF50, #8BC34A)', color: this.state.isWebcamOpen ? '#999' : 'white', border: 'none' }}
-                >
-                  Bật camera
-                </button>
+              <div 
+            style={{ 
+              marginTop: '10px', 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              gap: '10px',
+              width: '100%', 
+              maxWidth: '600px', 
+              marginLeft: 'auto',
+              marginRight: 'auto'
+            }}
+          >
+            <button 
+              onClick={this.handleOpenWebcam} 
+              disabled={this.state.isWebcamOpen}
+              style={{ 
+                fontSize: '16px', 
+                fontWeight: 'bold', 
+                padding: '10px 20px', 
+                borderRadius: '8px', 
+                cursor: 'pointer', 
+                transition: 'all 0.3s ease', 
+                color: this.state.isWebcamOpen ? '#999' : 'white', 
+                border: 'none', 
+                textAlign: 'center',
+                background: this.state.isWebcamOpen ? '#ddd' : 'linear-gradient(45deg, #4CAF50, #8BC34A)',
+                flex: '1', 
+                minWidth: '120px'
+              }}
+            >
+              Bật camera
+            </button>
 
-                <button 
-                  onClick={this.handleCloseWebcam} 
-                  disabled={!this.state.isWebcamOpen}
-                  style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: !this.state.isWebcamOpen ? '#ddd' : 'linear-gradient(45deg, #F44336, #E57373)', color: !this.state.isWebcamOpen ? '#999' : 'white', border: 'none' }}
-                >
-                  Tắt camera
-                </button>
+            <button 
+              onClick={this.handleCloseWebcam} 
+              disabled={!this.state.isWebcamOpen}
+              style={{ 
+                fontSize: '16px', 
+                fontWeight: 'bold', 
+                padding: '10px 20px', 
+                borderRadius: '8px', 
+                cursor: 'pointer', 
+                transition: 'all 0.3s ease', 
+                color: !this.state.isWebcamOpen ? '#999' : 'white', 
+                border: 'none', 
+                textAlign: 'center',
+                background: !this.state.isWebcamOpen ? '#ddd' : 'linear-gradient(45deg, #F44336, #E57373)',
+                flex: '1', 
+                minWidth: '120px'
+              }}
+            >
+              Tắt camera
+            </button>
 
-                {/* {!this.state.isUserRegistered && (
-                  <button 
-                    onClick={this.handleRegisterUser}
-                    style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: 'linear-gradient(45deg, #2196F3, #64B5F6)', color: 'white', border: 'none' }}
-                  >
-                    Đăng ký
-                  </button>
-                )} */}
-                {this.state.isUserRegistered ? (
-                      <button 
-                        onClick={this.handleReRegisterUser}
-                        style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: 'linear-gradient(45deg, #FF9800, #FFC107)', color: 'white', border: 'none' }}
-                      >
-                        Đăng ký lại
-                      </button>
-                    ) : (
-                      <button 
-                        onClick={this.handleRegisterUser}
-                        style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: 'linear-gradient(45deg, #2196F3, #64B5F6)', color: 'white', border: 'none' }}
-                      >
-                        Đăng ký
-                      </button>
-                    )}
+            <button 
+              onClick={this.handleReRegisterUser}
+              style={{ 
+                fontSize: '16px', 
+                fontWeight: 'bold', 
+                padding: '10px 20px', 
+                borderRadius: '8px', 
+                cursor: 'pointer', 
+                transition: 'all 0.3s ease', 
+                color: 'white', 
+                border: 'none', 
+                textAlign: 'center',
+                background: 'linear-gradient(45deg, #FF9800, #FFC107)',
+                flex: '1', 
+                minWidth: '120px'
+              }}
+            >
+              Đăng ký lại
+            </button>
 
-                <button 
-                  onClick={this.toggleModalHistory}
-                  style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: 'linear-gradient(45deg, #FF9966 , #FF9999)', color: 'white', border: 'none' }}
-                >
-                  Lịch sử
-                </button>
-              </div>
+            <button 
+              onClick={this.toggleModalHistory}
+              style={{ 
+                fontSize: '16px', 
+                fontWeight: 'bold', 
+                padding: '10px 20px', 
+                borderRadius: '8px', 
+                cursor: 'pointer', 
+                transition: 'all 0.3s ease', 
+                color: 'white', 
+                border: 'none', 
+                textAlign: 'center',
+                background: 'linear-gradient(45deg, #FF9966 , #FF9999)',
+                flex: '1', 
+                minWidth: '120px'
+              }}
+            >
+              Lịch sử
+            </button>
+          </div>
+
+              
             </div>
           </div>
             </div>

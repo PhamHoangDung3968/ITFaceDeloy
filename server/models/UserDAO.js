@@ -50,6 +50,20 @@ const UserDAO = {
           throw error;
         }
       },
+      async selectAdminAndBCNK() {
+        try {
+          // Assuming 'adminRoleId' and 'bcnkRoleId' are the IDs for the "admin" and "bcnk" roles
+          const adminRoleId = '67a2333630fb4a619fcc4d4c'; // Replace with actual admin role ID
+          const bcnkRoleId = '6759a318bdadd030d0029639'; // Replace with actual bcnk role ID
+    
+          // Query to find users with either the "admin" or "bcnk" role
+          const users = await Users.find({ role: { $in: [adminRoleId, bcnkRoleId] } }).exec();
+          return users;
+        } catch (error) {
+          console.error('Error fetching users:', error);
+          throw error;
+        }
+      },
       async insert(user) {
         try {
           const mongoose = require('mongoose');

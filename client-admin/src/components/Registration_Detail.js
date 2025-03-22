@@ -14,6 +14,8 @@ import '../plugins/summernote/summernote-bs4.min.css';
 import '../dist/css/pagination.css';
 import '../dist/css/buttonIcon.css';
 import IonIcon from '@reacticons/ionicons';
+import { ToastContainer, toast } from 'react-toastify';
+
 
 class TeacherAssignmentsDetail extends Component {
   static contextType = MyContext;
@@ -35,6 +37,8 @@ class TeacherAssignmentsDetail extends Component {
     selectedSemester: '',
     selectedSemester1: '', // Change this line
     semesters: [], // Add this line
+    showModalDelete: false,
+    deleteClassSectionId: null,
   };
 
   componentDidMount() {
@@ -186,16 +190,34 @@ class TeacherAssignmentsDetail extends Component {
     this.setState({ filteredUsers, currentPage: 0 });
   };
   
-  handleDeleteClassSection = async (teacherID, classsectionID) => {
-    if (window.confirm('Xác nhận xóa?')) {
-      try {
-        await axios.delete(`/api/admin/teacherassignments/removeclasssection/${teacherID}/${classsectionID}`);
-        this.setState(prevState => ({
-          filteredClassSections: prevState.filteredClassSections.filter(section => section._id !== classsectionID)
-        }));
-      } catch (error) {
-        console.error('Error deleting class section:', error);
-      }
+  // handleDeleteClassSection = async (teacherID, classsectionID) => {
+  //   if (window.confirm('Xác nhận xóa?')) {
+  //     try {
+  //       await axios.delete(`/api/admin/teacherassignments/removeclasssection/${teacherID}/${classsectionID}`);
+  //       this.setState(prevState => ({
+  //         filteredClassSections: prevState.filteredClassSections.filter(section => section._id !== classsectionID)
+  //       }));
+  //     } catch (error) {
+  //       console.error('Error deleting class section:', error);
+  //     }
+  //   }
+  // };
+  handleDeleteClassSection = (teacherID, classsectionID) => {
+    this.setState({ deleteClassSectionId: { teacherID, classsectionID }, showModalDelete: true });
+  };
+  confirmDeleteClassSection = async () => {
+    const { teacherID, classsectionID } = this.state.deleteClassSectionId;
+    try {
+      await axios.delete(`/api/admin/teacherassignments/removeclasssection/${teacherID}/${classsectionID}`);
+      this.setState(prevState => ({
+        filteredClassSections: prevState.filteredClassSections.filter(section => section._id !== classsectionID),
+        showModalDelete: false,
+        deleteClassSectionId: null,
+      }));
+      this.showToast("Xóa thành công")
+    } catch (error) {
+      console.error('Error deleting class section:', error);
+      this.showErrorToast("Xóa thất bại")
     }
   };
   // apiGetSemesters = async () => {
@@ -228,6 +250,16 @@ class TeacherAssignmentsDetail extends Component {
       console.error('Error fetching semesters:', error);
     }
   };
+  showToast = (message) => {
+          toast.success(message, {
+            position: "top-right"
+          });
+        };
+  showErrorToast = (message) => {
+            toast.error(message, {
+              position: "top-right"
+            });
+          };
   // filterClassSectionsBySemester = () => {
   //   const { originalClassSections, selectedSemester } = this.state;
   
@@ -268,6 +300,8 @@ class TeacherAssignmentsDetail extends Component {
         return '10-12';
       case 5:
         return '13-15';
+      case 6:
+        return 'Không có';
       default:
         return lesson;
     }
@@ -524,6 +558,27 @@ const currentModalItems = combinedItems.slice(modalOffset, modalOffset + itemsPe
             </div>
           </div>
         )}
+        {this.state.showModalDelete && (
+  <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+    <div className="modal-dialog">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Xác nhận xóa lớp học phần</h5>
+          <button type="button" className="close" onClick={() => this.setState({ showModalDelete: false })}>
+            <span>&times;</span>
+          </button>
+        </div>
+        <div className="modal-body">
+          <p>Bạn có chắc chắn muốn xóa lớp học phần này không?</p>
+        </div>
+        <div className="modal-footer">
+          <button type="button" className="btn btn-secondary" onClick={() => this.setState({ showModalDelete: false })}>Hủy</button>
+          <button type="button" className="btn btn-danger" onClick={this.confirmDeleteClassSection}>Xóa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       </div>
     );
   }

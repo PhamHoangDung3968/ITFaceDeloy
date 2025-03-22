@@ -147,7 +147,8 @@ class TKB extends Component {
       2: '4-6',
       3: '7-9',
       4: '10-12',
-      5: '13-15'
+      5: '13-15',
+      6: 'Không có',
     };
 
     const filteredsubjectterms = selectedSemester
@@ -193,9 +194,12 @@ class TKB extends Component {
                   >
                     {subject.classCode}
                     <div style={{ fontSize: 'smaller', color: '#555' }}>{subject.subjectName}</div>
-                    <div style={{ fontSize: 'smaller', color: '#555' }}>
+                    {userRole !== 'Giảng viên' && userRole !== 'Sinh viên'  && (
+                            <div style={{ fontSize: 'smaller', color: '#555' }}>
                       GV {subject.teacher ? subject.teacher.fullName || "Chưa cập nhật" : "Chưa cập nhật"}
                     </div>
+                          )}
+                    
                     <hr style={{ margin: '5px 0' }} />
                   </div>
                 ))}

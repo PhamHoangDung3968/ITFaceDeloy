@@ -115,4 +115,6 @@ const AddMajor = () => {
 
 
 
+
+
 export default AddMajor;

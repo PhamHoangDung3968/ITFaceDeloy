@@ -194,6 +194,17 @@
             align-items: center;
           }
 
+          .pagination li.active1 a {
+            background-color: #00B2EE; /* Màu tím */
+            color: #fff;
+            border-radius: 50%; /* Làm tròn nút */
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+
           .pagination li:hover a {
             border-radius: 50%;
           }

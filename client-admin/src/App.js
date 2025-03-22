@@ -30,10 +30,15 @@ import Attendance from './components/AttendanceComponent';
 import TKBStudent from './components/TKBStudentComponent';
 import AttendanceStudent from './components/AttendanceStudentComponent';
 import RegistFaceID from './components/RegistFaceID';
-
-import Test1 from './components/test1';
+import Clause from './components/Clause';
 import ProtectedRoute from './components/ProtectedRoute';
 import DisplayInfo from './components/DisplayInfo';
+import TK_LHPStudents_Term from './components/TK_LHPStudents_Term';
+import TK_StudenAbsent from './components/TK_StudenAbsent';
+import TK_StudenAttendance from './components/TK_StudentAttendance';
+import TK_StudentClassections from './components/TK_StudentClassections';
+import TK_LHPTotalStudent from './components/TK_LHPTotalStudent';
+import Dashboard from './components/dashboard';
 
 import './dist/css/adminlte.min.css';
 import './plugins/icheck-bootstrap/icheck-bootstrap.min.css';
@@ -49,6 +54,8 @@ import './plugins/dropzone/min/dropzone.min.css';
 import './dist/css/pagination.css'; // Import custom CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import IonIcon from '@reacticons/ionicons';
+
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -57,10 +64,11 @@ const App = () => {
   const [isTKBMenuOpen, setIsTKBMenuOpen] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [isCourseMenuOpen, setIsCourseMenuOpen] = useState(false); // State for "Môn học"
-  const [isTermMajorMenuOpen, setIsTermMajorMenuOpen] = useState(false); // State for "Môn học"
-  const [isUserManagementMenuOpen, setIsUserManagementMenuOpen] = useState(false); // State for "Người dùng"
-  const [showLogoutModal, setShowLogoutModal] = useState(false); // State for logout confirmation modal
+  const [isCourseMenuOpen, setIsCourseMenuOpen] = useState(false); 
+  const [isTermMajorMenuOpen, setIsTermMajorMenuOpen] = useState(false);
+  const [isUserManagementMenuOpen, setIsUserManagementMenuOpen] = useState(false);
+  const [isStatisticMenuOpen, setIsStatisticMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogin = () => {
     window.location.href = 'https://itface.onrender.com/auth/microsoft';
@@ -126,6 +134,9 @@ const App = () => {
   const toggleUserManagementMenu = () => {
     setIsUserManagementMenuOpen(!isUserManagementMenuOpen);
   };
+  const toggleStatisticMenu = () => {
+    setIsStatisticMenuOpen(!isStatisticMenuOpen);
+  };
 
   const sidebarTextStyle = {
     color: '#fff', // Change this to your desired color
@@ -161,11 +172,13 @@ const App = () => {
       { path: '/admin/major', element: <Major userRole={user?.role}/> },
       { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> },
       { path: '/admin/attendance/:classCode', element: <Attendance /> },
-      { path: '/admin/faceid_registration', element: <RegistFaceID userRole={user?.role} userID={user?._id} userCode={user?.userCode} /> },
+      // { path: '/admin/faceid_registration', element: <RegistFaceID userRole={user?.role} userID={user?._id} userCode={user?.userCode} /> },
       // { path: '/admin/test1', element: <ProtectedRoute element={Test1} /> }, // Sử dụng ProtectedRoute
       // { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} /> }, // Sử dụng ProtectedRoute
-
-      { path: '/admin/haha', element: <DisplayInfo userCode={user?.userCode} userID={user?._id} /> }, // Sử dụng ProtectedRoute
+      { path: '/admin/statistics-studenabsent', element: <TK_StudenAbsent/> }, 
+      { path: '/admin/statistics-studenattendance', element: <TK_StudenAttendance/> }, 
+      { path: '/admin/statistics-all-classes', element: <TK_StudentClassections userID={user?._id} userRole={user?.role} /> },
+      { path: '/admin/dashboard', element: <Dashboard/> }, // Sử dụng ProtectedRoute
 
     ],
     'Giảng viên': [
@@ -183,7 +196,9 @@ const App = () => {
       { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> },
       { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
       { path: '/admin/attendance/:classCode', element: <Attendance /> },
-      { path: '/admin/faceid_registration', element: <RegistFaceID userRole={user?.role} userID={user?._id} userCode={user?.userCode}/> },
+      { path: '/admin/statistics-all-classes', element: <TK_StudentClassections userID={user?._id} userRole={user?.role} /> },
+      { path: '/admin/statistics-total-all-classes', element: <TK_LHPTotalStudent userID={user?._id}/> },
+      // { path: '/admin/faceid_registration', element: <RegistFaceID userRole={user?.role} userID={user?._id} userCode={user?.userCode}/> },
 
 
     ],
@@ -197,11 +212,12 @@ const App = () => {
       { path: '/admin/faceid_registration', element: <RegistFaceID userRole={user?.role} userID={user?._id} userCode={user?.userCode} /> },
       { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
       // { path: '/admin/haha', element: <DisplayInfo userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
-      
+      { path: '/admin/statistics-classsections-students-term', element: <TK_LHPStudents_Term userID={user?._id}/> }, 
+      { path: '/admin/clause', element: <Clause/> }, 
       //nhớ xóa
-      { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> }, 
-      { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
-      { path: '/admin/attendance/:classCode', element: <Attendance /> },
+      // { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> }, 
+      // { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
+      // { path: '/admin/attendance/:classCode', element: <Attendance /> },
 
 
 
@@ -226,6 +242,7 @@ const App = () => {
         isCourseMenuOpen={isCourseMenuOpen}
         isTermMajorMenuOpen={isTermMajorMenuOpen}
         isUserManagementMenuOpen={isUserManagementMenuOpen}
+        isStatisticMenuOpen={isStatisticMenuOpen}
         handleLogin={handleLogin}
         handleLogout={handleLogout}
         confirmLogout={confirmLogout} // Pass confirmLogout to AppContent
@@ -237,6 +254,7 @@ const App = () => {
         toggleTKBMenu={toggleTKBMenu}
         toggleTermMajorMenu={toggleTermMajorMenu}
         toggleUserManagementMenu={toggleUserManagementMenu}
+        toggleStatisticMenu={toggleStatisticMenu}
         sidebarTextStyle={sidebarTextStyle}
         activeLinkStyle={activeLinkStyle}
         roleRoutes={roleRoutes}
@@ -258,6 +276,7 @@ const AppContent = ({
   isCourseMenuOpen,
   isTermMajorMenuOpen,
   isUserManagementMenuOpen,
+  isStatisticMenuOpen,
   handleLogin,
   handleLogout,
   confirmLogout, // Add confirmLogout to AppContent props
@@ -269,6 +288,7 @@ const AppContent = ({
   toggleCourseMenu,
   toggleTermMajorMenu,
   toggleUserManagementMenu,
+  toggleStatisticMenu,
   sidebarTextStyle,
   activeLinkStyle,
   roleRoutes,
@@ -292,14 +312,14 @@ const AppContent = ({
           <nav className={`main-header navbar navbar-expand navbar-white navbar-light ${isSidebarVisible ? '' : 'ml-0'}`} style={{ backgroundColor: '#fff', padding: '1.0em 1.0em', color: '#000' }}>
             <ul className="navbar-nav">
               <li className="nav-item">
-                <a className="nav-link" data-widget="pushmenu" href="#" role="button" onClick={toggleSidebar} style={{ color: '#000' }}>
+                <a className="nav-link" data-widget="pushmenu" role="button" onClick={toggleSidebar} style={{ color: '#000' }}>
                   <i className="fas fa-bars"></i>
                 </a>
               </li>
             </ul>
             <ul className="navbar-nav ml-auto">
               <li className="nav-item">
-                <a className="nav-link" href="#" role="button" onClick={toggleNotification} style={{ color: '#000' }}>
+                <a className="nav-link" role="button" onClick={toggleNotification} style={{ color: '#000' }}>
                   <i className="far fa-user-circle" style={{ fontSize: '24px' }}></i>
                 </a>
               </li>
@@ -310,7 +330,7 @@ const AppContent = ({
                 </div>
               </li>
               <li className="nav-item dropdown">
-                <a className="nav-link" href="#" role="button" onClick={toggleNotification} style={{ color: '#FFFFFF' }}>
+                <a className="nav-link" role="button" onClick={toggleNotification} style={{ color: '#FFFFFF' }}>
                   <i className="fas fa-angle-down" style={{ fontSize: '16px', color:'#000' }}></i>
                 </a>
                 {isNotificationOpen && (
@@ -354,7 +374,7 @@ const AppContent = ({
                         </li> */}
                         {user.role !== 'Sinh viên' && (
                          <li className={`nav-item has-treeview ${isUserMenuOpen ? 'menu-open' : ''}`}>
-                         <a href="#" className="nav-link" onClick={toggleUserMenu} style={sidebarTextStyle}>
+                         <a className="nav-link" onClick={toggleUserMenu} style={sidebarTextStyle}>
                            <i className="nav-icon fas fa-users"></i>
                            <p>
                              NGƯỜI DÙNG
@@ -386,7 +406,7 @@ const AppContent = ({
                         </li> */}
                         {user.role !== 'Sinh viên' && (
                           <li className={`nav-item has-treeview ${isTermMajorMenuOpen ? 'menu-open' : ''}`}>
-                            <a href="#" className="nav-link" onClick={toggleTermMajorMenu} style={sidebarTextStyle}>
+                            <a className="nav-link" onClick={toggleTermMajorMenu} style={sidebarTextStyle}>
                               <i className="nav-icon fas fa-layer-group"></i>
                               <p>
                                 DANH MỤC
@@ -433,9 +453,9 @@ const AppContent = ({
                           </ul>
                         </li> */}
                         
-                        {user.role !== '' && (
-                              <li className={`nav-item has-treeview ${isCourseMenuOpen ? 'menu-open' : ''}`}>
-                              <a href="#" className="nav-link" onClick={toggleCourseMenu} style={sidebarTextStyle}>
+                        {user.role !== 'Sinh viên' && (
+                              <li className={`nav-item has-treeview ${isCourseMenuOpen ? 'menu-open' : 'Sinh viên'}`}>
+                              <a className="nav-link" onClick={toggleCourseMenu} style={sidebarTextStyle}>
                                 <i className="nav-icon fas fa-book"></i>
                                 <p>
                                   LỚP HỌC PHẦN
@@ -449,11 +469,11 @@ const AppContent = ({
                                     <p>LHP</p>
                                   </Link>
                                 </li>
-                                {user.role !== '' && (
+                                {user.role !== 'Sinh viên' && (
                                   <li className="nav-item">
                                   <Link to="/admin/assignmentlist" className="nav-link" style={location.pathname === '/admin/assignmentlist' ? activeLinkStyle : sidebarTextStyle}>
                                     <i className="fas fa-dot-circle nav-icon"></i>
-                                    <p>LHP - GV</p>
+                                    <p>LHP - Giảng viên</p>
                                   </Link>
                                 </li>
                                 )}
@@ -461,57 +481,138 @@ const AppContent = ({
                               </ul>
                             </li>
                             )}
-                        
-                        {/* <li className="nav-item">
-                          <Link to="/admin/assignmentlist" className="nav-link" style={location.pathname === '/admin/assignmentlist' ? activeLinkStyle : sidebarTextStyle}>
-                            <i className="nav-icon fas fa-chalkboard-teacher"></i>
-                            <p>GV - LHP</p>
+                          {user.role !== 'Sinh viên' && (
+                            <li className="nav-item">
+                          <Link to="/admin/tkb" className="nav-link" style={location.pathname === '/admin/tkb' ? activeLinkStyle : sidebarTextStyle}>
+                            {/* <i className="nav-icon fas fa-id-card"></i> */}
+                            <i className="nav-icon fas fa-calendar-alt"></i>
+                            <p>THỜI KHÓA BIỂU</p>
                           </Link>
-                        </li> */}
-                        <li className={`nav-item has-treeview ${isTKBMenuOpen ? 'menu-open' : ''}`}>
-                         <a href="#" className="nav-link" onClick={toggleTKBMenu} style={sidebarTextStyle}>
-                           <i className="nav-icon fas fa-calendar-alt"></i>
-                           <p>
-                             THỜI KHÓA BIỂU
-                             <i className="right fas fa-angle-left"></i>
-                           </p>
-                         </a>
-                         <ul className="nav nav-treeview custom-indent">
-                         {user.role !== 'Sinh viên' && (
-                            <li className="nav-item">
-                             <Link to="/admin/tkb" className="nav-link" style={location.pathname === '/admin/tkb' ? activeLinkStyle : sidebarTextStyle}>
-                               <i className="fas fa-dot-circle nav-icon"></i>
-                               <p>TKB - GV</p>
-                             </Link>
-                           </li>
+                        </li>
                           )}
-                           {user.role !== 'Ban chủ nhiệm khoa' && (
+
+
+                          {/* Menu Sinh viên */}
+                        {user.role !== 'Ban chủ nhiệm khoa' && user.role !== 'Giảng viên' && (
                             <li className="nav-item">
-                             <Link to="/admin/tkbstudent" className="nav-link" style={location.pathname === '/admin/tkbstudent' ? activeLinkStyle : sidebarTextStyle}>
-                               <i className="fas fa-dot-circle nav-icon"></i>
-                               <p>TKB - SV</p>
-                             </Link>
-                           </li>
+                          <Link to="/admin/tkbstudent" className="nav-link" style={location.pathname === '/admin/tkbstudent' ? activeLinkStyle : sidebarTextStyle}>
+                            {/* <i className="nav-icon fas fa-id-card"></i> */}
+                            <i className="nav-icon fas fa-calendar-alt"></i>
+
+                            <p>THỜI KHÓA BIỂU</p>
+                          </Link>
+                        </li>
                           )}
-                           
-                         </ul>
-                       </li>
-                       <li className="nav-item">
+                       {user.role !== 'Ban chủ nhiệm khoa' && user.role !== 'Giảng viên' && (
+                            <li className="nav-item">
+                          <Link to="/admin/clause" className="nav-link" style={location.pathname === '/admin/clause' ? activeLinkStyle : sidebarTextStyle}>
+                            {/* <i className="nav-icon fas fa-id-card"></i> */}
+                            <i className="nav-icon fas fa-exclamation-circle"></i>
+
+                            <p>ĐIỀU KHOẢN ITFACE</p>
+                          </Link>
+                        </li>
+                          )}
+                       {user.role !== 'Ban chủ nhiệm khoa' && user.role !== 'Giảng viên' && (
+                            <li className="nav-item">
                           <Link to="/admin/faceid_registration" className="nav-link" style={location.pathname === '/admin/faceid_registration' ? activeLinkStyle : sidebarTextStyle}>
                             <i className="nav-icon fas fa-id-card"></i>
                             <p>ĐĂNG KÝ FACEID</p>
                           </Link>
                         </li>
-                        <li className="nav-item">
-                          <Link to="/admin/haha" className="nav-link" style={location.pathname === '/admin/haha' ? activeLinkStyle : sidebarTextStyle}>
-                            <i className="nav-icon fas fa-calendar-alt"></i>
-                            <p>Test</p>
-                          </Link>
-                        </li>
+                          )}
+                          {user.role !== 'Ban chủ nhiệm khoa' && user.role !== 'Giảng viên' && (
+                            <li className="nav-item">
+                                <Link to="/admin/statistics-classsections-students-term" className="nav-link" style={location.pathname === '/admin/statistics-classsections-students-term' ? activeLinkStyle : sidebarTextStyle}>
+                                  <i className="nav-icon fas fa-chart-line"></i>
+                                  <p>THỐNG KÊ</p>
+                                </Link>
+                              </li>
+                          )}
+                          
+                          {/* kết thúc menu Sinh viên */}
+
+
+                        {user.role !== 'Sinh viên' && (
+                           <li className={`nav-item has-treeview ${isStatisticMenuOpen ? 'menu-open' : ''}`}>
+                            <a className="nav-link" onClick={toggleStatisticMenu} style={sidebarTextStyle}>
+                              <i className="nav-icon fas fa-chart-line"></i>
+                              <p>
+                                THỐNG KÊ
+                                <i className="right fas fa-angle-left"></i>
+                              </p>
+                            </a>
+                            
+                            <ul className="nav nav-treeview custom-indent">
+                            {/* {user.role !== 'Ban chủ nhiệm khoa' && user.role !== 'Giảng viên' && (
+                            <li className="nav-item">
+                                <Link to="/admin/statistics-classsections-students-term" className="nav-link" style={location.pathname === '/admin/statistics-classsections-students-term' ? activeLinkStyle : sidebarTextStyle}>
+                                  <i className="fas fa-dot-circle nav-icon"></i>
+                                  <p>LHP - Theo học kỳ</p>
+                                </Link>
+                              </li>
+                          )} */}
+                          {user.role !== 'Sinh viên' && user.role !== 'Giảng viên' && (
+                            <>
+                            {/* <li className="nav-item">
+                                <Link to="/admin/statistics-studenabsent" className="nav-link" style={location.pathname === '/admin/statistics-studenabsent' ? activeLinkStyle : sidebarTextStyle}>
+                                  <i className="fas fa-dot-circle nav-icon"></i>
+                                  <p>Tỉ lệ SV vắng</p>
+                                </Link>
+                              </li>
+                              <li className="nav-item">
+                              <Link to="/admin/statistics-studenattendance" className="nav-link" style={location.pathname === '/admin/statistics-studenattendance' ? activeLinkStyle : sidebarTextStyle}>
+                                <i className="fas fa-dot-circle nav-icon"></i>
+                                <p>Tỉ lệ SV điểm danh</p>
+                              </Link>
+                            </li> */}
+                            <li className="nav-item">
+                              <Link to="/admin/statistics-studenattendance" className="nav-link" style={location.pathname === '/admin/statistics-studenattendance' ? activeLinkStyle : sidebarTextStyle}>
+                                <i className="fas fa-dot-circle nav-icon"></i>
+                                <p>Tỉ lệ SV điểm danh</p>
+                              </Link>
+                            </li>
+                            </>
+                          )}
+                          {user.role !== 'Sinh viên' && (
+                              <li className="nav-item">
+                              <Link to="/admin/statistics-all-classes" className="nav-link" style={location.pathname === '/admin/statistics-all-classes' ? activeLinkStyle : sidebarTextStyle}>
+                                <i className="fas fa-dot-circle nav-icon"></i>
+                                <p>LHP - Buổi vắng</p>
+                              </Link>
+                            </li>
+                          )}
+                          {user.role !== 'Sinh viên' && user.role !== 'Ban chủ nhiệm khoa' && (
+                              <li className="nav-item">
+                              <Link to="/admin/statistics-total-all-classes" className="nav-link" style={location.pathname === '/admin/statistics-total-all-classes' ? activeLinkStyle : sidebarTextStyle}>
+                                <i className="fas fa-dot-circle nav-icon"></i>
+                                <p>LHP - Tổng số lượng</p>
+                              </Link>
+                            </li>
+                          )}
+                          
+                          
+                              
+                            </ul>
+                          </li>
+                          )}
+                          {user.role !== 'Sinh viên' && user.role !== 'Giảng viên' && (
+                            <li className="nav-item">
+                                <Link to="/admin/dashboard" className="nav-link" style={location.pathname === '/admin/dashboard' ? activeLinkStyle : sidebarTextStyle}>
+                                  <i className="nav-icon fas fa-tachometer-alt"></i>
+                                  <p>TỔNG QUAN</p>
+                                </Link>
+                              </li>
+                          )}
                       </>
                     )}
+                    
                   </ul>
                 </nav>
+                <button className="mobile-button" onClick={toggleSidebar} style={{ backgroundColor: 'transparent', border: 'none' }}>
+              <IonIcon name="chevron-back-circle-outline" style={{ fontSize: '25px', height: '1em', width: '1.3em', padding: '1px 4px', color: '#fff' }} />
+          </button>
+
               </div>
             </aside>
           )}
@@ -535,6 +636,26 @@ const AppContent = ({
           <p><b>© {currentYear} - Bản Quyền Thuộc Khoa Công nghệ Thông tin, Trường Đại Học Văn Lang.</b></p>
           </footer>
           <aside className="control-sidebar control-sidebar-dark"></aside>
+                <style jsx>{`
+          @media (max-width: 768px) {
+            .mobile-button {
+              display: block;
+              width: 100%;
+              padding: 10px;
+              background-color: #007bff;
+              color: white;
+              border: none;
+              text-align: center;
+              cursor: pointer;
+            }
+          }
+
+          @media (min-width: 769px) {
+            .mobile-button {
+              display: none;
+            }
+          }
+        `}</style>
         </div>
       )}
       {showLogoutModal && (
