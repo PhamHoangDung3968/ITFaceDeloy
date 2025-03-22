@@ -8,7 +8,7 @@ import Role from './components/RoleComponent';
 import User from './components/UserComponent';
 import Student from './components/StudentComponent';
 import Home from './components/HomeComponent';
-import Profile from './components/ProfileComponent';
+import Profile from './components/Profile';
 import Semester_major from './components/semester_major';
 import AddMajor from './components/Major_Add';
 import EditMajor from './components/Major_Edit';
@@ -150,6 +150,7 @@ const App = () => {
 
   const roleRoutes = {
     'Ban chủ nhiệm khoa': [
+      { path: '/admin/profile', element: <Profile userRole={user?.role} userID={user?._id} /> },
       { path: '/admin/user', element: <User userRole={user?.role} /> },
       { path: '/admin/user/student', element: <Student /> },
       { path: '/admin/semester_major', element: <Semester_major /> },
@@ -165,7 +166,6 @@ const App = () => {
       { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
       { path: '/admin/classsections/:subjecttermID', element: <Classsection userRole={user?.role} /> }, // Pass userRole as prop
       { path: '/admin/role', element: <Role /> },
-      { path: '/admin/user/profile/:id', element: <Profile /> },
       { path: '/admin/tkb', element: <TKB userRole={user?.role} userID={user?._id} /> }, // Pass userRole and userID as props
       { path: '/admin/test', element: <Test/> },
       { path: '/admin/term', element: <Term userRole={user?.role}/> },
@@ -182,6 +182,7 @@ const App = () => {
 
     ],
     'Giảng viên': [
+      { path: '/admin/profile', element: <Profile userRole={user?.role} userID={user?._id} /> },
       { path: '/admin/user', element: <User userRole={user?.role} /> }, //nhớ xóa
       { path: '/admin/user/student', element: <Student /> },
       { path: '/admin/semester_major', element: <Semester_major /> },
@@ -203,6 +204,7 @@ const App = () => {
 
     ],
     'Sinh viên': [
+      { path: '/admin/profile', element: <Profile userRole={user?.role} userID={user?._id} /> },
       { path: '/admin/subject', element: <Subject /> },
       { path: '/admin/subjectregistration', element: <SubjectRegistration /> },
       { path: '/admin/subjectregistration/:subjectID', element: <SubjectRegistrationDetail /> },
