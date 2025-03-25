@@ -238,8 +238,8 @@ const Test = () => {
           datasets: [
             {
               label: 'Tổng số lượng buổi điểm danh trong 5 tuần gần đây',
-              backgroundColor: 'rgba(75,192,192,0.4)',
-              borderColor: 'rgba(75,192,192,1)',
+              backgroundColor: '#FF9900',
+              borderColor: '#FF9900',
               data: counts,
             },
           ],
@@ -262,8 +262,8 @@ const Test = () => {
           datasets: [
             {
               label: 'Tổng số lượng SV tham gia điểm danh FaceID trong 5 tuần gần đây',
-              backgroundColor: 'rgba(75,192,192,0.4)',
-              borderColor: 'rgba(75,192,192,1)',
+              backgroundColor: '#DCD800',
+              borderColor: '#DCD800',
               data: counts,
             },
           ],
@@ -308,14 +308,14 @@ const Test = () => {
           datasets: [
             {
               label: 'Tỷ lệ vắng học (%)',
-              backgroundColor: 'rgba(255,99,132,0.2)',
-              borderColor: 'rgba(255,99,132,1)',
+              backgroundColor: '#FF6B6B',
+              borderColor: '#FF6B6B)',
               data: finalData.map(item => item.dataset1),
             },
             {
               label: 'Tỷ lệ tham gia học (%)',
-              backgroundColor: 'rgba(54,162,235,0.2)',
-              borderColor: 'rgba(54,162,235,1)',
+              backgroundColor: '#40E0D0',
+              borderColor: '#40E0D0)',
               data: finalData.map(item => item.dataset2),
             },
           ],
@@ -343,12 +343,23 @@ const Test = () => {
     scales: {
       x: {
         stacked: true,
+        ticks: {
+          color: '#000000', // Màu chữ trên trục X
+        },
       },
       y: {
         stacked: true,
+        ticks: {
+          color: '#000000', // Màu chữ trên trục Y
+        },
       },
     },
     plugins: {
+      legend: {
+        labels: {
+          color: '#000000', // Màu chữ của tiêu đề legend
+        },
+      },
       tooltip: {
         callbacks: {
           label: function (context) {
@@ -365,26 +376,72 @@ const Test = () => {
       },
     },
   };
+  
 
   return (
     <div>
       <section className="content">
-        <div className="container-fluid">
-          <div className="row">
-            <div className="col-lg-6">
-              <div className="card">
-                <div className="card-body">
-                  <Line data={lineData} />
-                </div>
-              </div>
+       <div className="container-fluid">
+      <div className="row">
+        <div className="col-lg-6">
+          <div className="card">
+            <div className="card-body">
+              <Line 
+                data={lineData} 
+                options={{
+                  scales: {
+                    x: { ticks: { color: '#000000' } },
+                    y: { ticks: { color: '#000000' } }
+                  },
+                  plugins: {
+                    legend: { labels: { color: '#000000' } },
+                    tooltip: { 
+                      titleColor: '#FFFFFF', 
+                      bodyColor: '#FFFFFF',
+                      backgroundColor: '#000000',
+                      borderColor: '#FFFFFF', 
+                      borderWidth: 1 // Viền trắng để làm rõ tooltip
+                    }
+                    
+                  }
+                }} 
+              />
             </div>
+          </div>
+        </div>
             <div className="col-lg-6">
-              <div className="card">
-                <div className="card-body">
-                  <Bar data={barData} />
-                </div>
-              </div>
-            </div>
+  <div className="card">
+    <div className="card-body">
+      <Bar 
+        data={{
+          ...barData,
+          datasets: barData.datasets.map(dataset => ({
+            ...dataset,
+            borderRadius: 10, // Điều chỉnh giá trị để bo tròn nhiều hay ít
+          }))
+        }} 
+        options={{
+          scales: {
+            x: { ticks: { color: '#000000' } },
+            y: { ticks: { color: '#000000' } }
+          },
+          plugins: {
+            legend: { labels: { color: '#000000' } },
+            tooltip: { 
+              titleColor: '#FFFFFF', 
+              bodyColor: '#FFFFFF',
+              backgroundColor: '#000000',
+              borderColor: '#FFFFFF', 
+              borderWidth: 1 // Viền trắng để làm rõ tooltip
+            }
+            
+          }
+        }} 
+      />
+    </div>
+  </div>
+</div>
+
           </div>
         </div>
         
