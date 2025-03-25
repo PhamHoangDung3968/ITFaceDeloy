@@ -217,8 +217,8 @@ app.get('/user', async (req, res) => {
 });
 
 // Serve static files
-app.use('/', express.static(path.resolve(__dirname, '../client-admin/build')));
-app.get('/*', (req, res) => {
+app.use('/admin', express.static(path.resolve(__dirname, '../client-admin/build')));
+app.get('/admin/*', (req, res) => {
   res.sendFile(path.resolve(__dirname, '../client-admin/build', 'index.html'));
 });
 
