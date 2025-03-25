@@ -205,7 +205,7 @@ const App = () => {
     ],
     'Sinh viên': [
       { path: '/admin/profile', element: <Profile userRole={user?.role} userID={user?._id} /> },
-      { path: '/admin/subject', element: <Subject /> },
+      // { path: '/admin/subject', element: <Subject /> },
       { path: '/admin/subjectregistration', element: <SubjectRegistration /> },
       { path: '/admin/subjectregistration/:subjectID', element: <SubjectRegistrationDetail /> },
       { path: '/admin/tkbstudent', element: <TKBStudent userRole={user?.role} userID={user?._id}/> },
@@ -217,9 +217,9 @@ const App = () => {
       { path: '/admin/statistics-classsections-students-term', element: <TK_LHPStudents_Term userID={user?._id}/> }, 
       { path: '/admin/clause', element: <Clause/> }, 
       //nhớ xóa
-      { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> }, 
-      { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
-      { path: '/admin/attendance/:classCode', element: <Attendance /> },
+      // { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> }, 
+      // { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
+      // { path: '/admin/attendance/:classCode', element: <Attendance /> },
 
 
 
