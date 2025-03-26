@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import MyContext from '../contexts/MyContext';
 import { ToastContainer, toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import ReactPaginate from 'react-paginate';
 
@@ -117,6 +118,23 @@ class TK_StudenAttendance extends Component {
 
     return (
       <div>
+        <section className="content-header">
+                  <div className="container-fluid">
+                    <div className="row mb-2">
+                      <div className="col-sm-6">
+                        <h1>Thống kê tỉ lệ SV điểm danh</h1>
+                      </div>
+                      <div className="col-sm-6">
+                        <ol className="breadcrumb float-sm-right">
+                          <li className="breadcrumb-item">
+                            <b><Link to='/admin/home' style={{ color: '#6B63FF' }}>Trang chủ</Link></b>
+                          </li>
+                          <li className="breadcrumb-item active">Thống kê tỉ lệ SV điểm danh</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </section>
         <div className="content">
           <div className="card-body">
             <div className="row">
