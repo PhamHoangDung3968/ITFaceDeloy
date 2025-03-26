@@ -951,13 +951,55 @@ const StatisticDAO = {
             throw error;
         }
     },
+    // async exportClassSectionsAndDatesWithNonNullTimesToExcel(teacherID) {
+    //     try {
+    //         const classSections = await this.getClassSectionsAndDatesWithNonNullTimesByTeacherID(teacherID);
+    
+    //         const workbook = new ExcelJS.Workbook();
+    //         const worksheet = workbook.addWorksheet('ClassSections');
+    
+    //         // Add the column headers
+    //         const columnHeaders = [
+    //             'STT', 'Mã lớp học phần', 'Tên lớp học phần', 
+    //             ...Array.from({ length: 15 }, (_, i) => `Buổi ${i + 1}`), 
+    //             'Tổng số sinh viên'
+    //         ];
+    //         const headerRow = worksheet.addRow(columnHeaders);
+    //         headerRow.eachCell((cell) => {
+    //             cell.font = { bold: true }; // Make the column headers bold
+    //         });
+    
+    //         // Add the class section data
+    //         classSections.forEach((classSection, index) => {
+    //             const rowData = [
+    //                 index + 1, // STT
+    //                 classSection.classCode,
+    //                 classSection.subjectName,
+    //                 ...Array.from({ length: 15 }, (_, i) => {
+    //                     const sessionDate = new Date(classSection.datesWithNonNullTimes[0].date);
+    //                     sessionDate.setDate(sessionDate.getDate() + i);
+    //                     const dateWithNonNullTimes = classSection.datesWithNonNullTimes.find(d => new Date(d.date).getTime() === sessionDate.getTime());
+    //                     return dateWithNonNullTimes ? dateWithNonNullTimes.nonNullTimesCount : '';
+    //                 }),
+    //                 classSection.totalStudents
+    //             ];
+    //             worksheet.addRow(rowData);
+    //         });
+    
+    //         const buffer = await workbook.xlsx.writeBuffer();
+    //         return buffer;
+    //     } catch (error) {
+    //         console.error('Error exporting class sections and dates with non-null times to Excel:', error);
+    //         throw error;
+    //     }
+    // },
+
     async exportClassSectionsAndDatesWithNonNullTimesToExcel(teacherID) {
         try {
             const classSections = await this.getClassSectionsAndDatesWithNonNullTimesByTeacherID(teacherID);
     
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('ClassSections');
-    
             // Add the column headers
             const columnHeaders = [
                 'STT', 'Mã lớp học phần', 'Tên lớp học phần', 
@@ -968,7 +1010,6 @@ const StatisticDAO = {
             headerRow.eachCell((cell) => {
                 cell.font = { bold: true }; // Make the column headers bold
             });
-    
             // Add the class section data
             classSections.forEach((classSection, index) => {
                 const rowData = [
@@ -976,9 +1017,7 @@ const StatisticDAO = {
                     classSection.classCode,
                     classSection.subjectName,
                     ...Array.from({ length: 15 }, (_, i) => {
-                        const sessionDate = new Date(classSection.datesWithNonNullTimes[0].date);
-                        sessionDate.setDate(sessionDate.getDate() + i);
-                        const dateWithNonNullTimes = classSection.datesWithNonNullTimes.find(d => new Date(d.date).getTime() === sessionDate.getTime());
+                    const dateWithNonNullTimes = classSection.datesWithNonNullTimes[i];
                         return dateWithNonNullTimes ? dateWithNonNullTimes.nonNullTimesCount : '';
                     }),
                     classSection.totalStudents
@@ -993,7 +1032,6 @@ const StatisticDAO = {
             throw error;
         }
     },
-
 
 
     async getAllClassSectionsAndDatesWithNonNullTimes() {
@@ -1235,25 +1273,26 @@ const StatisticDAO = {
     async exportAllClassSectionsAndDatesWithNonNullTimesToExcel() {
         try {
             const classSections = await this.getAllClassSectionsAndDatesWithNonNullTimes();
-    
+
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('ClassSections');
-    
+
             // Add the column headers
             const columnHeaders = [
-                'Mã lớp học phần', 'Tên lớp học phần', 'Tổng số sinh viên', 'Số lượng SV tham gia trung bình'
+                'STT', 'Mã lớp học phần', 'Tên lớp học phần', 'Tổng số sinh viên', 'Số lượng SV tham gia trung bình'
             ];
             const headerRow = worksheet.addRow(columnHeaders);
             headerRow.eachCell((cell) => {
                 cell.font = { bold: true }; // Make the column headers bold
             });
-    
+
             // Add the class section data
-            classSections.forEach((classSection) => {
+            classSections.forEach((classSection, index) => {
                 const totalNonNullTimesCount = classSection.datesWithNonNullTimes.reduce((sum, record) => sum + record.nonNullTimesCount, 0);
                 const averageNonNullTimesCount = classSection.datesWithNonNullTimes.length > 0 ? (totalNonNullTimesCount / classSection.datesWithNonNullTimes.length).toFixed(2) : 'Chưa có dữ liệu';
-    
+
                 const rowData = [
+                    index + 1, // STT
                     classSection.classCode,
                     classSection.subjectName,
                     classSection.totalStudents,
@@ -1261,7 +1300,7 @@ const StatisticDAO = {
                 ];
                 worksheet.addRow(rowData);
             });
-    
+
             const buffer = await workbook.xlsx.writeBuffer();
             return buffer;
         } catch (error) {

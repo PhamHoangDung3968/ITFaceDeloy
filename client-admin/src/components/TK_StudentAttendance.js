@@ -137,22 +137,27 @@ class TK_StudenAttendance extends Component {
                   <input type="text" className="form-control" placeholder="Tìm kiếm" style={{ width: '100%' }} value={searchKeyword} onChange={this.handleSearchChange} />
                 </div>
               </div>
-              <div className="col-md-12">
-                <div className="form-group">
-                  <p>
-                    <button
-                      className="btn btn-success"
-                      style={{ backgroundColor: '#009900', borderColor: '#6B63FF', color: '#ffffff', borderRadius: '4px', marginLeft: '20px' }}
-                      onClick={this.handleTKExportAttendance}
-                    >
-                      <i className="nav-icon fas fa-file-excel"></i> Xuất Excel
-                    </button>
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
+          
           <div className="card">
+          <div className="card-header">
+              <h3 className="card-title" style={{ float: 'right' }}>
+                <div className="input-group input-group-sm">
+                  <div className="input-group-append">
+                  <button
+                    type="submit"
+                    onClick={this.handleTKExportAttendance}
+                    className="btn btn-success text-nowrap"
+                    style={{ backgroundColor: '#6B63FF', borderColor: '#6B63FF', color: '#ffffff', marginLeft: '210px', borderRadius: '4px', backgroundColor: '#009900', borderColor: '#009900' }}
+                  >
+                    <i className="nav-icon fas fa-file-excel"></i> Xuất excel
+                  </button>
+                  </div>
+                </div>
+              </h3>
+              
+            </div>
             <div className="card-body table-responsive p-0">
               <table className="table table-hover text-nowrap">
                 <thead>
