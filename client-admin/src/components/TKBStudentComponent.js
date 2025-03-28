@@ -160,9 +160,15 @@ class TKBStudent extends Component {
     this.setState(prevState => ({ showScanner: !prevState.showScanner, showModal1: !prevState.showModal1 }));
   };
   
+  // handleScan = (result) => {
+  //   if (result) {
+  //     this.setState({ scanResult: result.text });
+  //   }
+  // };
   handleScan = (result) => {
     if (result) {
       this.setState({ scanResult: result.text });
+      window.location.href = result.text; // Redirect to the scanned URL
     }
   };
   

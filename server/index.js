@@ -19,6 +19,24 @@ app.use(session({ secret: 'dung123456', resave: false, saveUninitialized: true }
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Middleware để chuyển hướng từ localhost:3000 sang localhost:3001/admin/
+//Chạy local
+// app.use((req, res, next) => {
+//   if (req.hostname === 'localhost' && req.port === '3001') {
+//     res.redirect('http://localhost:3001/admin');
+//   } else {
+//     next();
+//   }
+// });
+//Chạy deploy
+app.use((req, res, next) => {
+  if (req.hostname === 'itface.onrender.com' && req.path === '/') {
+    res.redirect('https://itface.onrender.com/admin');
+  } else {
+    next();
+  }
+});
+
 // Passport configuration
 passport.use(new MicrosoftStrategy({
   clientID: 'b124aa58-71a9-43fd-9962-6c81b6281dc8',
