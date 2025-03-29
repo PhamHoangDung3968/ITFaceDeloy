@@ -247,7 +247,7 @@ app.get('/hello', (req, res) => {
 
 // Additional APIs
 app.use('/api/admin', require('./api/admin.js'));
-app.use('/api/customer', require('./api/customer.js'));
+// app.use('/api/customer', require('./api/customer.js'));
 
 // Start server
 app.listen(PORT, () => {

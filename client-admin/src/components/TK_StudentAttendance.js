@@ -75,25 +75,50 @@ class TK_StudenAttendance extends Component {
     this.setState({ filteredSubjectterms });
   };
 
+  // handleTKExportAttendance = () => {
+  //   axios({
+  //     url: `/api/admin/export-tk-bcnk-totallhp`,
+  //     method: 'GET',
+  //     responseType: 'blob',
+  //   })
+  //   .then((response) => {
+  //     const url = window.URL.createObjectURL(new Blob([response.data]));
+  //     const link = document.createElement('a');
+  //     link.href = url;
+  //     link.setAttribute('download', `total_average_class_sections.xlsx.xlsx`);
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     link.remove();
+  //   })
+  //   .catch((error) => {
+  //     console.error('Error downloading the file:', error);
+  //   });
+  // };
   handleTKExportAttendance = () => {
+    const { selectedSemester } = this.state;
+    const apiUrl = `/api/admin/export-tk-bcnk-totallhp/${selectedSemester}`;
+    const semester = this.state.semesters.find(sem => sem._id === selectedSemester);
+    const semesterName = semester ? semester.term : 'unknown_term';
+    const fileName = `total_average_class_sections_${semesterName}.xlsx`;
+
     axios({
-      url: `/api/admin/export-tk-bcnk-totallhp`,
-      method: 'GET',
-      responseType: 'blob',
+        url: apiUrl,
+        method: 'GET',
+        responseType: 'blob',
     })
     .then((response) => {
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `total_average_class_sections.xlsx.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
     })
     .catch((error) => {
-      console.error('Error downloading the file:', error);
+        console.error('Error downloading the file:', error);
     });
-  };
+};
 
   render() {
     const { filteredSubjectterms, currentPage, itemsPerPage, selectedSemester, semesters, searchKeyword } = this.state;
@@ -164,13 +189,13 @@ class TK_StudenAttendance extends Component {
                 <div className="input-group input-group-sm">
                   <div className="input-group-append">
                   <button
-                    type="submit"
-                    onClick={this.handleTKExportAttendance}
-                    className="btn btn-success text-nowrap"
-                    style={{ backgroundColor: '#6B63FF', borderColor: '#6B63FF', color: '#ffffff', marginLeft: '210px', borderRadius: '4px', backgroundColor: '#009900', borderColor: '#009900' }}
-                  >
-                    <i className="nav-icon fas fa-file-excel"></i> Xuất excel
-                  </button>
+                      type="submit"
+                      onClick={this.handleTKExportAttendance}
+                      className="btn btn-success text-nowrap"
+                      style={{ backgroundColor: '#6B63FF', borderColor: '#6B63FF', color: '#ffffff', marginLeft: '210px', borderRadius: '4px', backgroundColor: '#009900', borderColor: '#009900' }}
+                    >
+                      <i className="nav-icon fas fa-file-excel"></i> Xuất excel
+                    </button>
                   </div>
                 </div>
               </h3>

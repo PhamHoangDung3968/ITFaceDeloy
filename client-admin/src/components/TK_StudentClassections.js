@@ -22,13 +22,14 @@ class TK_StudentClassections extends Component {
     expandedRow: null,
     nestedCurrentPage: {},
     searchKeyword: '', // Add this line
+    searchKeyword1:'',
     absenceSort: 'none', // Add this line
   };
 
   componentDidMount() {
     this.apiGetSemesters();
     this.apiGetUsers(this.props.userID);
-    
+    this.filterUsersBySearchKeyword1(); // Thêm dòng này
   }
   apiGetSemesters = async () => {
     try {
@@ -41,16 +42,6 @@ class TK_StudentClassections extends Component {
     }
   };
 
-  // Fetch subjects from the API
-  // apiGetUsers = async (teacherID) => {
-  //   try {
-  //     const response = await axios.get(`/api/admin/classsections/teacher/totalteachday/${teacherID}`);
-  //     const reversedUsers = response.data.reverse(); // Reverse the order here
-  //     this.setState({ subjects: reversedUsers, filteredUsers: reversedUsers });
-  //   } catch (error) {
-  //     console.error('Error fetching subjects:', error);
-  //   }
-  // };
   apiGetUsers = async (teacherID) => {
     try {
       const apiUrl = this.props.userRole === 'Ban chủ nhiệm khoa'
@@ -86,9 +77,6 @@ class TK_StudentClassections extends Component {
     }), this.filterAndSortStudents);
   };
 
-
-
-
   handlePageClick = (data) => {
     this.setState({ currentPage: data.selected });
   };
@@ -103,35 +91,18 @@ class TK_StudentClassections extends Component {
   handleSearchChange = (e) => {
     this.setState({ searchKeyword: e.target.value }, this.filterAndSortStudents);
   };
+  handleSearchChange1 = (e) => {
+    this.setState({ searchKeyword1: e.target.value }, this.filterUsersBySearchKeyword1);
+  };
+  filterUsersBySearchKeyword1 = () => {
+    const { subjects, searchKeyword1 } = this.state;
+    const filteredUsers = subjects.filter(subject =>
+      subject.classCode.toLowerCase().includes(searchKeyword1.toLowerCase()) ||
+      subject.subjectName.toLowerCase().includes(searchKeyword1.toLowerCase())
+    );
+    this.setState({ filteredUsers });
+  };
   
-  // handleAbsenceSortChange = (e) => {
-  //   this.setState({ absenceSort: e.target.value }, this.filterAndSortStudents);
-  // };
-  // filterAndSortStudents = () => {
-  //   const { subjects, searchKeyword, absenceSort } = this.state;
-  //   const filteredUsers = subjects.map(subject => {
-  //     let filteredStudents = subject.students;
-  
-  //     if (searchKeyword) {
-  //       filteredStudents = filteredStudents.filter(student =>
-  //         student.fullName.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-  //         student.usercode.toLowerCase().includes(searchKeyword.toLowerCase())
-  //       );
-  //     }
-  
-  //     if (absenceSort === 'most') {
-  //       filteredStudents.sort((a, b) => b.totalNullTimes - a.totalNullTimes);
-  //     } else if (absenceSort === 'least') {
-  //       filteredStudents.sort((a, b) => a.totalNullTimes - b.totalNullTimes);
-  //     }
-  
-  //     return { ...subject, students: filteredStudents };
-  //   });
-  
-  //   this.setState({ filteredUsers });
-  // };
-
-
   handleAbsenceSortChange = (e) => {
     const value = e.target.value;
     this.setState({ absenceSort: value }, this.filterAndSortStudents);
@@ -181,37 +152,48 @@ class TK_StudentClassections extends Component {
         return lesson;
     }
   };
-  handleTKExportAttendance = (teacherID) => {
+  handleTKExportAttendance = (teacherID, termID, classCode, totalNullTimes) => {
     const apiUrl = this.props.userRole === 'Ban chủ nhiệm khoa'
-      ? `/api/admin/export-tk-bcnk`
-      : `/api/admin/export-tk-teacher/${teacherID}`;
-  
+        ? `/api/admin/export-tk-bcnk/${termID}/${classCode}/${totalNullTimes}`
+        : `/api/admin/export-tk-teacher/${teacherID}/${termID}/${classCode}/${totalNullTimes}`;
+
     const fileName = this.props.userRole === 'Ban chủ nhiệm khoa'
-      ? 'attendance_BCNK.xlsx'
-      : `attendance_${teacherID}.xlsx`;
-  
+        ? `attendance_BCNK_${classCode}_vang${totalNullTimes}buoi.xlsx`
+        : `attendance_${classCode}_vang${totalNullTimes}buoi.xlsx`;
+
     axios({
-      url: apiUrl,
-      method: 'GET',
-      responseType: 'blob',
+        url: apiUrl,
+        method: 'GET',
+        responseType: 'blob',
     })
     .then((response) => {
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
     })
     .catch((error) => {
-      console.error('Error downloading the file:', error);
+        this.showErrorToast("Tải thất bại!");
+    });
+};
+showToast = (message) => {
+    toast.success(message, {
+      position: "top-right"
+    });
+  };
+  showErrorToast = (message) => {
+    toast.error(message, {
+      position: "top-right"
     });
   };
 
 
+
   render() {
-    const { currentPage, subjectsPerPage, filteredUsers, selectedRole, error, expandedRow, semesters, nestedCurrentPage, searchKeyword, absenceSort } = this.state;
+    const { currentPage, subjectsPerPage, filteredUsers, selectedRole, error, expandedRow, semesters, nestedCurrentPage, searchKeyword, searchKeyword1, absenceSort } = this.state;
 const offset = currentPage * subjectsPerPage;
 const currentPageUsers = filteredUsers.slice(offset, offset + subjectsPerPage);
 
@@ -238,41 +220,46 @@ const userRows = currentPageUsers.map((item, index) => {
   </tr>
   {expandedRow === item._id && (
     <tr>
-      <td colSpan="6">
-      <div className="card-header">
-  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-    {/* Tìm kiếm bên trái */}
-    <div className="input-group input-group-sm" style={{ width: '200px' }}>
-      <input
-        type="text"
-        className="form-control float-right"
-        placeholder="Tìm kiếm"
-        value={searchKeyword}
-        onChange={this.handleSearchChange}
-      />
-      <div className="input-group-append">
-        <button type="submit" className="btn btn-default">
-          <i className="fas fa-search"></i>
-        </button>
-      </div>
-    </div>
+      <td colSpan="7">
+        <div className="card-header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            {/* Tìm kiếm bên trái */}
+            <div className="input-group input-group-sm" style={{ width: '200px' }}>
+              <input
+                type="text"
+                className="form-control float-right"
+                placeholder="Tìm kiếm"
+                value={searchKeyword}
+                onChange={this.handleSearchChange}
+              />
+              <div className="input-group-append">
+                <button type="submit" className="btn btn-default">
+                  <i className="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
 
-    {/* Lọc bên phải */}
-    <div className="input-group input-group-sm" style={{ width: '200px' }}>
-      {/* <select className="form-control" value={absenceSort} onChange={this.handleAbsenceSortChange}>
-        <option value="none">Lọc</option>
-        <option value="most">Nhiều nhất</option>
-        <option value="least">Ít nhất</option>
-      </select> */}
-      <select className="form-control" value={absenceSort} onChange={this.handleAbsenceSortChange}>
-                      <option value="most">Vắng nhiều hơn</option>
-                      {[...Array(15).keys()].map(i => (
-                        <option key={i + 1} value={i + 1}>{i + 1} buổi</option>
-                      ))}
-                    </select>
-    </div>
-  </div>
-</div>
+            {/* Lọc bên phải */}
+            <div className="input-group input-group-sm" style={{ width: '200px' }}>
+              <select className="form-control" value={absenceSort} onChange={this.handleAbsenceSortChange}>
+                <option value="most">Vắng nhiều hơn</option>
+                {[...Array(15).keys()].map(i => (
+                  <option key={i + 1} value={i + 1}>{i + 1} buổi</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="input-group input-group-sm" style={{ marginTop: '10px' }}>
+            <button
+              type="button"
+              onClick={() => this.handleTKExportAttendance(this.props.userID, item.termID, item.classCode, this.state.absenceSort)}
+              className="btn btn-success text-nowrap"
+              style={{ backgroundColor: '#009900', borderColor: '#009900', color: '#ffffff' }}
+            >
+              <i className="nav-icon fas fa-file-excel"></i> Xuất excel
+            </button>
+          </div>
+        </div>
 
         <table className="table table-bordered">
           <thead>
@@ -282,7 +269,7 @@ const userRows = currentPageUsers.map((item, index) => {
               <th>Email</th>
               <th>Họ và tên</th>
               <th>Số buổi vắng</th>
-           </tr>
+            </tr>
           </thead>
           <tbody>
             {currentStudents.map((student, idx) => (
@@ -303,7 +290,6 @@ const userRows = currentPageUsers.map((item, index) => {
             justifyContent: 'center',
             alignItems: 'center',
             margin: '20px 0',
-            
           }}
         >
           <ReactPaginate
@@ -349,7 +335,7 @@ const userRows = currentPageUsers.map((item, index) => {
         <section className="content">
           <div className="card">
             <div className="card-header">
-              <h3 className="card-title" style={{ float: 'right' }}>
+              {/* <h3 className="card-title" style={{ float: 'right' }}>
                 <div className="input-group input-group-sm">
                   <div className="input-group-append">
                   <button
@@ -362,8 +348,8 @@ const userRows = currentPageUsers.map((item, index) => {
                   </button>
                   </div>
                 </div>
-              </h3>
-              <div className="card-tools" style={{ float: 'left' }}>
+              </h3> */}
+              <div className="card-tools">
                 <div className="input-group input-group-sm" style={{ width: '200px' }}>
                   <select className="form-control" value={this.state.selectedSemester} onChange={this.handleSemesterChange}>
                     <option value="">học kỳ</option>
@@ -375,6 +361,20 @@ const userRows = currentPageUsers.map((item, index) => {
                   </select>
                 </div>
               </div>
+              <div className="input-group input-group-sm" style={{ width: '200px' }}>
+              <input
+                type="text"
+                className="form-control float-right"
+                placeholder="Tìm kiếm"
+                value={searchKeyword1}
+                onChange={this.handleSearchChange1}
+              />
+              <div className="input-group-append">
+                <button type="submit" className="btn btn-default">
+                  <i className="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
             </div>
             <div className="card-body table-responsive p-0">
               <table className="table table-hover text-nowrap">

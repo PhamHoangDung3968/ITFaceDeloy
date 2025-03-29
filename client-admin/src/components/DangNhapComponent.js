@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import logo0 from '../dist/img/logovlu2.png';
 import logo1 from "../dist/img/logoIT.png"
 import logo2 from '../dist/img/logoVLU.abdc5798120a9127abb6.png';
 import backgroundImage from '../dist/img/bglogin.jpg';

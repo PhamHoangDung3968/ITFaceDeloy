@@ -228,7 +228,7 @@ const Test = () => {
     const fetchLineData = async () => {
       try {
         const response = await axios.get('/api/admin/thongke-soluong-diemdanh/fiveweeks');
-        const data = response.data;
+        const data = response.data.reverse();
 
         const labels = ['5 tuần trước', '4 tuần trước', '3 tuần trước', '2 tuần trước', 'Hiện tại'];
         const counts = data.map(item => item.count);
@@ -237,7 +237,7 @@ const Test = () => {
           labels,
           datasets: [
             {
-              label: 'Tổng số lượng buổi điểm danh trong 5 tuần gần đây',
+              label: 'Tổng số lượt điểm danh',
               backgroundColor: '#FF9900',
               borderColor: '#FF9900',
               data: counts,
@@ -252,9 +252,9 @@ const Test = () => {
     const fetchBarData = async () => {
       try {
         const response = await axios.get('/api/admin/thongke-soluong-diemdanh-faceid/fiveweeks');
-        const data = response.data;
+        const data = response.data.reverse();
 
-        const labels = ['Hiện tại', '2 tuần trước', '3 tuần trước', '4 tuần trước', '5 tuần trước'];
+        const labels = ['Hiện tại', '2 tuần trước', '3 tuần trước', '4 tuần trước', '5 tuần trước'].reverse();
         const counts = data.map(item => item.count);
 
         setBarData({
@@ -337,7 +337,7 @@ const Test = () => {
   const handleTermFilterChange = (event) => {
     setTermFilter(event.target.value);
   };
-
+// Biểu dồ 3
   const stackedBarOptions = {
     indexAxis: 'y', // This makes the bar chart horizontal
     scales: {
@@ -386,22 +386,27 @@ const Test = () => {
         <div className="col-lg-6">
           <div className="card">
             <div className="card-body">
-              <Line 
-                data={lineData} 
-                options={{
-                  scales: {
-                    x: { ticks: { color: '#000000' } },
-                    y: { ticks: { color: '#000000' } }
-                  },
-                  plugins: {
-                    legend: { labels: { color: '#000000' } },
-                    tooltip: { 
-                      titleColor: '#FFFFFF', 
-                      bodyColor: '#FFFFFF',
-                      backgroundColor: '#000000',
-                      borderColor: '#FFFFFF', 
-                      borderWidth: 1 // Viền trắng để làm rõ tooltip
-                    }
+            <Line 
+                    data={lineData} 
+                    options={{
+                      scales: {
+                        x: { ticks: { color: '#000000' } },
+                        y: { ticks: { color: '#000000' } }
+                      },
+                      plugins: {
+                        legend: { 
+                          labels: { 
+                            color: '#000000',
+                            font: { size: 13}, // Làm tiêu đề biểu đồ 1
+                          } 
+                        },
+                        tooltip: { 
+                          titleColor: '#FFFFFF', 
+                          bodyColor: '#FFFFFF',
+                          backgroundColor: '#000000',
+                          borderColor: '#FFFFFF', 
+                          borderWidth: 1 
+                        }
                     
                   }
                 }} 
@@ -426,13 +431,18 @@ const Test = () => {
             y: { ticks: { color: '#000000' } }
           },
           plugins: {
-            legend: { labels: { color: '#000000' } },
+            legend: { 
+              labels: { 
+                color: '#000000',
+                font: { size: 13}, // Làm tiêu đề biểu đồ 2
+              } 
+            },
             tooltip: { 
               titleColor: '#FFFFFF', 
               bodyColor: '#FFFFFF',
               backgroundColor: '#000000',
               borderColor: '#FFFFFF', 
-              borderWidth: 1 // Viền trắng để làm rõ tooltip
+              borderWidth: 1 
             }
             
           }
@@ -449,7 +459,7 @@ const Test = () => {
         <div className="card">
           <div className="card-header">
             <h3 className="card-title">Top các lớp học phần có số lượng sv vắng học nhiều</h3>
-            <div className="card-tools">
+            <div className="card-tools" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <div className="input-group input-group-sm" style={{ width: '200px' }}>
                 <select className="form-control" value={filter} onChange={handleFilterChange}>
                   <option value="top10">Top 10</option>

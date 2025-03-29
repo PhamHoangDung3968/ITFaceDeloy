@@ -281,15 +281,15 @@ const handleAttendanceClick = async (studentId, date) => {
 
     lessons.forEach(lesson => {
       if (lesson === '1-3' && ((currentHour >= 7 && currentHour < 9) || (currentHour === 9 && currentMinute <= 30))) {
-        status = "Có mặt";
+        status = "Hỗ trợ";
       } else if (lesson === '4-6' && ((currentHour >= 9 && currentMinute >= 35 && currentHour < 12) || (currentHour === 12 && currentMinute <= 0))) {
-        status = "Có mặt";
+        status = "Hỗ trợ";
       } else if (lesson === '7-9' && ((currentHour >= 13 && currentHour < 15) || (currentHour === 15 && currentMinute <= 30))) {
-        status = "Có mặt";
+        status = "Hỗ trợ";
       } else if (lesson === '10-12' && ((currentHour >= 15 && currentMinute >= 35 && currentHour < 18) || (currentHour === 18 && currentMinute <= 0))) {
-        status = "Có mặt";
+        status = "Hỗ trợ";
       } else if (lesson === '13-15' && ((currentHour >= 18 && currentHour < 20) || (currentHour === 20 && currentMinute <= 30))) {
-        status = "Có mặt";
+        status = "Hỗ trợ";
       }
     });
   }

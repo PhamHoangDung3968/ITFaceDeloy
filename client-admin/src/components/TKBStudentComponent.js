@@ -137,25 +137,6 @@ class TKBStudent extends Component {
     this.setState({ showModal: false, selectedUser: null, selectedSubject: null, modalMessage: '' });
   };
 
-  // toggleScanner = () => {
-  //   this.setState(prevState => ({ showScanner: !prevState.showScanner }));
-  // };
-  
-  // handleScan = (data) => {
-  //   if (data) {
-  //     this.setState({ scanResult: data.text, showScanner: false });
-  //   }
-  // };
-
-  // handleError = (err) => {
-  //   console.error(err);
-  // };
-  
-  // switchCamera = () => {
-  //   this.setState(prevState => ({
-  //     facingMode: prevState.facingMode === 'environment' ? 'user' : 'environment'
-  //   }));
-  // };
   toggleScanner = () => {
     this.setState(prevState => ({ showScanner: !prevState.showScanner, showModal1: !prevState.showModal1 }));
   };
@@ -223,9 +204,7 @@ class TKBStudent extends Component {
                     <div style={{ fontSize: 'smaller', color: '#555' }}>{subject.subjecttermID.subjectID.subjectName}</div>
                   </div>
                 ))}
-              {/* {filteredsubjectterms.filter(subject => subject.schoolDay.includes(day) && subject.lesson.some(lesson => lessonToPeriod[lesson] === period)).length === 0 && (
-                <div>N/A</div>
-              )} */}
+              
             </td>
           ))}
         </tr>
@@ -322,28 +301,9 @@ class TKBStudent extends Component {
               </div>
             </div>
           )}
-          {/* {showScanner && (
-        <div>
-          <QrScanner
-            delay={300}
-            onError={this.handleError}
-            onScan={this.handleScan}
-            facingMode={facingMode}
-            style={{ width: '100%' }}
-          />
-          <button onClick={this.switchCamera} className="btn btn-secondary">
-            Chuyển đổi camera
-          </button>
-        </div>
-      )} */}
-      <button onClick={this.toggleScanner} className="btn btn-primary">
+      {/* <button onClick={this.toggleScanner} className="btn btn-primary">
         {showScanner ? 'Đóng máy quét' : 'Quét mã QR'}
-      </button>
-      {/* {scanResult && (
-        <div>
-          <p>Kết quả quét: <a href={scanResult} target="_blank" rel="noopener noreferrer">{scanResult}</a></p>
-        </div>
-      )} */}
+      </button> */}
       {showModal1 && (
         <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.7)' }}>
           <div className="modal-dialog">

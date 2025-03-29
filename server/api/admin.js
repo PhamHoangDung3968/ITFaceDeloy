@@ -1174,12 +1174,38 @@ router.get('/export-attendance/:classCode', async (req, res) => {
   }
 });
 
-router.get('/export-tk-teacher/:teacherID', async (req, res) => {
+// router.get('/export-tk-teacher/:teacherID', async (req, res) => {
+//   try {
+//       const { teacherID } = req.params; // Corrected parameter name
+
+//       // Export the class sections to an Excel buffer
+//       const buffer = await StatisticDAO.exportTKClassSectionsToExcel(teacherID);
+
+//       // Create a readable stream from the buffer
+//       const stream = new Readable();
+//       stream.push(buffer);
+//       stream.push(null);
+
+//       // Set headers and send the file
+//       res.setHeader('Content-Disposition', `attachment; filename=attendance_${teacherID}.xlsx`);
+//       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+//       stream.pipe(res);
+//   } catch (error) {
+//       console.error('Error exporting attendance:', error);
+//       res.status(500).json({ message: 'Error exporting attendance', error });
+//   }
+// });
+
+router.get('/export-tk-teacher/:teacherID/:termID/:classCode/:totalNullTimes', async (req, res) => {
   try {
-      const { teacherID } = req.params; // Corrected parameter name
+      const { teacherID, termID, classCode, totalNullTimes } = req.params;
 
       // Export the class sections to an Excel buffer
-      const buffer = await StatisticDAO.exportTKClassSectionsToExcel(teacherID);
+      const buffer = await StatisticDAO.exportTKClassSectionsToExcel(teacherID, termID, parseInt(totalNullTimes), classCode);
+
+      if (!buffer) {
+          return res.status(404).json({ message: 'No data found for the given criteria' });
+      }
 
       // Create a readable stream from the buffer
       const stream = new Readable();
@@ -1196,26 +1222,25 @@ router.get('/export-tk-teacher/:teacherID', async (req, res) => {
   }
 });
 
+// router.get('/export-tk-bcnk', async (req, res) => {
+//   try {
+//       // Export the class sections to an Excel buffer
+//       const buffer = await StatisticDAO.exportTKClassSectionsToExcelWithoutTeacherID();
 
-router.get('/export-tk-bcnk', async (req, res) => {
-  try {
-      // Export the class sections to an Excel buffer
-      const buffer = await StatisticDAO.exportTKClassSectionsToExcelWithoutTeacherID();
+//       // Create a readable stream from the buffer
+//       const stream = new Readable();
+//       stream.push(buffer);
+//       stream.push(null);
 
-      // Create a readable stream from the buffer
-      const stream = new Readable();
-      stream.push(buffer);
-      stream.push(null);
-
-      // Set headers and send the file
-      res.setHeader('Content-Disposition', 'attachment; filename=statistic_attendance.xlsx');
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      stream.pipe(res);
-  } catch (error) {
-      console.error('Error exporting attendance:', error);
-      res.status(500).json({ message: 'Error exporting attendance', error });
-  }
-});
+//       // Set headers and send the file
+//       res.setHeader('Content-Disposition', 'attachment; filename=statistic_attendance.xlsx');
+//       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+//       stream.pipe(res);
+//   } catch (error) {
+//       console.error('Error exporting attendance:', error);
+//       res.status(500).json({ message: 'Error exporting attendance', error });
+//   }
+// });
 
 //(Có thể sẽ bỏ)
 // router.get('/export-tk-average-participation', async (req, res) => {
@@ -1237,6 +1262,32 @@ router.get('/export-tk-bcnk', async (req, res) => {
 //       res.status(500).json({ message: 'Error exporting class sections', error });
 //   }
 // });
+
+router.get('/export-tk-bcnk/:termID/:classCode/:totalNullTimes', async (req, res) => {
+  try {
+      const { termID, classCode, totalNullTimes } = req.params;
+
+      // Export the class sections to an Excel buffer
+      const buffer = await StatisticDAO.exportTKClassSectionsToExcelWithoutTeacherID(termID, parseInt(totalNullTimes), classCode);
+
+      if (!buffer) {
+          return res.status(404).json({ message: 'No data found for the given criteria' });
+      }
+
+      // Create a readable stream from the buffer
+      const stream = new Readable();
+      stream.push(buffer);
+      stream.push(null);
+
+      // Set headers and send the file
+      res.setHeader('Content-Disposition', `attachment; filename=statistic_attendance_${classCode}_buoi${totalNullTimes}.xlsx`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      stream.pipe(res);
+  } catch (error) {
+      console.error('Error exporting attendance:', error);
+      res.status(500).json({ message: 'Error exporting attendance', error });
+  }
+});
 
 
 
@@ -1260,12 +1311,13 @@ router.get('/export-tk-average-absent', async (req, res) => {
   }
 });
 
-router.get('/export-tk-totallhp/:teacherID', async (req, res) => {
+router.get('/export-tk-totallhp/:teacherID/:termID', async (req, res) => {
   try {
       const teacherID = req.params.teacherID; // Lấy teacherID từ params
+      const termID = req.params.termID; // Lấy termID từ params
 
       // Export the class sections to an Excel buffer
-      const buffer = await StatisticDAO.exportClassSectionsAndDatesWithNonNullTimesToExcel(teacherID);
+      const buffer = await StatisticDAO.exportClassSectionsAndDatesWithNonNullTimesToExcel(teacherID, termID);
 
       // Create a readable stream from the buffer
       const stream = new Readable();
@@ -1282,10 +1334,16 @@ router.get('/export-tk-totallhp/:teacherID', async (req, res) => {
   }
 });
 
-router.get('/export-tk-bcnk-totallhp', async (req, res) => {
+router.get('/export-tk-bcnk-totallhp/:termID', async (req, res) => {
   try {
+      const termID = req.params.termID; // Lấy termID từ params
+
       // Export the class sections to an Excel buffer
-      const buffer = await StatisticDAO.exportAllClassSectionsAndDatesWithNonNullTimesToExcel();
+      const buffer = await StatisticDAO.exportAllClassSectionsAndDatesWithNonNullTimesToExcel(termID);
+
+      if (!buffer) {
+          return res.status(404).json({ message: 'No data found for the given termID' });
+      }
 
       // Create a readable stream from the buffer
       const stream = new Readable();
@@ -1309,7 +1367,7 @@ router.post('/register_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user registration...');
-    const response = await axios.post('https://03fb-2001-ee0-50f1-c470-19c-4e94-e6bc-b44.ngrok-free.app/api/register', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/register', { name, image });
 
     console.log('Received response from Python API:', response.data);
 
@@ -1334,7 +1392,7 @@ router.post('/re_register_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Gửi yêu cầu đến API Python để đăng ký lại người dùng...');
-    const response = await axios.post('https://03fb-2001-ee0-50f1-c470-19c-4e94-e6bc-b44.ngrok-free.app/api/re_register', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/re_register', { name, image });
 
     console.log('Nhận phản hồi từ API Python:', response.data);
 
@@ -1371,7 +1429,7 @@ router.post('/login_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user login...');
-    const response = await axios.post('https://03fb-2001-ee0-50f1-c470-19c-4e94-e6bc-b44.ngrok-free.app/api/login', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/login', { name, image });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1401,7 +1459,7 @@ router.post('/check_user', async (req, res) => {
     const { name } = req.body;
 
     console.log('Sending request to Python API to check user registration...');
-    const response = await axios.post('https://03fb-2001-ee0-50f1-c470-19c-4e94-e6bc-b44.ngrok-free.app/api/check_user', { name });
+    const response = await axios.post('http://127.0.0.1:5000/api/check_user', { name });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1427,7 +1485,7 @@ router.post('/check_user', async (req, res) => {
 router.get('/count_users_regist', async (req, res) => {
   try {
     console.log('Sending request to Python API to count pickle files...');
-    const response = await axios.get('https://03fb-2001-ee0-50f1-c470-19c-4e94-e6bc-b44.ngrok-free.app/api/count-pickle-files');
+    const response = await axios.get('http://127.0.0.1:5000/api/count-pickle-files');
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);

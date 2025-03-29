@@ -33,7 +33,6 @@ const Clause = () => {
       </section>
       <section className="content">
       <div class="card">
-      <div class="card">
   <div class="card-body">
     <h4 style={{ textAlign:'center' }}>Điều khoản sử dụng hình ảnh người dùng</h4>
     <p>
@@ -74,12 +73,17 @@ const Clause = () => {
     <p>
       Bằng việc sử dụng ứng dụng ITFace, bạn đồng ý với các điều khoản trên. Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua email hoặc số điện thoại được cung cấp trên trang web chính thức của ITFace. Chúng tôi luôn sẵn sàng hỗ trợ bạn.
     </p>
+    <hr></hr>
     <p>
-      <em>ITFace Team - Khoa Công nghệ Thông tin Trường Đại học Văn Lang</em>
+      <em>ITFace Team - Khoa Công nghệ Thông tin Trường Đại học Văn Lang <br></br></em>
+      <em>0919079192 - itface.vlu@gmail.com</em>
     </p>
+    
+      
+
   </div>
 </div>  
-            </div>
+            
       </section>
     </div>
   );

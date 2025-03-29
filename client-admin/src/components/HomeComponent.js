@@ -101,7 +101,6 @@ import '../dist/css/adminlte.min.css';
 import '../plugins/overlayScrollbars/css/OverlayScrollbars.min.css';
 import '../plugins/daterangepicker/daterangepicker.css';
 import '../plugins/summernote/summernote-bs4.min.css';
-import backgroundImage from '../dist/img/background1.jpg';
 import videobackground from '../dist/img/file.mp4';
 
 class Home extends Component {

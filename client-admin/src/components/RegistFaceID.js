@@ -662,7 +662,6 @@ class RegistFaceID extends Component {
             <div className="col-lg-6">
             <div className="card">
             <div className="card-body">
-            <h5><b>Chú ý:</b> Hình ảnh cá nhân của bạn được thu thập từ ITFace sẽ được bảo mật tuyệt đối và không sử dụng cho bất kỳ mục đích thương mại nào, cũng như không làm ảnh hưởng đến danh dự cá nhân của bạn.</h5>              
             {/* <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', height: '450px', marginTop: '10px' }}> */}
               <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', marginTop: '20px' }}>
 

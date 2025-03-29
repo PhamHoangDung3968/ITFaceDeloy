@@ -196,7 +196,7 @@ const Dashboard = () => {
               <div className="info-box mb-3">
                 <span className="info-box-icon bg-warning elevation-1"><i className="fas fa-clipboard-list"></i></span>
                 <div className="info-box-content">
-                  <span className="info-box-text">Số lượng SV điểm danh</span>
+                  <span className="info-box-text">SLSV đã được điểm danh</span>
                   <span className="info-box-number">{currentTermStudentCount} SV</span>
                 </div>
               </div>
@@ -216,7 +216,7 @@ const Dashboard = () => {
               <div className="info-box mb-3">
                 <span className="info-box-icon bg-secondary elevation-1"><i className="fas fa-grin-wink"></i></span>
                 <div className="info-box-content">
-                  <span className="info-box-text">Tổng SV đã dùng FaceID</span>
+                  <span className="info-box-text">Số lượt dùng Faceid</span>
                   <span className="info-box-number">{totalsuccessFaceIDStudents} SV</span>
                 </div>
               </div>

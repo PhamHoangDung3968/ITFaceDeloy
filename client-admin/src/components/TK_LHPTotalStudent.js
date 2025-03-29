@@ -61,29 +61,53 @@ class TK_LHPTotalStudent extends Component {
   handlePageClick = (data) => {
     this.setState({ currentPage: data.selected });
   };
-  handleTKExportAttendance = (teacherID) => {
-    const apiUrl = `/api/admin/export-tk-totallhp/${teacherID}`;
-    const fileName = `total_class_sections.xlsx`;
+  // handleTKExportAttendance = (teacherID) => {
+  //   const apiUrl = `/api/admin/export-tk-totallhp/${teacherID}`;
+  //   const fileName = `total_class_sections.xlsx`;
   
+  //   axios({
+  //     url: apiUrl,
+  //     method: 'GET',
+  //     responseType: 'blob',
+  //   })
+  //   .then((response) => {
+  //     const url = window.URL.createObjectURL(new Blob([response.data]));
+  //     const link = document.createElement('a');
+  //     link.href = url;
+  //     link.setAttribute('download', fileName);
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     link.remove();
+  //   })
+  //   .catch((error) => {
+  //     console.error('Error downloading the file:', error);
+  //   });
+  // };
+
+  handleTKExportAttendance = (teacherID, termID) => {
+    // Tìm tên học kỳ từ danh sách semesters
+    const semester = this.state.semesters.find(sem => sem._id === termID);
+    const semesterName = semester ? semester.term : 'unknown_term';
+    const apiUrl = `/api/admin/export-tk-totallhp/${teacherID}/${termID}`;
+    const fileName = `total_class_sections_${semesterName}.xlsx`;
+
     axios({
-      url: apiUrl,
-      method: 'GET',
-      responseType: 'blob',
+        url: apiUrl,
+        method: 'GET',
+        responseType: 'blob',
     })
     .then((response) => {
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        link.click();
+        link.remove();
     })
     .catch((error) => {
-      console.error('Error downloading the file:', error);
+        console.error('Error downloading the file:', error);
     });
-  };
-
+};
   render() {
     const { currentPage, subjectsPerPage, filteredUsers, semesters } = this.state;
     const offset = currentPage * subjectsPerPage;
@@ -125,13 +149,13 @@ class TK_LHPTotalStudent extends Component {
           <div className="card">
             <div className="card-header">
               <h3 className="card-title" style={{ float: 'right' }}>
-                <button
+              <button
                   type="submit"
-                  onClick={() => this.handleTKExportAttendance(this.props.userID)}
+                  onClick={() => this.handleTKExportAttendance(this.props.userID, this.state.selectedSemester)}
                   className="btn btn-success text-nowrap"
                   style={{ marginLeft: '210px', borderRadius: '4px', backgroundColor: '#009900', borderColor: '#009900' }}
                 >
-                  <i className="nav-icon fas fa-file-excel" onClick={() => this.handleTKExportAttendance(this.props.userID)}></i> Xuất excel
+                  <i className="nav-icon fas fa-file-excel"></i> Xuất excel
                 </button>
              </h3>
               <div className="card-tools" style={{ float: 'left' }}>

@@ -8,6 +8,8 @@ const ExcelJS = require('exceljs'); // Import the exceljs library
 const SubjectTerm = require('./SubjectTerm');
 const Term = require('./Term'); // Import mô hình Role
 const classsection = require('./Classsection'); // Import mô hình Classsection
+const path = require('path'); // Import thư viện path
+
 
 const StatisticDAO = {
     async getClassSectionsAndTotalDatesByStudentID(studentID) {
@@ -463,31 +465,121 @@ const StatisticDAO = {
     },
 
     
-    async exportTKClassSectionsToExcel(teacherID) {
+    // async exportTKClassSectionsToExcel(teacherID) {
+    //     try {
+    //         const classSections = await this.getClassSectionsAndTotalDatesByTeacherID(teacherID);
+    
+    //         const workbook = new ExcelJS.Workbook();
+    
+    //         classSections.forEach((classSection) => {
+    //             const worksheet = workbook.addWorksheet(classSection.classCode);
+    
+    //             // Add the merged header row
+    //             worksheet.mergeCells('A1', 'E1');
+    //             const headerCell = worksheet.getCell('A1');
+    //             headerCell.value = `${classSection.classCode} - ${classSection.subjectName}`;
+    //             headerCell.alignment = { horizontal: 'center' };
+    //             headerCell.font = { bold: true }; // Make the header bold
+    
+    //             // Add the column headers
+    //             const columnHeaders = ['STT', 'Email', 'Mã số SV', 'Họ tên', 'Tổng số buổi vắng'];
+    //             const headerRow = worksheet.addRow(columnHeaders);
+    //             headerRow.eachCell((cell) => {
+    //                 cell.font = { bold: true }; // Make the column headers bold
+    //             });
+    
+    //             // Add the student data with index
+    //             classSection.students.forEach((student, index) => {
+    //                 worksheet.addRow([
+    //                     index + 1, // STT
+    //                     student.email,
+    //                     student.usercode,
+    //                     student.fullName,
+    //                     student.totalNullTimes
+    //                 ]);
+    //             });
+    //         });
+    
+    //         const buffer = await workbook.xlsx.writeBuffer();
+    //         return buffer;
+    //     } catch (error) {
+    //         console.error('Error exporting class sections to Excel:', error);
+    //         throw error;
+    //     }
+    // },
+
+    async exportTKClassSectionsToExcel(teacherID, termID, totalNullTimes, classCode) {
         try {
+            // Lấy dữ liệu các lớp học phần theo teacherID và termID
             const classSections = await this.getClassSectionsAndTotalDatesByTeacherID(teacherID);
     
+            // Lọc dữ liệu theo termID, totalNullTimes và classCode
+            const filteredClassSections = classSections.filter(classSection => 
+                classSection.termID.toString() === termID &&
+                classSection.classCode === classCode &&
+                classSection.students.some(student => student.totalNullTimes === totalNullTimes)
+            );
+    
+            if (filteredClassSections.length === 0) {
+                console.log('No data found for the given criteria');
+                return null;
+            }
+    
             const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('ClassSection');
     
-            classSections.forEach((classSection) => {
-                const worksheet = workbook.addWorksheet(classSection.classCode);
+            const classSection = filteredClassSections[0];
     
-                // Add the merged header row
-                worksheet.mergeCells('A1', 'E1');
-                const headerCell = worksheet.getCell('A1');
-                headerCell.value = `${classSection.classCode} - ${classSection.subjectName}`;
-                headerCell.alignment = { horizontal: 'center' };
-                headerCell.font = { bold: true }; // Make the header bold
+            // Add the title rows
+            const titleRow1 = worksheet.addRow(['TRƯỜNG ĐẠI HỌC VĂN LANG']);
+            titleRow1.font = { bold: true, size: 16 };
+            titleRow1.alignment = { vertical: 'middle' };
+            worksheet.mergeCells('A1:E1');
     
-                // Add the column headers
-                const columnHeaders = ['STT', 'Email', 'Mã số SV', 'Họ tên', 'Tổng số buổi vắng'];
-                const headerRow = worksheet.addRow(columnHeaders);
-                headerRow.eachCell((cell) => {
-                    cell.font = { bold: true }; // Make the column headers bold
-                });
+            const titleRow2 = worksheet.addRow(['KHOA CÔNG NGHỆ THÔNG TIN']);
+            titleRow2.font = { bold: true, size: 16 };
+            titleRow2.alignment = { vertical: 'middle' };
+            worksheet.mergeCells('A2:E2');
     
-                // Add the student data with index
-                classSection.students.forEach((student, index) => {
+            // Add the logo
+            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png'); // Cập nhật đường dẫn chính xác đến file logo
+            const logo = workbook.addImage({
+                filename: logoPath,
+                extension: 'png',
+            });
+            worksheet.addImage(logo, 'F1:G5'); // Cố định logo ở 'F1:G5'
+    
+            // Add the merged header row
+            worksheet.mergeCells('A3:E3');
+            const headerCell = worksheet.getCell('A3');
+            headerCell.value = `${classSection.classCode} - ${classSection.subjectName}`;
+            headerCell.alignment = { horizontal: 'center' };
+            headerCell.font = { bold: true, size: 14 }; // Make the header bold and larger
+    
+            // Add the sub-header row
+            worksheet.mergeCells('A4:E4');
+            const subHeaderCell = worksheet.getCell('A4');
+            subHeaderCell.value = `DANH SÁCH SINH VIÊN VẮNG ${totalNullTimes} BUỔI`;
+            subHeaderCell.alignment = { horizontal: 'center' };
+            subHeaderCell.font = { bold: true, size: 14 }; // Make the sub-header bold and larger
+    
+            // Add the column headers
+            const columnHeaders = ['STT', 'Email', 'Mã số SV', 'Họ tên', 'Tổng số buổi vắng'];
+            const headerRow = worksheet.addRow(columnHeaders);
+            headerRow.eachCell((cell) => {
+                cell.font = { bold: true }; // Make the column headers bold
+            });
+    
+            // Set column widths
+            worksheet.getColumn(1).width = 5; // STT
+            worksheet.getColumn(2).width = 30; // Email
+            worksheet.getColumn(3).width = 15; // Mã số SV
+            worksheet.getColumn(4).width = 25; // Họ tên
+            worksheet.getColumn(5).width = 20; // Tổng số buổi vắng
+    
+            // Add the student data with index
+            classSection.students.forEach((student, index) => {
+                if (student.totalNullTimes === totalNullTimes) {
                     worksheet.addRow([
                         index + 1, // STT
                         student.email,
@@ -495,8 +587,19 @@ const StatisticDAO = {
                         student.fullName,
                         student.totalNullTimes
                     ]);
-                });
+                }
             });
+    
+            // Add the final rows with the date and signature
+            const finalRow1 = worksheet.addRow(['TP.Hồ Chí Minh, ngày   tháng    năm 2025']);
+            finalRow1.font = { italic: true };
+            finalRow1.alignment = { horizontal: 'right' };
+            worksheet.mergeCells(`A${finalRow1.number}:E${finalRow1.number}`);
+    
+            const finalRow2 = worksheet.addRow(['Người lập danh sách                ']);
+            finalRow2.font = { italic: true };
+            finalRow2.alignment = { horizontal: 'right' };
+            worksheet.mergeCells(`A${finalRow2.number}:E${finalRow2.number}`);
     
             const buffer = await workbook.xlsx.writeBuffer();
             return buffer;
@@ -570,10 +673,25 @@ const StatisticDAO = {
                 },
                 {
                     $addFields: {
+                        // totalDays: {
+                        //     $sum: {
+                        //         $map: {
+                        //             input: '$attendances',
+                        //             as: 'attendance',
+                        //             in: { $size: '$$attendance.attendanceRecords' }
+                        //         }
+                        //     }
+                        // }
                         totalDays: {
                             $sum: {
                                 $map: {
-                                    input: '$attendances',
+                                    input: {
+                                        $filter: {
+                                            input: '$attendances',
+                                            as: 'attendance',
+                                            cond: { $eq: ['$$attendance.studentclasssection', { $arrayElemAt: ['$studentClasses._id', 0] }] }
+                                        }
+                                    },
                                     as: 'attendance',
                                     in: { $size: '$$attendance.attendanceRecords' }
                                 }
@@ -642,31 +760,120 @@ const StatisticDAO = {
             throw error;
         }
     },
-    async exportTKClassSectionsToExcelWithoutTeacherID() {
+    // async exportTKClassSectionsToExcelWithoutTeacherID() {
+    //     try {
+    //         const classSections = await this.getClassSectionsAndTotalDates();
+    
+    //         const workbook = new ExcelJS.Workbook();
+    
+    //         classSections.forEach((classSection) => {
+    //             const worksheet = workbook.addWorksheet(classSection.classCode);
+    
+    //             // Add the merged header row
+    //             worksheet.mergeCells('A1', 'E1');
+    //             const headerCell = worksheet.getCell('A1');
+    //             headerCell.value = `${classSection.classCode} - ${classSection.subjectName}`;
+    //             headerCell.alignment = { horizontal: 'center' };
+    //             headerCell.font = { bold: true }; // Make the header bold
+    
+    //             // Add the column headers
+    //             const columnHeaders = ['STT', 'Email', 'Mã số SV', 'Họ tên', 'Tổng số buổi vắng'];
+    //             const headerRow = worksheet.addRow(columnHeaders);
+    //             headerRow.eachCell((cell) => {
+    //                 cell.font = { bold: true }; // Make the column headers bold
+    //             });
+    
+    //             // Add the student data with index
+    //             classSection.students.forEach((student, index) => {
+    //                 worksheet.addRow([
+    //                     index + 1, // STT
+    //                     student.email,
+    //                     student.usercode,
+    //                     student.fullName,
+    //                     student.totalNullTimes
+    //                 ]);
+    //             });
+    //         });
+    
+    //         const buffer = await workbook.xlsx.writeBuffer();
+    //         return buffer;
+    //     } catch (error) {
+    //         console.error('Error exporting class sections to Excel:', error);
+    //         throw error;
+    //     }
+    // },
+    async exportTKClassSectionsToExcelWithoutTeacherID(termID, totalNullTimes, classCode) {
         try {
+            // Lấy dữ liệu các lớp học phần
             const classSections = await this.getClassSectionsAndTotalDates();
     
+            // Lọc dữ liệu theo termID, totalNullTimes và classCode
+            const filteredClassSections = classSections.filter(classSection => 
+                classSection.termID.toString() === termID &&
+                classSection.classCode === classCode &&
+                classSection.students.some(student => student.totalNullTimes === totalNullTimes)
+            );
+    
+            if (filteredClassSections.length === 0) {
+                console.log('No data found for the given criteria');
+                return null;
+            }
+    
             const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('ClassSection');
     
-            classSections.forEach((classSection) => {
-                const worksheet = workbook.addWorksheet(classSection.classCode);
+            const classSection = filteredClassSections[0];
     
-                // Add the merged header row
-                worksheet.mergeCells('A1', 'E1');
-                const headerCell = worksheet.getCell('A1');
-                headerCell.value = `${classSection.classCode} - ${classSection.subjectName}`;
-                headerCell.alignment = { horizontal: 'center' };
-                headerCell.font = { bold: true }; // Make the header bold
+            // Add the title rows
+            const titleRow1 = worksheet.addRow(['TRƯỜNG ĐẠI HỌC VĂN LANG']);
+            titleRow1.font = { bold: true, size: 16 };
+            titleRow1.alignment = { vertical: 'middle' };
+            worksheet.mergeCells('A1:E1');
     
-                // Add the column headers
-                const columnHeaders = ['STT', 'Email', 'Mã số SV', 'Họ tên', 'Tổng số buổi vắng'];
-                const headerRow = worksheet.addRow(columnHeaders);
-                headerRow.eachCell((cell) => {
-                    cell.font = { bold: true }; // Make the column headers bold
-                });
+            const titleRow2 = worksheet.addRow(['KHOA CÔNG NGHỆ THÔNG TIN']);
+            titleRow2.font = { bold: true, size: 16 };
+            titleRow2.alignment = { vertical: 'middle' };
+            worksheet.mergeCells('A2:E2');
     
-                // Add the student data with index
-                classSection.students.forEach((student, index) => {
+            // Add the logo
+            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png'); // Cập nhật đường dẫn chính xác đến file logo
+            const logo = workbook.addImage({
+                filename: logoPath,
+                extension: 'png',
+            });
+            worksheet.addImage(logo, 'F1:G5'); // Cố định logo ở 'F1:G5'
+    
+            // Add the merged header row
+            worksheet.mergeCells('A3:E3');
+            const headerCell = worksheet.getCell('A3');
+            headerCell.value = `${classSection.classCode} - ${classSection.subjectName}`;
+            headerCell.alignment = { horizontal: 'center' };
+            headerCell.font = { bold: true, size: 14 }; // Make the header bold and larger
+    
+            // Add the sub-header row
+            worksheet.mergeCells('A4:E4');
+            const subHeaderCell = worksheet.getCell('A4');
+            subHeaderCell.value = `DANH SÁCH SINH VIÊN VẮNG ${totalNullTimes} BUỔI`;
+            subHeaderCell.alignment = { horizontal: 'center' };
+            subHeaderCell.font = { bold: true, size: 14 }; // Make the sub-header bold and larger
+    
+            // Add the column headers
+            const columnHeaders = ['STT', 'Email', 'Mã số SV', 'Họ tên', 'Tổng số buổi vắng'];
+            const headerRow = worksheet.addRow(columnHeaders);
+            headerRow.eachCell((cell) => {
+                cell.font = { bold: true }; // Make the column headers bold
+            });
+    
+            // Set column widths
+            worksheet.getColumn(1).width = 5; // STT
+            worksheet.getColumn(2).width = 30; // Email
+            worksheet.getColumn(3).width = 15; // Mã số SV
+            worksheet.getColumn(4).width = 25; // Họ tên
+            worksheet.getColumn(5).width = 20; // Tổng số buổi vắng
+    
+            // Add the student data with index
+            classSection.students.forEach((student, index) => {
+                if (student.totalNullTimes === totalNullTimes) {
                     worksheet.addRow([
                         index + 1, // STT
                         student.email,
@@ -674,8 +881,19 @@ const StatisticDAO = {
                         student.fullName,
                         student.totalNullTimes
                     ]);
-                });
+                }
             });
+    
+            // Add the final rows with the date and signature
+            const finalRow1 = worksheet.addRow(['TP.Hồ Chí Minh, ngày   tháng    năm 2025']);
+            finalRow1.font = { italic: true };
+            finalRow1.alignment = { horizontal: 'right' };
+            worksheet.mergeCells(`A${finalRow1.number}:E${finalRow1.number}`);
+    
+            const finalRow2 = worksheet.addRow(['Người lập danh sách                ']);
+            finalRow2.font = { italic: true };
+            finalRow2.alignment = { horizontal: 'right' };
+            worksheet.mergeCells(`A${finalRow2.number}:E${finalRow2.number}`);
     
             const buffer = await workbook.xlsx.writeBuffer();
             return buffer;
@@ -993,13 +1211,101 @@ const StatisticDAO = {
     //         throw error;
     //     }
     // },
+    // async exportClassSectionsAndDatesWithNonNullTimesToExcel(teacherID) {
+    //     try {
+    //         const classSections = await this.getClassSectionsAndDatesWithNonNullTimesByTeacherID(teacherID);
+    
+    //         const workbook = new ExcelJS.Workbook();
+    //         const worksheet = workbook.addWorksheet('ClassSections');
+    
+    //         // Add the column headers
+    //         const columnHeaders = [
+    //             'STT', 'Mã lớp học phần', 'Tên lớp học phần', 
+    //             ...Array.from({ length: 15 }, (_, i) => `Buổi ${i + 1}`), 
+    //             'Tổng số sinh viên'
+    //         ];
+    //         const headerRow = worksheet.addRow(columnHeaders);
+    //         headerRow.eachCell((cell) => {
+    //             cell.font = { bold: true }; // Make the column headers bold
+    //         });
+    
+    //         // Add the class section data
+    //         classSections.forEach((classSection, index) => {
+    //             const rowData = [
+    //                 index + 1, // STT
+    //                 classSection.classCode,
+    //                 classSection.subjectName,
+    //                 ...Array.from({ length: 15 }, (_, i) => {
+    //                     const dateWithNonNullTimes = classSection.datesWithNonNullTimes[i];
+    //                     return dateWithNonNullTimes ? dateWithNonNullTimes.nonNullTimesCount : '';
+    //                 }),
+    //                 classSection.totalStudents
+    //             ];
+    //             worksheet.addRow(rowData);
+    //         });
+    
+    //         const buffer = await workbook.xlsx.writeBuffer();
+    //         return buffer;
+    //     } catch (error) {
+    //         console.error('Error exporting class sections and dates with non-null times to Excel:', error);
+    //         throw error;
+    //     }
+    // },
 
-    async exportClassSectionsAndDatesWithNonNullTimesToExcel(teacherID) {
+    async exportClassSectionsAndDatesWithNonNullTimesToExcel(teacherID, termID) {
         try {
+            // Truy vấn termID để lấy thông tin term
+            const term = await Term.findById(termID).select('term').lean();
+            if (!term) {
+                throw new Error('Term not found');
+            }
+    
+            // Lấy dữ liệu các lớp học phần theo teacherID
             const classSections = await this.getClassSectionsAndDatesWithNonNullTimesByTeacherID(teacherID);
+    
+            // Lọc dữ liệu theo termID
+            const filteredClassSections = classSections.filter(classSection => classSection.termID.toString() === termID);
+    
+            if (filteredClassSections.length === 0) {
+                console.log('No data found for the given termID');
+                return null;
+            }
     
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('ClassSections');
+    
+            // Add the title rows
+            const titleRow1 = worksheet.addRow(['TRƯỜNG ĐẠI HỌC VĂN LANG']);
+            titleRow1.font = { bold: true, size: 16 };
+            titleRow1.alignment = { vertical: 'middle' };
+            worksheet.mergeCells('A1:Q1');
+    
+            const titleRow2 = worksheet.addRow(['KHOA CÔNG NGHỆ THÔNG TIN']);
+            titleRow2.font = { bold: true, size: 16 };
+            titleRow2.alignment = { vertical: 'middle' };
+            worksheet.mergeCells('A2:Q2');
+    
+            // Add the logo
+            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png'); // Cập nhật đường dẫn chính xác đến file logo
+            const logo = workbook.addImage({
+                filename: logoPath,
+                extension: 'png',
+            });
+            worksheet.addImage(logo, 'F1:G5'); // Cố định logo ở 'F1:G5'
+    
+            // Add the statistics title row
+            const statsTitleRow = worksheet.addRow(['SỐ LƯỢNG SINH VIÊN TỪNG BUỔI']);
+            statsTitleRow.font = { bold: true, size: 14 };
+            statsTitleRow.alignment = { vertical: 'middle', horizontal: 'center' };
+            worksheet.mergeCells('A7:S7');
+    
+            // Add the term row
+            const termRow = worksheet.addRow([`Học kỳ: ${term.term}`]);
+            termRow.font = { bold: true, size: 14 };
+            termRow.alignment = { vertical: 'middle', horizontal: 'center' };
+            worksheet.mergeCells('A8:S8');
+            worksheet.addRow([]);
+    
             // Add the column headers
             const columnHeaders = [
                 'STT', 'Mã lớp học phần', 'Tên lớp học phần', 
@@ -1008,22 +1314,40 @@ const StatisticDAO = {
             ];
             const headerRow = worksheet.addRow(columnHeaders);
             headerRow.eachCell((cell) => {
-                cell.font = { bold: true }; // Make the column headers bold
+                cell.font = { bold: true }; // Làm đậm tiêu đề cột
             });
+    
+            // Set column widths
+            const columnWidths = [10, 22, 50, ...Array(15).fill(7), 20];
+            worksheet.columns.forEach((column, index) => {
+                column.width = columnWidths[index];
+            });
+    
             // Add the class section data
-            classSections.forEach((classSection, index) => {
+            filteredClassSections.forEach((classSection, index) => {
                 const rowData = [
                     index + 1, // STT
                     classSection.classCode,
                     classSection.subjectName,
                     ...Array.from({ length: 15 }, (_, i) => {
-                    const dateWithNonNullTimes = classSection.datesWithNonNullTimes[i];
+                        const dateWithNonNullTimes = classSection.datesWithNonNullTimes[i];
                         return dateWithNonNullTimes ? dateWithNonNullTimes.nonNullTimesCount : '';
                     }),
                     classSection.totalStudents
                 ];
                 worksheet.addRow(rowData);
             });
+    
+            // Add the final rows with the date and signature
+            const finalRow1 = worksheet.addRow(['TP.Hồ Chí Minh, ngày   tháng    năm 2025']);
+            finalRow1.font = { italic: true };
+            finalRow1.alignment = { horizontal: 'right' };
+            worksheet.mergeCells(`A${finalRow1.number}:S${finalRow1.number}`);
+    
+            const finalRow2 = worksheet.addRow(['Người lập danh sách                ']);
+            finalRow2.font = { italic: true };
+            finalRow2.alignment = { horizontal: 'right' };
+            worksheet.mergeCells(`A${finalRow2.number}:S${finalRow2.number}`);
     
             const buffer = await workbook.xlsx.writeBuffer();
             return buffer;
@@ -1032,6 +1356,7 @@ const StatisticDAO = {
             throw error;
         }
     },
+
 
 
     async getAllClassSectionsAndDatesWithNonNullTimes() {
@@ -1270,27 +1595,115 @@ const StatisticDAO = {
             throw error;
         }
     },
-    async exportAllClassSectionsAndDatesWithNonNullTimesToExcel() {
-        try {
-            const classSections = await this.getAllClassSectionsAndDatesWithNonNullTimes();
 
+    // async exportAllClassSectionsAndDatesWithNonNullTimesToExcel() {
+    //     try {
+    //         const classSections = await this.getAllClassSectionsAndDatesWithNonNullTimes();
+
+    //         const workbook = new ExcelJS.Workbook();
+    //         const worksheet = workbook.addWorksheet('ClassSections');
+
+    //         // Add the column headers
+    //         const columnHeaders = [
+    //             'STT', 'Mã lớp học phần', 'Tên lớp học phần', 'Tổng SLSV', 'SLSV tham gia TB'
+    //         ];
+    //         const headerRow = worksheet.addRow(columnHeaders);
+    //         headerRow.eachCell((cell) => {
+    //             cell.font = { bold: true }; // Make the column headers bold
+    //         });
+
+    //         // Add the class section data
+    //         classSections.forEach((classSection, index) => {
+    //             const totalNonNullTimesCount = classSection.datesWithNonNullTimes.reduce((sum, record) => sum + record.nonNullTimesCount, 0);
+    //             const averageNonNullTimesCount = classSection.datesWithNonNullTimes.length > 0 ? (totalNonNullTimesCount / classSection.datesWithNonNullTimes.length).toFixed(2) : 'Chưa có dữ liệu';
+
+    //             const rowData = [
+    //                 index + 1, // STT
+    //                 classSection.classCode,
+    //                 classSection.subjectName,
+    //                 classSection.totalStudents,
+    //                 averageNonNullTimesCount
+    //             ];
+    //             worksheet.addRow(rowData);
+    //         });
+
+    //         const buffer = await workbook.xlsx.writeBuffer();
+    //         return buffer;
+    //     } catch (error) {
+    //         console.error('Error exporting class sections and dates with non-null times to Excel:', error);
+    //         throw error;
+    //     }
+    // },
+
+    async exportAllClassSectionsAndDatesWithNonNullTimesToExcel(termID) {
+        try {
+            // Truy vấn termID để lấy thông tin term
+            const term = await Term.findById(termID).select('term').lean();
+            if (!term) {
+                throw new Error('Term not found');
+            }
+    
+            // Lấy dữ liệu các lớp học phần theo termID
+            const classSections = await this.getAllClassSectionsAndDatesWithNonNullTimes();
+    
+            // Lọc dữ liệu theo termID
+            const filteredClassSections = classSections.filter(classSection => classSection.termID.toString() === termID);
+    
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('ClassSections');
-
+    
+            // Add the title rows
+            const titleRow1 = worksheet.addRow(['TRƯỜNG ĐẠI HỌC VĂN LANG']);
+            titleRow1.font = { bold: true, size: 16 };
+            titleRow1.alignment = { vertical: 'middle' };
+            worksheet.mergeCells('A1:E1');
+    
+            const titleRow2 = worksheet.addRow(['KHOA CÔNG NGHỆ THÔNG TIN']);
+            titleRow2.font = { bold: true, size: 16 };
+            titleRow2.alignment = { vertical: 'middle' };
+            worksheet.mergeCells('A2:E2');
+    
+            // Add the logo
+            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png'); // Cập nhật đường dẫn chính xác đến file logo
+            const logo = workbook.addImage({
+                filename: logoPath,
+                extension: 'png',
+            });
+            worksheet.addImage(logo, 'F1:G5'); // Phóng to logo
+    
+            // Add the statistics title row
+            const statsTitleRow = worksheet.addRow(['THỐNG KÊ SỐ LƯỢNG SINH VIÊN THAM GIA']);
+            statsTitleRow.font = { bold: true, size: 14 };
+            statsTitleRow.alignment = { vertical: 'middle', horizontal: 'center' };
+            worksheet.mergeCells('A7:E7');
+    
+            // Add the term row
+            const termRow = worksheet.addRow([`Học kỳ: ${term.term}`]);
+            termRow.font = { bold: true, size: 14 };
+            termRow.alignment = { vertical: 'middle', horizontal: 'center' };
+            worksheet.mergeCells('A8:E8');
+            worksheet.addRow([]);
+    
             // Add the column headers
             const columnHeaders = [
-                'STT', 'Mã lớp học phần', 'Tên lớp học phần', 'Tổng số sinh viên', 'Số lượng SV tham gia trung bình'
+                'STT', 'Mã lớp học phần', 'Tên lớp học phần', 'Tổng SLSV', 'SLSV tham gia TB'
             ];
             const headerRow = worksheet.addRow(columnHeaders);
             headerRow.eachCell((cell) => {
                 cell.font = { bold: true }; // Make the column headers bold
             });
-
+    
+            // Set column widths
+            const columnWidths = [10, 22, 50, 15, 20];
+            worksheet.columns.forEach((column, index) => {
+                column.width = columnWidths[index];
+            });
+    
             // Add the class section data
-            classSections.forEach((classSection, index) => {
+            filteredClassSections.forEach((classSection, index) => {
                 const totalNonNullTimesCount = classSection.datesWithNonNullTimes.reduce((sum, record) => sum + record.nonNullTimesCount, 0);
                 const averageNonNullTimesCount = classSection.datesWithNonNullTimes.length > 0 ? (totalNonNullTimesCount / classSection.datesWithNonNullTimes.length).toFixed(2) : 'Chưa có dữ liệu';
-
+    
                 const rowData = [
                     index + 1, // STT
                     classSection.classCode,
@@ -1300,7 +1713,18 @@ const StatisticDAO = {
                 ];
                 worksheet.addRow(rowData);
             });
-
+    
+            // Add the final rows with the date and signature
+            const finalRow1 = worksheet.addRow(['TP.Hồ Chí Minh, ngày   tháng    năm 2025']);
+            finalRow1.font = { italic: true };
+            finalRow1.alignment = { horizontal: 'right' };
+            worksheet.mergeCells(`A${finalRow1.number}:E${finalRow1.number}`);
+    
+            const finalRow2 = worksheet.addRow(['Người lập danh sách                ']);
+            finalRow2.font = { italic: true };
+            finalRow2.alignment = { horizontal: 'right' };
+            worksheet.mergeCells(`A${finalRow2.number}:E${finalRow2.number}`);
+    
             const buffer = await workbook.xlsx.writeBuffer();
             return buffer;
         } catch (error) {
@@ -1308,8 +1732,6 @@ const StatisticDAO = {
             throw error;
         }
     },
-
-
 
 
 

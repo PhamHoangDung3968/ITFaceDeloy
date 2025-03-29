@@ -6,7 +6,10 @@ const Classsection = require('./Classsection'); // Import mô hình Classsection
 const { populate } = require('./Role');
 const Attendance = require('./Attendance');
 const XLSX = require('xlsx');
+const ExcelJS = require('exceljs'); // Import the exceljs library
 const { Readable } = require('stream');
+const path = require('path'); // Import thư viện path
+
 
 
 
@@ -1114,6 +1117,90 @@ async getAttendanceStatus(classCode, studentId, date) {
 //   }
 // }
 
+// async exportAttendanceToExcel(classCode) {
+//   try {
+//       // Find classSection based on classCode
+//       const classSection = await Classsection.findOne({ classCode: classCode });
+//       if (!classSection) {
+//           throw new Error('Class section not found');
+//       }
+
+//       // Find all studentClass entries for the classSection
+//       const studentClasses = await studentClass.find({ classsectionID: classSection._id }).populate('studentID');
+
+//       // Prepare data for the Excel file
+//       const data = [];
+//       const headers = [
+//           'STT', 'Mã SV', 'Họ và tên', 'Email'
+//       ];
+
+//       const allDates = new Set();
+//       for (const studentClassEntry of studentClasses) {
+//           const attendance = await Attendance.findOne({ studentclasssection: studentClassEntry._id });
+//           if (attendance) {
+//               attendance.attendanceRecords.forEach(record => {
+//                   allDates.add(record.date.toISOString().split('T')[0]);
+//               });
+//           }
+//       }
+
+//       // Sort dates
+//       const sortedDates = Array.from(allDates).sort();
+//       headers.push(...sortedDates);
+
+//       // Prepare student data
+//       let index = 1;
+//       for (const studentClassEntry of studentClasses) {
+//           const user = studentClassEntry.studentID;
+//           const attendance = await Attendance.findOne({ studentclasssection: studentClassEntry._id });
+
+//           const rowData = {
+//               STT: index++,
+//               'Mã SV': user.userCode || '',
+//               'Họ và tên': user.fullName || '',
+//               'Email': user.email
+//           };
+
+//           // Add attendance data
+//           if (attendance) {
+//               sortedDates.forEach(date => {
+//                   const record = attendance.attendanceRecords.find(record => record.date.toISOString().split('T')[0] === date);
+//                   rowData[date] = record ? record.status : '';
+//               });
+//           } else {
+//               sortedDates.forEach(date => {
+//                   rowData[date] = '';
+//               });
+//           }
+
+//           data.push(rowData);
+//       }
+
+//       // Create a new workbook and worksheet
+//       const workbook = XLSX.utils.book_new();
+//       const worksheet = XLSX.utils.json_to_sheet(data, { header: headers });
+
+//       // Apply bold style to the header row
+//       const range = XLSX.utils.decode_range(worksheet['!ref']);
+//       for (let C = range.s.c; C <= range.e.c; ++C) {
+//           const cell_address = XLSX.utils.encode_cell({ r: 0, c: C });
+//           if (!worksheet[cell_address]) continue;
+//           if (!worksheet[cell_address].s) worksheet[cell_address].s = {};
+//           worksheet[cell_address].s.font = { bold: true };
+//       }
+
+//       // Append the worksheet to the workbook
+//       XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
+
+//       // Write the workbook to a buffer
+//       const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
+
+//       return buffer;
+//   } catch (error) {
+//       console.error('Error exporting attendance to Excel:', error);
+//       throw error;
+//   }
+// },
 async exportAttendanceToExcel(classCode) {
   try {
       // Find classSection based on classCode
@@ -1174,30 +1261,71 @@ async exportAttendanceToExcel(classCode) {
       }
 
       // Create a new workbook and worksheet
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(data, { header: headers });
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Attendance');
 
-      // Apply bold style to the header row
-      const range = XLSX.utils.decode_range(worksheet['!ref']);
-      for (let C = range.s.c; C <= range.e.c; ++C) {
-          const cell_address = XLSX.utils.encode_cell({ r: 0, c: C });
-          if (!worksheet[cell_address]) continue;
-          if (!worksheet[cell_address].s) worksheet[cell_address].s = {};
-          worksheet[cell_address].s.font = { bold: true };
-      }
+      // Add the title rows
+      const titleRow1 = worksheet.addRow(['TRƯỜNG ĐẠI HỌC VĂN LANG']);
+      titleRow1.font = { bold: true, size: 16 };
+      titleRow1.alignment = { vertical: 'middle' };
+      worksheet.mergeCells('A1:Q1');
 
-      // Append the worksheet to the workbook
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
+      const titleRow2 = worksheet.addRow(['KHOA CÔNG NGHỆ THÔNG TIN']);
+      titleRow2.font = { bold: true, size: 16 };
+      titleRow2.alignment = { vertical: 'middle' };
+      worksheet.mergeCells('A2:Q2');
 
-      // Write the workbook to a buffer
-      const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
+      // Add the logo
+      const logoPath = path.join(__dirname, '../uploads/logovanlang1.png'); // Cập nhật đường dẫn chính xác đến file logo
+      const logo = workbook.addImage({
+          filename: logoPath,
+          extension: 'png',
+      });
+      worksheet.addImage(logo, 'E1:E5'); // Cố định logo ở 'F1:G5'
 
+      // Add the statistics title row
+      const statsTitleRow = worksheet.addRow(['SỐ LƯỢNG SINH VIÊN TỪNG BUỔI']);
+      statsTitleRow.font = { bold: true, size: 14 };
+      statsTitleRow.alignment = { vertical: 'middle', horizontal: 'center' };
+      worksheet.mergeCells('A7:N7');
+
+      worksheet.addRow([]);
+
+      // Add the column headers
+      const headerRow = worksheet.addRow(headers);
+      headerRow.eachCell((cell) => {
+          cell.font = { bold: true }; // Làm đậm tiêu đề cột
+      });
+
+      // Set column widths
+      const columnWidths = [5, 15, 22, 30, ...Array(sortedDates.length).fill(15)];
+      worksheet.columns.forEach((column, index) => {
+          column.width = columnWidths[index];
+      });
+
+      // Add the student data
+      data.forEach((rowData) => {
+          worksheet.addRow(Object.values(rowData));
+      });
+
+      // Add the final rows with the date and signature
+      const finalRow1 = worksheet.addRow(['TP.Hồ Chí Minh, ngày   tháng    năm 2025']);
+      finalRow1.font = { italic: true };
+      finalRow1.alignment = { horizontal: 'right' };
+      worksheet.mergeCells(`A${finalRow1.number}:N${finalRow1.number}`);
+
+      const finalRow2 = worksheet.addRow(['Người lập danh sách                ']);
+      finalRow2.font = { italic: true };
+      finalRow2.alignment = { horizontal: 'right' };
+      worksheet.mergeCells(`A${finalRow2.number}:N${finalRow2.number}`);
+
+      const buffer = await workbook.xlsx.writeBuffer();
       return buffer;
   } catch (error) {
       console.error('Error exporting attendance to Excel:', error);
       throw error;
   }
-},
+}
 
 };
 module.exports = studentClassDAO;

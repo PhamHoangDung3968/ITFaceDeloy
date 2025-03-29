@@ -4,8 +4,8 @@ const MyConstants = {
   DB_USER : 'itachivssasuke70',
   DB_PASS : 'dung123456',
   DB_DATABASE : 'StudentAttendance_FaceID',
-  EMAIL_USER : 'karatedocutetyteo@gmail.com', // Microsoft mail service
-  EMAIL_PASS : 'imxe hvrj uutt mium',
+  EMAIL_USER : 'itface.vlu@gmail.com', // Microsoft mail service
+  EMAIL_PASS : 'niuj jquw gpdb xmlv',
   JWT_SECRET : 'dung123456',
   JWT_EXPIRES : 60 * 60 * 1000, // in milliseconds
   };

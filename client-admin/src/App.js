@@ -1,22 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+
 import { Routes, Route, BrowserRouter, Link, useLocation, Navigate } from 'react-router-dom';
 import logo from "./dist/img/logoIT.png"
 import sidebarback from "./dist/img/sidebarbackground.jpg"
 import DangNhap from './components/DangNhapComponent';
-import Role from './components/RoleComponent';
 import User from './components/UserComponent';
 import Student from './components/StudentComponent';
 import Home from './components/HomeComponent';
 import Profile from './components/Profile';
-import Semester_major from './components/semester_major';
-import AddMajor from './components/Major_Add';
-import EditMajor from './components/Major_Edit';
-import AddTerm from './components/Term_Add';
-import EditTerm from './components/Term_Edit';
 import Subject from './components/SubjectComponent';
-import AddSubject from './components/Subject_Add';
-import EditSubject from './components/Subject_Edit';
 import SubjectRegistration from './components/subjectRegistrationComponent';
 import SubjectRegistrationDetail from './components/subjectRegistration_Detail';
 import Classsection from './components/ClasssectionComponent';
@@ -25,7 +18,6 @@ import Term from './components/TermComponent';
 import Major from './components/MajorComponent';
 import ClassSectionDetail from './components/ClasssectionDetail';
 import TKB from './components/TKBComponent';
-import Test from './components/test';
 import Attendance from './components/AttendanceComponent';
 import TKBStudent from './components/TKBStudentComponent';
 import AttendanceStudent from './components/AttendanceStudentComponent';
@@ -39,7 +31,8 @@ import TK_StudenAttendance from './components/TK_StudentAttendance';
 import TK_StudentClassections from './components/TK_StudentClassections';
 import TK_LHPTotalStudent from './components/TK_LHPTotalStudent';
 import Dashboard from './components/dashboard';
-
+//Scanner
+import { BrowserMultiFormatReader } from '@zxing/library';
 import './dist/css/adminlte.min.css';
 import './plugins/icheck-bootstrap/icheck-bootstrap.min.css';
 import './plugins/fontawesome-free/css/all.min.css';
@@ -69,6 +62,10 @@ const App = () => {
   const [isUserManagementMenuOpen, setIsUserManagementMenuOpen] = useState(false);
   const [isStatisticMenuOpen, setIsStatisticMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  //Scanner
+  const [showScanner, setShowScanner] = useState(false);
+  const [showModal1, setShowModal1] = useState(false);
+  const [scanResult, setScanResult] = useState('');
 
   const handleLogin = () => {
     window.location.href = 'https://itface.onrender.com/auth/microsoft';
@@ -153,21 +150,12 @@ const App = () => {
       { path: '/admin/profile', element: <Profile userRole={user?.role} userID={user?._id} /> },
       { path: '/admin/user', element: <User userRole={user?.role} /> },
       { path: '/admin/user/student', element: <Student /> },
-      { path: '/admin/semester_major', element: <Semester_major /> },
-      { path: '/admin/major/add', element: <AddMajor /> },
-      { path: '/admin/major/edit/:id', element: <EditMajor /> },
-      { path: '/admin/term/add', element: <AddTerm /> },
-      { path: '/admin/term/edit/:id', element: <EditTerm /> },
       { path: '/admin/subject', element: <Subject userRole={user?.role} /> }, // Pass userRole as prop
-      { path: '/admin/subject/add', element: <AddSubject /> },
-      { path: '/admin/subject/edit/:id', element: <EditSubject /> },
       { path: '/admin/subjectregistration', element: <SubjectRegistration userRole={user?.role} /> },
       { path: '/admin/subjectregistration/:subjecttermID', element: <SubjectRegistrationDetail userRole={user?.role} /> },
       { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
       { path: '/admin/classsections/:subjecttermID', element: <Classsection userRole={user?.role} /> }, // Pass userRole as prop
-      { path: '/admin/role', element: <Role /> },
       { path: '/admin/tkb', element: <TKB userRole={user?.role} userID={user?._id} /> }, // Pass userRole and userID as props
-      { path: '/admin/test', element: <Test/> },
       { path: '/admin/term', element: <Term userRole={user?.role}/> },
       { path: '/admin/major', element: <Major userRole={user?.role}/> },
       { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> },
@@ -185,13 +173,11 @@ const App = () => {
       { path: '/admin/profile', element: <Profile userRole={user?.role} userID={user?._id} /> },
       { path: '/admin/user', element: <User userRole={user?.role} /> }, //nhớ xóa
       { path: '/admin/user/student', element: <Student /> },
-      { path: '/admin/semester_major', element: <Semester_major /> },
       { path: '/admin/subject', element: <Subject userRole={user?.role} /> }, // Pass userRole as prop
       { path: '/admin/subjectregistration', element: <SubjectRegistration userRole={user?.role} /> },
       { path: '/admin/subjectregistration/:subjecttermID', element: <SubjectRegistrationDetail userRole={user?.role} /> },
       { path: '/admin/classsections/:subjecttermID', element: <Classsection userRole={user?.role} /> }, // Pass userRole as prop
       { path: '/admin/tkb', element: <TKB userRole={user?.role} userID={user?._id}/> },
-      { path: '/admin/test', element: <Test/> },
       { path: '/admin/term', element: <Term userRole={user?.role}/> },
       { path: '/admin/major', element: <Major userRole={user?.role}/> },
       { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> },
@@ -232,6 +218,54 @@ const App = () => {
       position: "top-right"
     });
   };
+  //Scanner
+  const codeReaderRef = useRef(null);
+  const startScanner = () => {
+    const codeReader = new BrowserMultiFormatReader();
+    codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+      if (result) {
+        handleScan(result);
+      }
+      if (err) {
+        handleError(err);
+      }
+    });
+    codeReaderRef.current = codeReader;
+  };
+  
+  const stopScanner = () => {
+    if (codeReaderRef.current) {
+      codeReaderRef.current.reset();
+    }
+  };
+  
+  const handleScan = (result) => {
+    if (result) {
+      setScanResult(result.text);
+      window.location.href = result.text; // Redirect to the scanned URL
+    }
+  };
+  
+  const handleError = (err) => {
+    console.error(err);
+  };
+  const toggleScanner = () => {
+    setShowScanner(prevState => !prevState);
+    setShowModal1(prevState => !prevState);
+  };
+  
+  const handleCloseModal = () => {
+    stopScanner();
+    setShowModal1(false);
+    setScanResult('');
+    setShowScanner(false);
+  };
+  useEffect(() => {
+    if (showScanner) {
+      startScanner();
+    }
+  }, [showScanner]);
+  
   return (
     <BrowserRouter>
       <AppContent
@@ -262,6 +296,12 @@ const App = () => {
         roleRoutes={roleRoutes}
         showLogoutModal={showLogoutModal} // Pass showLogoutModal to AppContent
         showToast={showToast} // Pass showToast to AppContent
+        //Scanner
+        showScanner={showScanner}
+        showModal1={showModal1}
+        scanResult={scanResult}
+        toggleScanner={toggleScanner}
+        handleCloseModal={handleCloseModal}
       />
       <ToastContainer />
     </BrowserRouter>
@@ -296,6 +336,12 @@ const AppContent = ({
   roleRoutes,
   showLogoutModal, // Add showLogoutModal to AppContent props
   showToast, // Add showToast to AppContent props
+  //Scanner
+  showScanner, // Add showScanner to AppContent props
+  showModal1, // Add showModal1 to AppContent props
+  scanResult, // Add scanResult to AppContent props
+  toggleScanner, // Add toggleScanner to AppContent props
+  handleCloseModal, // Add handleCloseModal to AppContent props
 }) => {
   const location = useLocation();
 
@@ -320,6 +366,13 @@ const AppContent = ({
               </li>
             </ul>
             <ul className="navbar-nav ml-auto">
+              {/* Scanner */}
+            <li className="nav-item" style={{ position: 'relative' }}>
+              <a onClick={toggleScanner} className="nav-link" role="button" title='Quét QR Code' style={{ color: '#000' }}>
+                <IonIcon name="scan-outline" style={{ fontSize: '30px',position: 'absolute', top: '0px', left: '-2px' }} />
+                <IonIcon name="qr-code-outline" style={{ fontSize: '16px', position: 'absolute', top: '11px', left: '5px' }} />
+              </a>
+            </li>
               <li className="nav-item">
                 <a className="nav-link" role="button" onClick={toggleNotification} style={{ color: '#000' }}>
                   <i className="far fa-user-circle" style={{ fontSize: '24px' }}></i>
@@ -468,7 +521,7 @@ const AppContent = ({
                                 <li className="nav-item">
                                   <Link to="/admin/subject" className="nav-link" style={location.pathname === '/admin/subject' ? activeLinkStyle : sidebarTextStyle}>
                                     <i className="fas fa-dot-circle nav-icon"></i>
-                                    <p>LHP</p>
+                                    <p>LHP - Môn học</p>
                                   </Link>
                                 </li>
                                 {user.role !== 'Sinh viên' && (
@@ -569,6 +622,12 @@ const AppContent = ({
                               </Link>
                             </li> */}
                             <li className="nav-item">
+                              <Link to="/admin/dashboard" className="nav-link" style={location.pathname === '/admin/dashboard' ? activeLinkStyle : sidebarTextStyle}>
+                                <i className="fas fa-dot-circle nav-icon"></i>
+                                <p>Thống kê chung</p>
+                              </Link>
+                            </li>
+                            <li className="nav-item">
                               <Link to="/admin/statistics-studenattendance" className="nav-link" style={location.pathname === '/admin/statistics-studenattendance' ? activeLinkStyle : sidebarTextStyle}>
                                 <i className="fas fa-dot-circle nav-icon"></i>
                                 <p>Tỉ lệ SV điểm danh</p>
@@ -580,7 +639,7 @@ const AppContent = ({
                               <li className="nav-item">
                               <Link to="/admin/statistics-all-classes" className="nav-link" style={location.pathname === '/admin/statistics-all-classes' ? activeLinkStyle : sidebarTextStyle}>
                                 <i className="fas fa-dot-circle nav-icon"></i>
-                                <p>LHP - Buổi vắng</p>
+                                <p>DSSV vắng nhiều</p>
                               </Link>
                             </li>
                           )}
@@ -588,7 +647,7 @@ const AppContent = ({
                               <li className="nav-item">
                               <Link to="/admin/statistics-total-all-classes" className="nav-link" style={location.pathname === '/admin/statistics-total-all-classes' ? activeLinkStyle : sidebarTextStyle}>
                                 <i className="fas fa-dot-circle nav-icon"></i>
-                                <p>LHP - Tổng số lượng</p>
+                                <p>SLSV từng buổi</p>
                               </Link>
                             </li>
                           )}
@@ -598,14 +657,7 @@ const AppContent = ({
                             </ul>
                           </li>
                           )}
-                          {user.role !== 'Sinh viên' && user.role !== 'Giảng viên' && (
-                            <li className="nav-item">
-                                <Link to="/admin/dashboard" className="nav-link" style={location.pathname === '/admin/dashboard' ? activeLinkStyle : sidebarTextStyle}>
-                                  <i className="nav-icon fas fa-tachometer-alt"></i>
-                                  <p>TỔNG QUAN</p>
-                                </Link>
-                              </li>
-                          )}
+                          
                       </>
                     )}
                     
@@ -681,6 +733,33 @@ const AppContent = ({
           </div>
         </div>
       )}
+      {/* Scanner */}
+    {showModal1 && (
+      <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title"><b>Quét mã QR</b></h5>
+              <button type="button" className="close" onClick={handleCloseModal}>
+                <span>&times;</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              {showScanner && (
+                <div>
+                  <video id="video" width="100%" height="100%"></video>
+                </div>
+              )}
+              {scanResult && (
+                <div>
+                  <p>Kết quả quét: <a href={scanResult} target="_blank" rel="noopener noreferrer">{scanResult}</a></p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   );
 };
