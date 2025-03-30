@@ -349,7 +349,8 @@ const AppContent = ({
     return roleRoutes[role] || [];
   };
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const userName = user ? user.microsoftData.displayName.split(' - ')[1] : '';
+  // const userName = user ? user.microsoftData.displayName.split(' - ')[1] : '';
+  const userName = user ? (user.microsoftData.mail.includes('@vanlanguni.vn') ? user.microsoftData.displayName.split(' - ')[1] : user.microsoftData.displayName.split(' - ')[0]) : '';
 
   return (
     <div className={`wrapper ${isSidebarVisible ? '' : 'sidebar-collapse'}`}>
