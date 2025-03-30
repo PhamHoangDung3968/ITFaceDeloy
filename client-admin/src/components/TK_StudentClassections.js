@@ -221,45 +221,48 @@ const userRows = currentPageUsers.map((item, index) => {
   {expandedRow === item._id && (
     <tr>
       <td colSpan="7">
-        <div className="card-header">
-          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-            {/* Tìm kiếm bên trái */}
-            <div className="input-group input-group-sm" style={{ width: '200px' }}>
-              <input
-                type="text"
-                className="form-control float-right"
-                placeholder="Tìm kiếm"
-                value={searchKeyword}
-                onChange={this.handleSearchChange}
-              />
-              <div className="input-group-append">
-                <button type="submit" className="btn btn-default">
-                  <i className="fas fa-search"></i>
-                </button>
-              </div>
-            </div>
-
-            {/* Lọc bên phải */}
-            <div className="input-group input-group-sm" style={{ width: '200px' }}>
-              <select className="form-control" value={absenceSort} onChange={this.handleAbsenceSortChange}>
-                <option value="most">Vắng nhiều hơn</option>
-                {[...Array(15).keys()].map(i => (
-                  <option key={i + 1} value={i + 1}>{i + 1} buổi</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="input-group input-group-sm" style={{ marginTop: '10px' }}>
-            <button
-              type="button"
-              onClick={() => this.handleTKExportAttendance(this.props.userID, item.termID, item.classCode, this.state.absenceSort)}
-              className="btn btn-success text-nowrap"
-              style={{ backgroundColor: '#009900', borderColor: '#009900', color: '#ffffff' }}
-            >
-              <i className="nav-icon fas fa-file-excel"></i> Xuất excel
-            </button>
-          </div>
+      <div className="card-header">
+  <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+    {/* Thanh tìm kiếm và lọc bên trái */}
+    <div style={{ display: 'flex', gap: '10px' }}>
+      {/* Tìm kiếm */}
+      <div className="input-group input-group-sm" style={{ width: '200px' }}>
+        <input
+          type="text"
+          className="form-control float-right"
+          placeholder="Tìm kiếm"
+          value={searchKeyword}
+          onChange={this.handleSearchChange}
+        />
+        <div className="input-group-append">
+          <button type="submit" className="btn btn-default">
+            <i className="fas fa-search"></i>
+          </button>
         </div>
+      </div>
+
+      {/* Lọc */}
+      <div className="input-group input-group-sm" style={{ width: '200px' }}>
+        <select className="form-control" value={absenceSort} onChange={this.handleAbsenceSortChange}>
+          <option value="most">Vắng nhiều hơn</option>
+          {[...Array(15).keys()].map(i => (
+            <option key={i + 1} value={i + 1}>{i + 1} buổi</option>
+          ))}
+        </select>
+      </div>
+    </div>
+
+    {/* Nút Export bên phải */}
+    <button
+      type="button"
+      onClick={() => this.handleTKExportAttendance(this.props.userID, item.termID, item.classCode, this.state.absenceSort)}
+      className="btn btn-success text-nowrap"
+      style={{ backgroundColor: '#009900', borderColor: '#009900', color: '#ffffff', marginLeft: 'auto' }}
+    >
+      <i className="nav-icon fas fa-file-excel"></i> Xuất excel
+    </button>
+  </div>
+</div>
 
         <table className="table table-bordered">
           <thead>

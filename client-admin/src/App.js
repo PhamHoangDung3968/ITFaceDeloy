@@ -203,9 +203,9 @@ const App = () => {
       { path: '/admin/statistics-classsections-students-term', element: <TK_LHPStudents_Term userID={user?._id}/> }, 
       { path: '/admin/clause', element: <Clause/> }, 
       //nhớ xóa
-      // { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> }, 
-      // { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
-      // { path: '/admin/attendance/:classCode', element: <Attendance /> },
+      { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> }, 
+      { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
+      { path: '/admin/attendance/:classCode', element: <Attendance /> },
 
 
 
@@ -369,8 +369,8 @@ const AppContent = ({
               {/* Scanner */}
             <li className="nav-item" style={{ position: 'relative' }}>
               <a onClick={toggleScanner} className="nav-link" role="button" title='Quét QR Code' style={{ color: '#000' }}>
-                <IonIcon name="scan-outline" style={{ fontSize: '30px',position: 'absolute', top: '0px', left: '-2px' }} />
-                <IonIcon name="qr-code-outline" style={{ fontSize: '16px', position: 'absolute', top: '11px', left: '5px' }} />
+              <IonIcon name="scan-outline" style={{ fontSize: '30px',position: 'absolute', top: '-5px', left: '-2px' }} />
+              <IonIcon name="qr-code-outline" style={{ fontSize: '16px', position: 'absolute', top: '6px', left: '5px' }} />
               </a>
             </li>
               <li className="nav-item">
