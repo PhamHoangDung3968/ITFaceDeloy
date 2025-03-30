@@ -203,9 +203,9 @@ const App = () => {
       { path: '/admin/statistics-classsections-students-term', element: <TK_LHPStudents_Term userID={user?._id}/> }, 
       { path: '/admin/clause', element: <Clause/> }, 
       //nhớ xóa
-      { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> }, 
-      { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
-      { path: '/admin/attendance/:classCode', element: <Attendance /> },
+      // { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> }, 
+      // { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
+      // { path: '/admin/attendance/:classCode', element: <Attendance /> },
 
 
 
