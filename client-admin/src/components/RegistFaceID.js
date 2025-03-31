@@ -662,109 +662,82 @@ class RegistFaceID extends Component {
             <div className="col-lg-6">
             <div className="card">
             <div className="card-body">
-            {/* <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', height: '450px', marginTop: '10px' }}> */}
-              <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', marginTop: '20px' }}>
+              {/* <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', height: '450px', marginTop: '10px' }}> */}
+              <div style={{ backgroundColor: 'black', width: '100%', maxWidth: '600px', marginTop: '10px' }}>
 
                 <video ref={this.videoRef} style={{ width: '100%', maxWidth: '600px', height: '100%' }}></video>
               </div>
               {/* Các nút nằm dưới khung hình, căn giữa */}
-              <div 
-            style={{ 
-              marginTop: '10px', 
-              display: 'flex', 
-              flexWrap: 'wrap', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              gap: '10px',
-              width: '100%', 
-              maxWidth: '600px', 
-              marginLeft: 'auto',
-              marginRight: 'auto'
-            }}
-          >
-            <button 
-              onClick={this.handleOpenWebcam} 
-              disabled={this.state.isWebcamOpen}
-              style={{ 
-                fontSize: '16px', 
-                fontWeight: 'bold', 
-                padding: '10px 20px', 
-                borderRadius: '8px', 
-                cursor: 'pointer', 
-                transition: 'all 0.3s ease', 
-                color: this.state.isWebcamOpen ? '#999' : 'white', 
-                border: 'none', 
-                textAlign: 'center',
-                background: this.state.isWebcamOpen ? '#ddd' : 'linear-gradient(45deg, #4CAF50, #8BC34A)',
-                flex: '1', 
-                minWidth: '120px'
-              }}
-            >
-              Bật camera
-            </button>
+              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                <button 
+                  onClick={this.handleOpenWebcam} 
+                  disabled={this.state.isWebcamOpen}
+                  style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: this.state.isWebcamOpen ? '#ddd' : 'linear-gradient(45deg, #4CAF50, #8BC34A)', color: this.state.isWebcamOpen ? '#999' : 'white', border: 'none' }}
+                >
+                  Bật camera
+                </button>
 
-            <button 
-              onClick={this.handleCloseWebcam} 
-              disabled={!this.state.isWebcamOpen}
-              style={{ 
-                fontSize: '16px', 
-                fontWeight: 'bold', 
-                padding: '10px 20px', 
-                borderRadius: '8px', 
-                cursor: 'pointer', 
-                transition: 'all 0.3s ease', 
-                color: !this.state.isWebcamOpen ? '#999' : 'white', 
-                border: 'none', 
-                textAlign: 'center',
-                background: !this.state.isWebcamOpen ? '#ddd' : 'linear-gradient(45deg, #F44336, #E57373)',
-                flex: '1', 
-                minWidth: '120px'
-              }}
-            >
-              Tắt camera
-            </button>
+                <button 
+                  onClick={this.handleCloseWebcam} 
+                  disabled={!this.state.isWebcamOpen}
+                  style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: !this.state.isWebcamOpen ? '#ddd' : 'linear-gradient(45deg, #F44336, #E57373)', color: !this.state.isWebcamOpen ? '#999' : 'white', border: 'none' }}
+                >
+                  Tắt camera
+                </button>
 
-            <button 
-              onClick={this.handleReRegisterUser}
-              style={{ 
-                fontSize: '16px', 
-                fontWeight: 'bold', 
-                padding: '10px 20px', 
-                borderRadius: '8px', 
-                cursor: 'pointer', 
-                transition: 'all 0.3s ease', 
-                color: 'white', 
-                border: 'none', 
-                textAlign: 'center',
-                background: 'linear-gradient(45deg, #FF9800, #FFC107)',
-                flex: '1', 
-                minWidth: '120px'
-              }}
-            >
-              Đăng ký lại
-            </button>
+                {/* {!this.state.isUserRegistered && (
+                  <button 
+                    onClick={this.handleRegisterUser}
+                    style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: 'linear-gradient(45deg, #2196F3, #64B5F6)', color: 'white', border: 'none' }}
+                  >
+                    Đăng ký
+                  </button>
+                )} */}
+                {this.state.isUserRegistered ? (
+                      <button 
+                      onClick={this.handleReRegisterUser}
+                      style={{ 
+                        display: this.state.isProcessing1 ? 'none' : 'block', // Ẩn nút khi đang xử lý
+                        fontSize: '16px', 
+                        fontWeight: 'bold', 
+                        padding: '10px 20px', 
+                        borderRadius: '8px', 
+                        cursor: 'pointer', 
+                        transition: 'all 0.3s ease', 
+                        background: 'linear-gradient(45deg, #FF9800, #FFC107)', 
+                        color: 'white', 
+                        border: 'none' 
+                      }}
+                    >
+                      Đăng ký lại
+                    </button>
+                    ) : (
+                      <button 
+                        onClick={this.handleRegisterUser}
+                        style={{ 
+                          display: this.state.isProcessing ? 'none' : 'block', // Ẩn nút khi đang xử lý
+                          fontSize: '16px', 
+                          fontWeight: 'bold', 
+                          padding: '10px 20px', 
+                          borderRadius: '8px', 
+                          cursor: 'pointer', 
+                          transition: 'all 0.3s ease', 
+                          background: 'linear-gradient(45deg, #2196F3, #64B5F6)', 
+                          color: 'white', 
+                          border: 'none' 
+                        }}
+                      >
+                        Đăng ký
+                      </button>
+                    )}
 
-            <button 
-              onClick={this.toggleModalHistory}
-              style={{ 
-                fontSize: '16px', 
-                fontWeight: 'bold', 
-                padding: '10px 20px', 
-                borderRadius: '8px', 
-                cursor: 'pointer', 
-                transition: 'all 0.3s ease', 
-                color: 'white', 
-                border: 'none', 
-                textAlign: 'center',
-                background: 'linear-gradient(45deg, #FF9966 , #FF9999)',
-                flex: '1', 
-                minWidth: '120px'
-              }}
-            >
-              Lịch sử
-            </button>
-          </div>
-
+                <button 
+                  onClick={this.toggleModalHistory}
+                  style={{ fontSize: '16px', fontWeight: 'bold', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s ease', background: 'linear-gradient(45deg, #FF9966 , #FF9999)', color: 'white', border: 'none' }}
+                >
+                  Lịch sử
+                </button>
+              </div>
               
             </div>
           </div>
