@@ -41,8 +41,8 @@ router.post('/generate/:classcode/:day', (req, res) => {
   const { url } = req.body;
   const deviceUUID = uuidv4(); 
 
-  // const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
-  const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '5s' });
+  const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
+  // const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '5s' });
   tokens[token] = { classcode, used: false, deviceUUID, day };
 
   const qrData = `${url}/admin/?classcode=${classcode}&day=${day}&token=${token}`;
@@ -64,8 +64,8 @@ router.get('/generate/:classcode/:day/qr', (req, res) => {
   const day = req.params.day; 
   const { url } = req.query;
 
-  // const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
-  const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '5s' });
+  const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
+  // const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '5s' });
   tokens[token] = { classcode, used: false, deviceUUID: uuidv4(), day }; 
 
   const qrData = `${url}/admin/?classcode=${classcode}&day=${day}&token=${token}`;

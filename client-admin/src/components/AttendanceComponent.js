@@ -39,8 +39,8 @@ const Attendance = ({ userRole }) => {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [token, setToken] = useState('');
   const [scanSuccess, setScanSuccess] = useState(false);
-  // const [countdown, setCountdown] = useState(10);
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(10);
+  // const [countdown, setCountdown] = useState(5);
   const [attendanceCounts, setAttendanceCounts] = useState({});
   const [excusedAbsenceCounts, setExcusedAbsenceCounts] = useState({});
   const [isZoomed, setIsZoomed] = useState(false);
@@ -114,8 +114,8 @@ const Attendance = ({ userRole }) => {
 
       setToken(response.data.token);
       setQrCodeValue(response.data.qrCodeImage);
-      // setCountdown(10);
-      setCountdown(5);
+      setCountdown(10);
+      // setCountdown(5);
     } catch (error) {
       console.error('Error generating QR code:', error);
     }
@@ -129,8 +129,8 @@ const Attendance = ({ userRole }) => {
 
       setToken(response.data.token);
       setQrCodeValue(response.data.qrCodeImage);
-      // setCountdown(10);
-      setCountdown(5);
+      setCountdown(10);
+      // setCountdown(5);
     } catch (error) {
       console.error('Error fetching QR code:', error);
     }
@@ -138,8 +138,8 @@ const Attendance = ({ userRole }) => {
 
   useEffect(() => {
     if (token) {
-      // const interval = setInterval(fetchQrCode, 10000);
-      const interval = setInterval(fetchQrCode, 5000);
+      const interval = setInterval(fetchQrCode, 10000);
+      // const interval = setInterval(fetchQrCode, 5000);
       return () => clearInterval(interval);
     }
   }, [token]);
