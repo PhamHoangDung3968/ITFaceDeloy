@@ -260,11 +260,11 @@ const handleLoginUser = () => {
         const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
         const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
   
-        if (formattedDay > formattedToday) {
-          showErrorToast('Điểm danh thất bại: Ngày điểm danh chưa tới.');
-          setIsProcessing(false);
-          return;
-        }
+        // if (formattedDay > formattedToday) {
+        //   showErrorToast('Điểm danh thất bại: Ngày điểm danh chưa tới.');
+        //   setIsProcessing(false);
+        //   return;
+        // }
   
         axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
           studentId: userID,
