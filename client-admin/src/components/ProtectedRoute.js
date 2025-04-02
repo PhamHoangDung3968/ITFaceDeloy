@@ -37,11 +37,20 @@
 import React, { useEffect, useState } from 'react';
 import { Route, Navigate, useLocation } from 'react-router-dom';
 import verifyToken from './verifyToken'; // Import hàm kiểm tra mã thông báo
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProtectedRoute = ({ element: Component, ...rest }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
     const location = useLocation();
+    const showToast = (message) => {
+        toast.success(message, { position: "top-right" });
+    };
+
+    const showErrorToast = (message) => {
+        toast.error(message, { position: "top-right" });
+    };
 
     useEffect(() => {
         const token = new URLSearchParams(location.search).get('token')// Lấy token từ URL hoặc localStorage
@@ -60,13 +69,27 @@ const ProtectedRoute = ({ element: Component, ...rest }) => {
     if (loading) {
         return <div>Loading...</div>; // Hoặc một spinner loading
     }
+    if (!isAuthenticated) {
+        showErrorToast('Authentication failed. Redirecting to home page.');
+        return (
+            <>
+                <Navigate to="/admin/home" /> // Hoặc trang khác mà bạn muốn điều hướng đến
+                <ToastContainer />
+            </>
+        );
+    }
 
     return (
-        isAuthenticated ? (
+        // isAuthenticated ? (
+        //     <Component {...rest} />
+        // ) : (
+        //     <Navigate to="/admin/home" /> // Hoặc trang khác mà bạn muốn điều hướng đến
+        // )
+        <>
             <Component {...rest} />
-        ) : (
-            <Navigate to="/admin/home" /> // Hoặc trang khác mà bạn muốn điều hướng đến
-        )
+            <ToastContainer />
+        </>
+
     );
 };
 

@@ -297,8 +297,7 @@ const handleLoginUser = () => {
       }
     })
     .catch(error => {
-      console.error('Lỗi khi đăng nhập người dùng:', error);
-      showErrorToast('Lỗi khi đăng nhập người dùng');
+      showErrorToast('Bạn chưa đăng kí FaceID!');
       setIsProcessing(false);
     });
   };
