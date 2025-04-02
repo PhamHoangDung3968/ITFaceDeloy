@@ -65,7 +65,7 @@ const ProtectedRoute = ({ element: Component, ...rest }) => {
         isAuthenticated ? (
             <Component {...rest} />
         ) : (
-            <Navigate to="/admin/home" state={{ authFailed: true }}  /> // Hoặc trang khác mà bạn muốn điều hướng đến
+            <Navigate to="/admin/home"/> // Hoặc trang khác mà bạn muốn điều hướng đến
         )
     );
 };
