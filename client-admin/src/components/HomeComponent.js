@@ -102,8 +102,6 @@ import '../plugins/overlayScrollbars/css/OverlayScrollbars.min.css';
 import '../plugins/daterangepicker/daterangepicker.css';
 import '../plugins/summernote/summernote-bs4.min.css';
 import videobackground from '../dist/img/file.mp4';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 class Home extends Component {
   static contextType = MyContext; // using this.context to access global state
@@ -114,19 +112,7 @@ class Home extends Component {
 
   componentDidMount() {
     this.fetchUsers();
-    const { state } = this.props.location;
-    if (state?.authFailed) {
-      this.showErrorToast('Authentication failed. Redirected to home page.');
-    }
   }
-  showToast = (message) => {
-    toast.success(message, { position: "top-right" });
-};
-
-showErrorToast = (message) => {
-    toast.error(message, { position: "top-right" });
-};
-
 
   fetchUsers = async () => {
     try {
@@ -188,7 +174,6 @@ showErrorToast = (message) => {
             </h3>
           </div>
         </div>
-        <ToastContainer />
       </div>
     );
   }
