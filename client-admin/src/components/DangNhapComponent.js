@@ -50,7 +50,7 @@ const DangNhap = ({ handleLogin, error }) => {
       <h2 className="h2" style={{ color: 'white', textAlign: 'center' }}>
         <b>TRƯỜNG ĐẠI HỌC VĂN LANG</b>
       </h2>
-      <div className="login-box" style={{ marginTop: '30px' }}>
+      <div className="login-box" style={{ marginTop: '10px' }}>
         <div className="card card-outline card-primary" style={{
         backgroundColor: 'rgba(255, 255, 255, 0.3)', // Nền trắng với độ trong suốt 80%
         borderRadius: '5px', // Bo góc cho khung
@@ -63,7 +63,7 @@ const DangNhap = ({ handleLogin, error }) => {
             </h1> */}
           </div>
           <div className="card-body">
-            <p className="login-box-msg" style={{ marginTop: '10px' }}>
+            <p className="login-box-msg">
               <img src={logo2} style={{ width: '100px', height: 'auto', animation: 'slideInFromRight 1s ease-in-out, moveBanner 5s infinite' }} />
             </p>
             <style>
@@ -87,7 +87,7 @@ const DangNhap = ({ handleLogin, error }) => {
       </div>
       <div className="card-footer">
 
-      <h5 className="h5" style={{ color: 'white', marginTop: '30px', textAlign: 'center' }}>
+      <h5 className="h5" style={{ color: 'white', marginTop: '10px', textAlign: 'center' }}>
         © {currentYear} - Bản Quyền Thuộc Khoa Công nghệ Thông tin, Trường Đại Học Văn Lang.
       </h5>
       </div>
