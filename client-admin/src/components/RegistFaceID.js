@@ -53,89 +53,6 @@ class RegistFaceID extends Component {
   };
 
   //using AI
-  // handleRegisterUser = () => {
-  //   if (this.state.isProcessing) return; // Ngăn chặn việc nhấp nhiều lần
-  //   this.setState({ isProcessing: true });
-
-  //   if (!this.videoRef.current) {
-  //     this.setState({ isProcessing: false });
-  //     return;
-  //   }
-
-  //   const canvas = document.createElement('canvas');
-  //   canvas.width = this.videoRef.current.videoWidth;
-  //   canvas.height = this.videoRef.current.videoHeight;
-  //   const context = canvas.getContext('2d');
-  //   context.drawImage(this.videoRef.current, 0, 0, canvas.width, canvas.height);
-  //   const image = canvas.toDataURL('image/jpeg');
-
-  //   this.setState({ webcamImage: image });
-
-  //   axios.post('/api/admin/register_user', {
-  //     name: this.props.userCode,
-  //     image: image.split(',')[1]
-  //   })
-  //     .then(() => {
-  //       this.showToast('Đăng ký thành công!');
-  //       this.checkUserRegistration();
-  //     })
-  //     .catch(error => {
-  //       console.error('Error registering user:', error);
-  //       this.showErrorToast('Đăng ký thất bại');
-  //     })
-  //     .finally(() => {
-  //       this.setState({ isProcessing: false });
-  //     });
-  // };
-
-  // handleReRegisterUser = () => {
-  //   if (this.state.isProcessing1) return; // Ngăn chặn việc nhấp nhiều lần
-  //   this.setState({ isProcessing1: true });
-
-  //   if (!this.videoRef.current) {
-  //     this.setState({ isProcessing1: false });
-  //     return;
-  //   }
-
-  //   const canvas = document.createElement('canvas');
-  //   canvas.width = this.videoRef.current.videoWidth;
-  //   canvas.height = this.videoRef.current.videoHeight;
-  //   const context = canvas.getContext('2d');
-  //   context.drawImage(this.videoRef.current, 0, 0, canvas.width, canvas.height);
-  //   const image = canvas.toDataURL('image/jpeg');
-
-  //   this.setState({ webcamImage: image });
-
-  //   axios.post('/api/admin/re_register_user', {
-  //     name: this.props.userCode,
-  //     image: image.split(',')[1]
-  //   })
-  //     .then(() => {
-  //       this.showToast('Đăng ký lại thành công!');
-  //       this.checkUserRegistration();
-  //     })
-  //     .catch(error => {
-  //       console.error('Error re-registering user:', error);
-  //       this.showErrorToast('Đăng ký lại thất bại');
-  //     })
-  //     .finally(() => {
-  //       this.setState({ isProcessing1: false });
-  //     });
-  // };
-
-  // checkUserRegistration = () => {
-  //   axios.post('/api/admin/check_user', { name: this.props.userCode })
-  //     .then(response => {
-  //       this.setState({ isUserRegistered: response.data.status === 'success' });
-  //     })
-  //     .catch(error => {
-  //       console.error('Error checking user registration:', error);
-  //       this.setState({ isUserRegistered: false });
-  //     });
-  // };
-  //end using AI
-
-  //using API
   handleRegisterUser = () => {
     if (this.state.isProcessing) return; // Ngăn chặn việc nhấp nhiều lần
     this.setState({ isProcessing: true });
@@ -154,7 +71,7 @@ class RegistFaceID extends Component {
 
     this.setState({ webcamImage: image });
 
-    axios.post('/api/admin/register_user_01', {
+    axios.post('/api/admin/register_user', {
       name: this.props.userCode,
       image: image.split(',')[1]
     })
@@ -171,21 +88,7 @@ class RegistFaceID extends Component {
       });
   };
 
-checkUserRegistration = () => {
-    const { userID } = this.props;
-
-    axios.post(`/api/admin/check_user_01/${userID}`)
-      .then(response => {
-        this.setState({ isUserRegistered: response.data.hasImage });
-      })
-      .catch(error => {
-        console.error('Error checking user registration:', error);
-        this.setState({ isUserRegistered: false });
-      });
-};
-
-
-handleReRegisterUser = () => {
+  handleReRegisterUser = () => {
     if (this.state.isProcessing1) return; // Ngăn chặn việc nhấp nhiều lần
     this.setState({ isProcessing1: true });
 
@@ -203,8 +106,8 @@ handleReRegisterUser = () => {
 
     this.setState({ webcamImage: image });
 
-    axios.post(`/api/admin/re_register_user_01`, {
-      studentID: this.props.userID,
+    axios.post('/api/admin/re_register_user', {
+      name: this.props.userCode,
       image: image.split(',')[1]
     })
       .then(() => {
@@ -218,7 +121,104 @@ handleReRegisterUser = () => {
       .finally(() => {
         this.setState({ isProcessing1: false });
       });
-};
+  };
+
+  checkUserRegistration = () => {
+    axios.post('/api/admin/check_user', { name: this.props.userCode })
+      .then(response => {
+        this.setState({ isUserRegistered: response.data.status === 'success' });
+      })
+      .catch(error => {
+        console.error('Error checking user registration:', error);
+        this.setState({ isUserRegistered: false });
+      });
+  };
+  //end using AI
+
+  //using API
+//   handleRegisterUser = () => {
+//     if (this.state.isProcessing) return; // Ngăn chặn việc nhấp nhiều lần
+//     this.setState({ isProcessing: true });
+
+//     if (!this.videoRef.current) {
+//       this.setState({ isProcessing: false });
+//       return;
+//     }
+
+//     const canvas = document.createElement('canvas');
+//     canvas.width = this.videoRef.current.videoWidth;
+//     canvas.height = this.videoRef.current.videoHeight;
+//     const context = canvas.getContext('2d');
+//     context.drawImage(this.videoRef.current, 0, 0, canvas.width, canvas.height);
+//     const image = canvas.toDataURL('image/jpeg');
+
+//     this.setState({ webcamImage: image });
+
+//     axios.post('/api/admin/register_user_01', {
+//       name: this.props.userCode,
+//       image: image.split(',')[1]
+//     })
+//       .then(() => {
+//         this.showToast('Đăng ký thành công!');
+//         this.checkUserRegistration();
+//       })
+//       .catch(error => {
+//         console.error('Error registering user:', error);
+//         this.showErrorToast('Đăng ký thất bại');
+//       })
+//       .finally(() => {
+//         this.setState({ isProcessing: false });
+//       });
+//   };
+
+// checkUserRegistration = () => {
+//     const { userID } = this.props;
+
+//     axios.post(`/api/admin/check_user_01/${userID}`)
+//       .then(response => {
+//         this.setState({ isUserRegistered: response.data.hasImage });
+//       })
+//       .catch(error => {
+//         console.error('Error checking user registration:', error);
+//         this.setState({ isUserRegistered: false });
+//       });
+// };
+
+
+// handleReRegisterUser = () => {
+//     if (this.state.isProcessing1) return; // Ngăn chặn việc nhấp nhiều lần
+//     this.setState({ isProcessing1: true });
+
+//     if (!this.videoRef.current) {
+//       this.setState({ isProcessing1: false });
+//       return;
+//     }
+
+//     const canvas = document.createElement('canvas');
+//     canvas.width = this.videoRef.current.videoWidth;
+//     canvas.height = this.videoRef.current.videoHeight;
+//     const context = canvas.getContext('2d');
+//     context.drawImage(this.videoRef.current, 0, 0, canvas.width, canvas.height);
+//     const image = canvas.toDataURL('image/jpeg');
+
+//     this.setState({ webcamImage: image });
+
+//     axios.post(`/api/admin/re_register_user_01`, {
+//       studentID: this.props.userID,
+//       image: image.split(',')[1]
+//     })
+//       .then(() => {
+//         this.showToast('Đăng ký lại thành công!');
+//         this.checkUserRegistration();
+//       })
+//       .catch(error => {
+//         console.error('Error re-registering user:', error);
+//         this.showErrorToast('Đăng ký lại thất bại');
+//       })
+//       .finally(() => {
+//         this.setState({ isProcessing1: false });
+//       });
+// };
 
   //end using API
 

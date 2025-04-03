@@ -167,7 +167,7 @@ const App = () => {
       { path: '/admin/statistics-studenattendance', element: <TK_StudenAttendance/> }, 
       { path: '/admin/statistics-all-classes', element: <TK_StudentClassections userID={user?._id} userRole={user?.role} /> },
       { path: '/admin/dashboard', element: <Dashboard/> }, // Sử dụng ProtectedRoute
-      { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
+      // { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
 
 
     ],
@@ -187,7 +187,7 @@ const App = () => {
       { path: '/admin/attendance/:classCode', element: <Attendance /> },
       { path: '/admin/statistics-all-classes', element: <TK_StudentClassections userID={user?._id} userRole={user?.role} /> },
       { path: '/admin/statistics-total-all-classes', element: <TK_LHPTotalStudent userID={user?._id}/> },
-      { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
+      // { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
 
       // { path: '/admin/faceid_registration', element: <RegistFaceID userRole={user?.role} userID={user?._id} userCode={user?.userCode}/> },
 
