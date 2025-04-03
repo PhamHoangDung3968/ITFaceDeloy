@@ -330,7 +330,7 @@ const handleLoginUser = () => {
       // Logic xử lý đăng nhập
       // Giả sử hàm này trả về một đối tượng với thuộc tính 'status'
       if (name && image) {
-          return { status: 'success', message: 'Điểm danh thành công' };
+          return { status: 'success' };
       } else {
           return { status: 'failure', message: 'Điểm danh thất bại' };
       }
@@ -339,42 +339,44 @@ const handleLoginUser = () => {
   const response = loginUser(userCode, image.split(',')[1]);
 
   if (response.status === 'success') {
-      showToast(response.message);
       const today = new Date();
       const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
       const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
 
-      axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
-          studentId: userID,
-          date: formattedDay,
-          status: 'Có mặt' // hoặc bất kỳ trạng thái nào bạn muốn đặt
-      })
-      .then(attendanceResponse => {
-          showToast('Điểm danh thành công!');
-          // Gọi API /send-email
-          axios.post('/api/admin/send-email', {
-              classcode: classcode,
-              email: userEmail, // Thay thế bằng địa chỉ email thực tế
-              date: formattedToday,
-              time: currentTime,
-              image: image.split(',')[1] // Loại bỏ tiền tố data URL
+      setTimeout(() => {
+          axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
+              studentId: userID,
+              date: formattedDay,
+              status: 'Có mặt' // hoặc bất kỳ trạng thái nào bạn muốn đặt
           })
-          .catch(emailError => {
-              console.error('Lỗi khi gửi email:', emailError);
+          .then(attendanceResponse => {
+              showToast('Điểm danh thành công!');
+              // Gọi API /send-email
+              axios.post('/api/admin/send-email', {
+                  classcode: classcode,
+                  email: userEmail, // Thay thế bằng địa chỉ email thực tế
+                  date: formattedToday,
+                  time: currentTime,
+                  image: image.split(',')[1] // Loại bỏ tiền tố data URL
+              })
+              .catch(emailError => {
+                  console.error('Lỗi khi gửi email:', emailError);
+              })
+              .finally(() => {
+                  setIsProcessing(false);
+              });
           })
-          .finally(() => {
+          .catch(attendanceError => {
+              console.error('Lỗi khi cập nhật điểm danh:', attendanceError);
               setIsProcessing(false);
           });
-      })
-      .catch(attendanceError => {
-          console.error('Lỗi khi cập nhật điểm danh:', attendanceError);
-          setIsProcessing(false);
-      });
+      }, 5000); // Trì hoãn 5 giây
   } else {
-      showErrorToast(response.message);
+      showErrorToast('Đăng nhập thất bại');
       setIsProcessing(false);
   }
 };
+
 
   
 
