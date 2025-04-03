@@ -1386,6 +1386,24 @@ router.post('/register_user', async (req, res) => {
   }
 });
 
+//.....
+router.post('/register_user_01', async (req, res) => {
+  try {
+    const { name, image } = req.body;
+
+    console.log('Registering user and saving image to database...');
+    
+    // Call the insert function to save the image
+    const result = await registrationImageDAO.insert(name, image);
+    console.log('Image saved successfully:', result);
+    
+    res.json({ message: 'User registered and image saved successfully', data: result });
+  } catch (error) {
+    console.error('Error saving user to database:', error);
+    res.status(500).json({ message: 'Error saving user to database', error });
+  }
+});
+
 //Đăng ký faceID lại
 router.post('/re_register_user', async (req, res) => {
   try {
@@ -1408,6 +1426,35 @@ router.post('/re_register_user', async (req, res) => {
   } catch (error) {
     console.error('Lỗi khi gọi API Python:', error);
     res.status(500).json({ message: 'Lỗi khi gọi API Python', error });
+  }
+});
+
+//......
+router.post('/re_register_user_01', async (req, res) => {
+  try {
+      const { studentID, image } = req.body;
+
+      if (!studentID || !image) {
+          return res.status(400).json({ message: 'studentID và image là bắt buộc' });
+      }
+
+      // Tìm kiếm bản ghi hiện tại của sinh viên
+      let registrationImage = await registrationImageDAO.findOne1({ studentID });
+
+      if (registrationImage) {
+          // Nếu đã có bản ghi, thêm hình vào mảng images
+          registrationImage.images.push(image);
+          await registrationImage.save();
+      } else {
+          // Nếu chưa có bản ghi, tạo mới
+          registrationImage = await registrationImageDAO.create1({ studentID, images: [image] });
+      }
+
+      console.log('Hình ảnh đã được lưu thành công:', registrationImage);
+      res.json({ message: 'Hình ảnh đã được lưu thành công', data: registrationImage });
+  } catch (error) {
+      console.error('Lỗi khi lưu hình ảnh:', error);
+      res.status(500).json({ message: 'Lỗi khi lưu hình ảnh', error });
   }
 });
 
@@ -1478,6 +1525,24 @@ router.post('/check_user', async (req, res) => {
     } else {
       res.status(500).json({ message: 'Error calling Python API', error });
     }
+  }
+});
+
+//......
+router.post('/check_user_01/:studentID', async (req, res) => {
+  try {
+      const { studentID } = req.params;
+      
+      if (!studentID) {
+          return res.status(400).json({ message: 'studentID is required' });
+      }
+
+      const hasImage = await UserDAO.checkStudentImage(studentID);
+
+      return res.status(200).json({ hasImage });
+  } catch (error) {
+      console.error('Error checking user image:', error);
+      return res.status(500).json({ message: 'Internal server error' });
   }
 });
 

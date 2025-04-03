@@ -48,6 +48,24 @@ const registrationImageDAO = {
             console.error('Error fetching images:', error);
             throw error;
         }
+    },
+    //...........
+    async findOne1(query) {
+        try {
+            return await RegistrationImage.findOne(query).exec();
+        } catch (error) {
+            console.error('Error finding registration image:', error);
+            throw error;
+        }
+    },
+    async create1(data) {
+        try {
+            const registrationImage = new RegistrationImage(data);
+            return await registrationImage.save();
+        } catch (error) {
+            console.error('Error creating registration image:', error);
+            throw error;
+        }
     }
 };
 

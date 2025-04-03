@@ -1,5 +1,7 @@
 require('../utils/MongooseUtil');
 const Users = require('./User');
+const RegistrationImage = require('./registrationImage');
+
 
 const UserDAO = {
     async selectAll() {
@@ -135,5 +137,15 @@ const UserDAO = {
             throw error;
           }
       },
+      //............
+      async checkStudentImage(studentID) {
+        try {
+            const registrationImage = await RegistrationImage.findOne({ studentID: studentID }).exec();
+            return registrationImage && registrationImage.images.length > 0;
+        } catch (error) {
+            console.error('Error checking student image:', error);
+            throw error;
+        }
+    },
 };
 module.exports = UserDAO;
