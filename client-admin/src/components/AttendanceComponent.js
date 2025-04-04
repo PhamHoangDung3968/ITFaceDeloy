@@ -426,18 +426,21 @@ return (
           </div>
         )} */}
         {qrCodeValue && (
-                      <div>
-                        <img
-                          src={qrCodeValue}
-                          alt="QR Code"
-                          width="200"
-                          height="200"
-                          style={{ marginTop: '-15px' }}
-                          onClick={handleQrCodeClick}
-                        />
-                        <p>QR code sẽ thay đổi trong: {countdown} giây</p>
-                      </div>
-                    )}
+  <div>
+    <img
+      src={qrCodeValue}
+      alt="QR Code"
+      width="200"
+      height="200"
+      style={{
+        marginTop: '-15px',
+        filter: 'contrast(150%) brightness(80%)' // Tăng độ tương phản và giảm độ sáng
+      }}
+      onClick={handleQrCodeClick}
+    />
+    <p>QR code sẽ thay đổi trong: {countdown} giây</p>
+  </div>
+)}
         {scanSuccess && (
           <Link to='/admin/test1'>Go to Test1</Link>
         )}
