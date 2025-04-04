@@ -426,21 +426,18 @@ return (
           </div>
         )} */}
         {qrCodeValue && (
-  <div>
-    <img
-      src={qrCodeValue}
-      alt="QR Code"
-      width="200"
-      height="200"
-      style={{
-        marginTop: '-15px',
-        filter: 'contrast(150%) brightness(80%)' // Tăng độ tương phản và giảm độ sáng
-      }}
-      onClick={handleQrCodeClick}
-    />
-    <p>QR code sẽ thay đổi trong: {countdown} giây</p>
-  </div>
-)}
+                      <div>
+                        <img
+                          src={qrCodeValue}
+                          alt="QR Code"
+                          width="200"
+                          height="200"
+                          style={{ marginTop: '-15px' }}
+                          onClick={handleQrCodeClick}
+                        />
+                        <p>QR code sẽ thay đổi trong: {countdown} giây</p>
+                      </div>
+                    )}
         {scanSuccess && (
           <Link to='/admin/test1'>Go to Test1</Link>
         )}
@@ -708,26 +705,34 @@ return (
 </div>
 )}
 {isZoomed && (
-        <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.7)' }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title"><b></b>Mã QR được phóng to</h5>
-                <button type="button" className="close" onClick={handleCloseModal}>
-                  <span>&times;</span>
-                </button>
-              </div>
-              <div className="modal-body">
-                <h4 style={{ textAlign:'center' }}>{formatDate(selectedDate)}</h4>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <img src={qrCodeValue} alt="Zoomed QR Code" style={{ width: '450px', height: '450px' }} />
-                </div>
-                <h4 style={{ textAlign:'center' }}>{countdown}</h4>
-              </div>
-            </div>
-          </div>
+  <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+    <div className="modal-dialog">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title"><b></b>Mã QR được phóng to</h5>
+          <button type="button" className="close" onClick={handleCloseModal}>
+            <span>&times;</span>
+          </button>
         </div>
-      )}
+        <div className="modal-body">
+          <h4 style={{ textAlign: 'center' }}>{formatDate(selectedDate)}</h4>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <img
+              src={qrCodeValue}
+              alt="Zoomed QR Code"
+              style={{
+                width: '450px',
+                height: '450px',
+                filter: 'invert(100%)' // Đảo ngược màu sắc
+              }}
+            />
+          </div>
+          <h4 style={{ textAlign: 'center' }}>{countdown}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
   </div>
 );
 };

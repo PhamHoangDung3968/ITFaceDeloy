@@ -226,14 +226,49 @@ const App = () => {
   const codeReaderRef = useRef(null);
   const startScanner = () => {
     const codeReader = new BrowserMultiFormatReader();
-    codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-      if (result) {
-        handleScan(result);
-      }
-      if (err) {
-        handleError(err);
-      }
-    });
+    const hints = new Map();
+    hints.set(
+      BrowserHints.VideoInputDeviceId,
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) => {
+          const videoDevices = devices.filter(
+            (device) => device.kind === 'videoinput'
+          );
+          if (videoDevices.length > 0) {
+            return videoDevices[0].deviceId;
+          }
+          return null;
+        })
+        .catch((err) => {
+          console.error(err);
+          return null;
+        })
+    );
+  
+    const constraints = {
+      video: {
+        width: { ideal: 1920 }, // Độ phân giải ngang mong muốn
+        height: { ideal: 1080 }, // Độ phân giải dọc mong muốn
+        facingMode: { ideal: 'environment' } // Ưu tiên camera sau (nếu có)
+      },
+    };
+  
+    codeReader.decodeFromVideoDevice(
+      undefined,
+      'video',
+      (result, err) => {
+        if (result) {
+          handleScan(result);
+        }
+        if (err) {
+          handleError(err);
+        }
+      },
+      hints,
+      constraints // Áp dụng constraints để tăng độ phân giải
+    );
+  
     codeReaderRef.current = codeReader;
   };
   
