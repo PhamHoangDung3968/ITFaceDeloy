@@ -32,7 +32,7 @@ import TK_StudentClassections from './components/TK_StudentClassections';
 import TK_LHPTotalStudent from './components/TK_LHPTotalStudent';
 import Dashboard from './components/dashboard';
 //Scanner
-import { BrowserMultiFormatReader } from '@zxing/library';
+import { BrowserMultiFormatReader, BrowserHints  } from '@zxing/library';
 import './dist/css/adminlte.min.css';
 import './plugins/icheck-bootstrap/icheck-bootstrap.min.css';
 import './plugins/fontawesome-free/css/all.min.css';
