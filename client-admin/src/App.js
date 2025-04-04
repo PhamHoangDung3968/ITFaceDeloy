@@ -66,6 +66,12 @@ const App = () => {
   const [showScanner, setShowScanner] = useState(false);
   const [showModal1, setShowModal1] = useState(false);
   const [scanResult, setScanResult] = useState('');
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [videoConstraints, setVideoConstraints] = useState({
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
+    facingMode: 'environment',
+  });
 
   const handleLogin = () => {
     window.location.href = 'https://itface.onrender.com/auth/microsoft';
@@ -226,20 +232,33 @@ const App = () => {
   const codeReaderRef = useRef(null);
   const startScanner = () => {
     const codeReader = new BrowserMultiFormatReader();
-    codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-      if (result) {
-        handleScan(result);
-      }
-      if (err) {
-        handleError(err);
-      }
-    });
+    const video = document.getElementById('video');
+  
+    navigator.mediaDevices
+      .getUserMedia({ video: videoConstraints })
+      .then((stream) => {
+        video.srcObject = stream;
+        video.play();
+        codeReader.decodeFromVideoElement(video, (result, err) => {
+          if (result) {
+            handleScan(result);
+          }
+          if (err) {
+            handleError(err);
+          }
+        });
+      })
+      .catch((err) => {
+        console.error('Error accessing camera:', err);
+      });
     codeReaderRef.current = codeReader;
   };
-  
-  const stopScanner = () => {
-    if (codeReaderRef.current) {
-      codeReaderRef.current.reset();
+  const handleZoomChange = (e) => {
+    const newZoomLevel = parseFloat(e.target.value);
+    setZoomLevel(newZoomLevel);
+    const video = document.getElementById('video');
+    if (video) {
+      video.style.transform = `scale(${newZoomLevel})`;
     }
   };
   
@@ -739,32 +758,41 @@ const AppContent = ({
         </div>
       )}
       {/* Scanner */}
-    {showModal1 && (
-      <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.7)' }}>
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title"><b>Quét mã QR</b></h5>
-              <button type="button" className="close" onClick={handleCloseModal}>
-                <span>&times;</span>
-              </button>
+      {showModal1 && (
+  <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+    <div className="modal-dialog">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title"><b>Quét mã QR</b></h5>
+          <button type="button" className="close" onClick={handleCloseModal}>
+            <span>&times;</span>
+          </button>
+        </div>
+        <div className="modal-body">
+          {showScanner && (
+            <div>
+              <video id="video" width="100%" height="100%"></video>
+              <input
+                type="range"
+                min="1"
+                max="3"
+                step="0.1"
+                value={zoomLevel}
+                onChange={handleZoomChange}
+                className="form-control-range" // Add a class for styling if needed
+              />
             </div>
-            <div className="modal-body">
-              {showScanner && (
-                <div>
-                  <video id="video" width="100%" height="100%"></video>
-                </div>
-              )}
-              {scanResult && (
-                <div>
-                  <p>Kết quả quét: <a href={scanResult} target="_blank" rel="noopener noreferrer">{scanResult}</a></p>
-                </div>
-              )}
+          )}
+          {scanResult && (
+            <div>
+              <p>Kết quả quét: <a href={scanResult} target="_blank" rel="noopener noreferrer">{scanResult}</a></p>
             </div>
-          </div>
+          )}
         </div>
       </div>
-    )}
+    </div>
+  </div>
+)}
     </div>
   );
 };
