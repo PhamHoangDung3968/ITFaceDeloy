@@ -1367,7 +1367,7 @@ router.post('/register_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user registration...');
-    const response = await axios.post(' https://3ca6-2001-ee0-4f80-9720-68e8-e674-8bc2-2c5d.ngrok-free.app/api/register', { name, image });
+    const response = await axios.post('https://d63b-123-21-159-111.ngrok-free.app/api/register', { name, image });
 
     console.log('Received response from Python API:', response.data);
 
@@ -1410,7 +1410,7 @@ router.post('/re_register_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Gửi yêu cầu đến API Python để đăng ký lại người dùng...');
-    const response = await axios.post(' https://3ca6-2001-ee0-4f80-9720-68e8-e674-8bc2-2c5d.ngrok-free.app/api/re_register', { name, image });
+    const response = await axios.post('https://d63b-123-21-159-111.ngrok-free.app/api/re_register', { name, image });
 
     console.log('Nhận phản hồi từ API Python:', response.data);
 
@@ -1476,7 +1476,7 @@ router.post('/login_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user login...');
-    const response = await axios.post(' https://3ca6-2001-ee0-4f80-9720-68e8-e674-8bc2-2c5d.ngrok-free.app/api/login', { name, image });
+    const response = await axios.post('https://d63b-123-21-159-111.ngrok-free.app/api/login', { name, image });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1506,7 +1506,7 @@ router.post('/check_user', async (req, res) => {
     const { name } = req.body;
 
     console.log('Sending request to Python API to check user registration...');
-    const response = await axios.post(' https://3ca6-2001-ee0-4f80-9720-68e8-e674-8bc2-2c5d.ngrok-free.app/api/check_user', { name });
+    const response = await axios.post('https://d63b-123-21-159-111.ngrok-free.app/api/check_user', { name });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1550,7 +1550,7 @@ router.post('/check_user_01/:studentID', async (req, res) => {
 router.get('/count_users_regist', async (req, res) => {
   try {
     console.log('Sending request to Python API to count pickle files...');
-    const response = await axios.get(' https://3ca6-2001-ee0-4f80-9720-68e8-e674-8bc2-2c5d.ngrok-free.app/api/count-pickle-files');
+    const response = await axios.get('https://d63b-123-21-159-111.ngrok-free.app/api/count-pickle-files');
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);

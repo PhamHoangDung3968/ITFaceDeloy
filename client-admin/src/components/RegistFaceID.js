@@ -51,6 +51,7 @@ class RegistFaceID extends Component {
     this.showToast('Tắt camera thành công!');
   };
   
+  //using AI
   handleRegisterUser = async () => {
     if (this.state.isProcessing || !this.state.isWebcamOpen) return; // Ngăn chặn việc nhấp nhiều lần và kiểm tra camera
     this.setState({ isProcessing: true });
@@ -136,7 +137,8 @@ class RegistFaceID extends Component {
 //     if (this.state.isProcessing) return; // Ngăn chặn việc nhấp nhiều lần
 //     this.setState({ isProcessing: true });
 
-//     if (!this.videoRef.current) {
+//     if (!this.state.isWebcamOpen || !this.videoRef.current) {
+//       this.showErrorToast('Camera chưa được bật hoặc không truy cập được');
 //       this.setState({ isProcessing: false });
 //       return;
 //     }
@@ -165,55 +167,57 @@ class RegistFaceID extends Component {
 //       .finally(() => {
 //         this.setState({ isProcessing: false });
 //       });
-//   };
+// };
+
 
 // checkUserRegistration = () => {
-//     const { userID } = this.props;
+//   const { userID } = this.props;
 
-//     axios.post(`/api/admin/check_user_01/${userID}`)
-//       .then(response => {
-//         this.setState({ isUserRegistered: response.data.hasImage });
-//       })
-//       .catch(error => {
-//         console.error('Error checking user registration:', error);
-//         this.setState({ isUserRegistered: false });
-//       });
+//   axios.post(`/api/admin/check_user_01/${userID}`)
+//     .then(response => {
+//       this.setState({ isUserRegistered: response.data.hasImage });
+//     })
+//     .catch(error => {
+//       console.error('Error checking user registration:', error);
+//       this.setState({ isUserRegistered: false });
+//     });
 // };
 
 
 // handleReRegisterUser = () => {
-//     if (this.state.isProcessing1) return; // Ngăn chặn việc nhấp nhiều lần
-//     this.setState({ isProcessing1: true });
+// if (this.state.isProcessing1) return; // Ngăn chặn việc nhấp nhiều lần
+// this.setState({ isProcessing1: true });
 
-//     if (!this.videoRef.current) {
-//       this.setState({ isProcessing1: false });
-//       return;
-//     }
+// if (!this.state.isWebcamOpen || !this.videoRef.current) {
+//   this.showErrorToast('Camera chưa được bật hoặc không truy cập được');
+//   this.setState({ isProcessing1: false });
+//   return;
+// }
 
-//     const canvas = document.createElement('canvas');
-//     canvas.width = this.videoRef.current.videoWidth;
-//     canvas.height = this.videoRef.current.videoHeight;
-//     const context = canvas.getContext('2d');
-//     context.drawImage(this.videoRef.current, 0, 0, canvas.width, canvas.height);
-//     const image = canvas.toDataURL('image/jpeg');
+// const canvas = document.createElement('canvas');
+// canvas.width = this.videoRef.current.videoWidth;
+// canvas.height = this.videoRef.current.videoHeight;
+// const context = canvas.getContext('2d');
+// context.drawImage(this.videoRef.current, 0, 0, canvas.width, canvas.height);
+// const image = canvas.toDataURL('image/jpeg');
 
-//     this.setState({ webcamImage: image });
+// this.setState({ webcamImage: image });
 
-//     axios.post(`/api/admin/re_register_user_01`, {
-//       studentID: this.props.userID,
-//       image: image.split(',')[1]
-//     })
-//       .then(() => {
-//         this.showToast('Đăng ký lại thành công!');
-//         this.checkUserRegistration();
-//       })
-//       .catch(error => {
-//         console.error('Error re-registering user:', error);
-//         this.showErrorToast('Đăng ký lại thất bại');
-//       })
-//       .finally(() => {
-//         this.setState({ isProcessing1: false });
-//       });
+// axios.post(`/api/admin/re_register_user_01`, {
+//   studentID: this.props.userID,
+//   image: image.split(',')[1]
+// })
+//   .then(() => {
+//     this.showToast('Đăng ký lại thành công!');
+//     this.checkUserRegistration();
+//   })
+//   .catch(error => {
+//     console.error('Error re-registering user:', error);
+//     this.showErrorToast('Đăng ký lại thất bại');
+//   })
+//   .finally(() => {
+//     this.setState({ isProcessing1: false });
+//   });
 // };
 
   //end using API

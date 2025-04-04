@@ -311,75 +311,90 @@ const handleLoginUser = () => {
 
 
 
-// const handleLoginUser = () => {
-//   if (isProcessing) return; // Ngăn chặn việc nhấp nhiều lần
-//   setIsProcessing(true);
-
-//   if (!videoRef.current) {
-//     setIsProcessing(false);
-//     return;
-//   }
-
-//   const canvas = document.createElement('canvas');
-//   canvas.width = videoRef.current.videoWidth;
-//   canvas.height = videoRef.current.videoHeight;
-//   const context = canvas.getContext('2d');
-//   context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-//   const image = canvas.toDataURL('image/jpeg');
-
-//   setWebcamImage(image);
-
-//   // Giả sử hàm loginUser xử lý logic đăng nhập nội bộ
-//   const loginUser = (name, image) => {
-//       // Logic xử lý đăng nhập
-//       // Giả sử hàm này trả về một đối tượng với thuộc tính 'status'
-//       if (name && image) {
-//           return { status: 'success' };
-//       } else {
-//           return { status: 'failure', message: 'Điểm danh thất bại' };
-//       }
-//   };
-
-//   const response = loginUser(userCode, image.split(',')[1]);
-
-//   if (response.status === 'success') {
-//       const today = new Date();
-//       const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
-//       const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
-
-//       setTimeout(() => {
-//           axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
-//               studentId: userID,
-//               date: formattedDay,
-//               status: 'Có mặt' // hoặc bất kỳ trạng thái nào bạn muốn đặt
-//           })
-//           .then(attendanceResponse => {
-//               showToast('Điểm danh thành công!');
-//               // Gọi API /send-email
-//               axios.post('/api/admin/send-email', {
-//                   classcode: classcode,
-//                   email: userEmail, // Thay thế bằng địa chỉ email thực tế
-//                   date: formattedToday,
-//                   time: currentTime,
-//                   image: image.split(',')[1] // Loại bỏ tiền tố data URL
-//               })
-//               .catch(emailError => {
-//                   console.error('Lỗi khi gửi email:', emailError);
-//               })
-//               .finally(() => {
-//                   setIsProcessing(false);
-//               });
-//           })
-//           .catch(attendanceError => {
-//               console.error('Lỗi khi cập nhật điểm danh:', attendanceError);
-//               setIsProcessing(false);
-//           });
-//       }, 5000); // Trì hoãn 5 giây
-//   } else {
-//       showErrorToast('Đăng nhập thất bại');
-//       setIsProcessing(false);
-//   }
-// };
+  // const handleLoginUser = async () => {
+  //   if (isProcessing) return; // Ngăn chặn việc nhấp nhiều lần
+  //   setIsProcessing(true);
+  
+  //   try {
+  //     const checkResponse = await axios.post(`/api/admin/check_user_01/${userID}`);
+  //     const isUserRegistered = checkResponse.data.hasImage;
+  
+  //     if (!isUserRegistered) {
+  //       showErrorToast('Người dùng chưa đăng ký');
+  //       setIsProcessing(false);
+  //       return;
+  //     }
+  
+  //     if (!videoRef.current) {
+  //       setIsProcessing(false);
+  //       return;
+  //     }
+  
+  //     const canvas = document.createElement('canvas');
+  //     canvas.width = videoRef.current.videoWidth;
+  //     canvas.height = videoRef.current.videoHeight;
+  //     const context = canvas.getContext('2d');
+  //     context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+  //     const image = canvas.toDataURL('image/jpeg');
+  
+  //     setWebcamImage(image);
+  
+  //     // Giả sử hàm loginUser xử lý logic đăng nhập nội bộ
+  //     const loginUser = (name, image) => {
+  //         // Logic xử lý đăng nhập
+  //         // Giả sử hàm này trả về một đối tượng với thuộc tính 'status'
+  //         if (name && image) {
+  //             return { status: 'success' };
+  //         } else {
+  //             return { status: 'failure', message: 'Điểm danh thất bại' };
+  //         }
+  //     };
+  
+  //     const response = loginUser(userCode, image.split(',')[1]);
+  
+  //     if (response.status === 'success') {
+  //         const today = new Date();
+  //         const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+  //         const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
+  
+  //         setTimeout(() => {
+  //             axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
+  //                 studentId: userID,
+  //                 date: formattedToday,
+  //                 status: 'Có mặt' // hoặc bất kỳ trạng thái nào bạn muốn đặt
+  //             })
+  //             .then(attendanceResponse => {
+  //                 showToast('Điểm danh thành công!');
+  //                 // Gọi API /send-email
+  //                 axios.post('/api/admin/send-email', {
+  //                     classcode: classcode,
+  //                     email: userEmail, // Thay thế bằng địa chỉ email thực tế
+  //                     date: formattedToday,
+  //                     time: currentTime,
+  //                     image: image.split(',')[1] // Loại bỏ tiền tố data URL
+  //                 })
+  //                 .catch(emailError => {
+  //                     console.error('Lỗi khi gửi email:', emailError);
+  //                 })
+  //                 .finally(() => {
+  //                     setIsProcessing(false);
+  //                 });
+  //             })
+  //             .catch(attendanceError => {
+  //                 console.error('Lỗi khi cập nhật điểm danh:', attendanceError);
+  //                 setIsProcessing(false);
+  //             });
+  //         }, 5000); // Trì hoãn 5 giây
+  //     } else {
+  //         showErrorToast('Đăng nhập thất bại');
+  //         setIsProcessing(false);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error during login process:', error);
+  //     showErrorToast('Đã xảy ra lỗi trong quá trình đăng nhập');
+  //     setIsProcessing(false);
+  //   }
+  // };
 
 
   
