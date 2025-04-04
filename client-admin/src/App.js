@@ -48,6 +48,8 @@ import './dist/css/pagination.css'; // Import custom CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IonIcon from '@reacticons/ionicons';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+
 
 
 const App = () => {
@@ -739,7 +741,7 @@ const AppContent = ({
         </div>
       )}
       {/* Scanner */}
-    {showModal1 && (
+      {showModal1 && (
       <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.7)' }}>
         <div className="modal-dialog">
           <div className="modal-content">
@@ -751,9 +753,17 @@ const AppContent = ({
             </div>
             <div className="modal-body">
               {showScanner && (
-                <div>
-                  <video id="video" width="100%" height="100%"></video>
-                </div>
+                <TransformWrapper
+                  defaultScale={1}
+                  defaultPositionX={0}
+                  defaultPositionY={0}
+                  wheel={{ disabled: false }}
+                  pinch={{ disabled: false }}
+                >
+                  <TransformComponent>
+                    <video id="video" width="100%" height="auto"></video>
+                  </TransformComponent>
+                </TransformWrapper>
               )}
               {scanResult && (
                 <div>
