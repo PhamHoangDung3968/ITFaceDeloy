@@ -241,8 +241,8 @@ const App = () => {
   const startScanner = () => {
     const codeReader = new BrowserMultiFormatReader();
     const videoConstraints = {
-      width: { ideal: 1920 }, // Set width resolution
-      height: { ideal: 1080 }, // Set height resolution
+      width: { ideal: 3840 }, // Set width resolution
+      height: { ideal: 2160 }, // Set height resolution
       facingMode: "environment" // Use the back camera if available
     };
   
