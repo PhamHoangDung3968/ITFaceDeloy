@@ -311,18 +311,61 @@ const applyFilter = (videoElement) => {
       container.appendChild(canvas);
   }
 
+  const sharpenKernel = [
+      0, -1,  0,
+      -1,  5, -1,
+       0, -1,  0
+  ];
+
   const updateFrame = () => {
       canvas.width = videoElement.videoWidth;
       canvas.height = videoElement.videoHeight;
 
-      // Bộ lọc làm mịn và tăng màu sắc
-      ctx.filter = "contrast(1.2) brightness(1.1) saturate(1.5)";
+      // Vẽ khung hình từ video
       ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+      // Lấy dữ liệu hình ảnh từ canvas
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      // Áp dụng bộ lọc làm nét
+      const filteredData = applySharpen(imageData, sharpenKernel);
+      ctx.putImageData(filteredData, 0, 0);
 
       requestAnimationFrame(updateFrame); // Vẽ lại mỗi khung hình
   };
 
   updateFrame(); // Bắt đầu xử lý
+};
+
+const applySharpen = (imageData, kernel) => {
+  const { width, height, data } = imageData;
+  const result = new Uint8ClampedArray(data); // Lưu kết quả
+
+  // Áp dụng bộ lọc kernel (matrix convolution)
+  const kernelSize = Math.sqrt(kernel.length);
+  const half = Math.floor(kernelSize / 2);
+
+  for (let y = half; y < height - half; y++) {
+      for (let x = half; x < width - half; x++) {
+          let r = 0, g = 0, b = 0;
+          for (let ky = -half; ky <= half; ky++) {
+              for (let kx = -half; kx <= half; kx++) {
+                  const pixelIndex = ((y + ky) * width + (x + kx)) * 4;
+                  const weight = kernel[(ky + half) * kernelSize + (kx + half)];
+                  r += data[pixelIndex] * weight;
+                  g += data[pixelIndex + 1] * weight;
+                  b += data[pixelIndex + 2] * weight;
+              }
+          }
+
+          const index = (y * width + x) * 4;
+          result[index] = Math.min(Math.max(r, 0), 255);
+          result[index + 1] = Math.min(Math.max(g, 0), 255);
+          result[index + 2] = Math.min(Math.max(b, 0), 255);
+      }
+  }
+
+  return new ImageData(result, width, height);
 };
 
   
