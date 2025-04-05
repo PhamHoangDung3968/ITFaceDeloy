@@ -279,7 +279,6 @@ const App = () => {
         videoElement.play();
 
         // Áp dụng bộ lọc để cải thiện chất lượng
-        applyFilter(videoElement);
 
         codeReader.decodeFromVideoElement(videoElement, (result, err) => {
             if (result) {
@@ -289,6 +288,7 @@ const App = () => {
                 handleError(err);
             }
         });
+        applyFilter(videoElement);
 
         codeReaderRef.current = codeReader;
     } catch (err) {
@@ -312,13 +312,12 @@ const applyFilter = (videoElement) => {
   }
 
   const sharpenKernel = [
-    -1, -1, -1,
-    -1,  9, -1,
-    -1, -1, -1
+      -1, -1, -1,
+      -1,  9, -1,
+      -1, -1, -1
   ]; // Kernel mạnh hơn để làm nét hình ảnh
 
   const updateFrame = () => {
-      // Kiểm tra nếu video chưa có kích thước hợp lệ
       if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
           canvas.width = videoElement.videoWidth;
           canvas.height = videoElement.videoHeight;
@@ -326,7 +325,7 @@ const applyFilter = (videoElement) => {
           // Áp dụng bộ lọc màu sắc
           ctx.filter = "contrast(1.4) brightness(1.3) saturate(1.8)";
 
-          // Vẽ khung hình từ video
+          // Vẽ khung hình từ video lên canvas
           ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
           // Lấy dữ liệu hình ảnh từ canvas
@@ -344,6 +343,7 @@ const applyFilter = (videoElement) => {
 
   updateFrame(); // Bắt đầu xử lý
 };
+
 
 const applySharpen = (imageData, kernel) => {
   const { width, height, data } = imageData;
