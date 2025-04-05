@@ -273,12 +273,13 @@ const App = () => {
         }
 
         // Reset stream với ràng buộc mới
-        const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
-        const videoElement = document.getElementById("video");
-        videoElement.srcObject = optimizedStream;
-        videoElement.play();
+        // const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+        // const videoElement = document.getElementById("video");
+        // videoElement.srcObject = optimizedStream;
+        // videoElement.play();
 
-        // Áp dụng bộ lọc để cải thiện chất lượng
+        // // Áp dụng bộ lọc để cải thiện chất lượng
+        // applyFilter(videoElement);
 
         codeReader.decodeFromVideoElement(videoElement, (result, err) => {
             if (result) {
@@ -288,7 +289,6 @@ const App = () => {
                 handleError(err);
             }
         });
-        applyFilter(videoElement);
 
         codeReaderRef.current = codeReader;
     } catch (err) {
