@@ -226,17 +226,47 @@ const App = () => {
   };
   //Scanner
   const codeReaderRef = useRef(null);
+  // const startScanner = () => {
+  //   const codeReader = new BrowserMultiFormatReader();
+  //   codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+  //     if (result) {
+  //       handleScan(result);
+  //     }
+  //     if (err) {
+  //       handleError(err);
+  //     }
+  //   });
+  //   codeReaderRef.current = codeReader;
+  // };
   const startScanner = () => {
     const codeReader = new BrowserMultiFormatReader();
-    codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-      if (result) {
-        handleScan(result);
-      }
-      if (err) {
+    const videoConstraints = {
+      width: { ideal: 1920 }, // Set width resolution
+      height: { ideal: 1080 }, // Set height resolution
+      facingMode: "environment" // Use the back camera if available
+    };
+  
+    navigator.mediaDevices
+      .getUserMedia({ video: videoConstraints })
+      .then((stream) => {
+        const videoElement = document.getElementById("video");
+        videoElement.srcObject = stream;
+        videoElement.play();
+  
+        codeReader.decodeFromVideoElement(videoElement, (result, err) => {
+          if (result) {
+            handleScan(result);
+          }
+          if (err) {
+            handleError(err);
+          }
+        });
+        codeReaderRef.current = codeReader;
+      })
+      .catch((err) => {
+        console.error("Error accessing the camera: ", err);
         handleError(err);
-      }
-    });
-    codeReaderRef.current = codeReader;
+      });
   };
   
   const stopScanner = () => {
