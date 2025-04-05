@@ -312,10 +312,11 @@ const applyFilter = (videoElement) => {
   }
 
   const sharpenKernel = [
-      0, -1,  0,
-      -1,  5, -1,
-       0, -1,  0
-  ];
+    -1, -1, -1,
+    -1,  9, -1,
+    -1, -1, -1
+  ]; // Kernel mạnh hơn để làm nét hình ảnh
+
 
   const updateFrame = () => {
       canvas.width = videoElement.videoWidth;
