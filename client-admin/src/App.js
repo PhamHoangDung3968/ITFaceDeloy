@@ -298,22 +298,33 @@ const App = () => {
 };
 
 const applyFilter = (videoElement) => {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  const container = document.getElementById("canvas-container");
 
-    setInterval(() => {
-        canvas.width = videoElement.videoWidth;
-        canvas.height = videoElement.videoHeight;
+  if (!container) {
+      const newContainer = document.createElement("div");
+      newContainer.id = "canvas-container";
+      document.body.appendChild(newContainer);
+      newContainer.appendChild(canvas);
+  } else {
+      container.appendChild(canvas);
+  }
 
-        // Bộ lọc làm mịn, tăng màu sắc, và độ tương phản
-        ctx.filter = "contrast(1.2) brightness(1.1) saturate(1.5)";
-        ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+  const updateFrame = () => {
+      canvas.width = videoElement.videoWidth;
+      canvas.height = videoElement.videoHeight;
 
-        // Chuyển đổi khung hình đã xử lý thành video stream mới
-        const processedStream = canvas.captureStream(30); // 30 FPS
-        videoElement.srcObject = processedStream;
-    }, 1000 / 30); // Xử lý 30 khung hình mỗi giây
+      // Bộ lọc làm mịn và tăng màu sắc
+      ctx.filter = "contrast(1.2) brightness(1.1) saturate(1.5)";
+      ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+      requestAnimationFrame(updateFrame); // Vẽ lại mỗi khung hình
+  };
+
+  updateFrame(); // Bắt đầu xử lý
 };
+
   
   const stopScanner = () => {
     if (codeReaderRef.current) {
