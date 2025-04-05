@@ -317,20 +317,27 @@ const applyFilter = (videoElement) => {
     -1, -1, -1
   ]; // Kernel mạnh hơn để làm nét hình ảnh
 
-
   const updateFrame = () => {
-      canvas.width = videoElement.videoWidth;
-      canvas.height = videoElement.videoHeight;
+      // Kiểm tra nếu video chưa có kích thước hợp lệ
+      if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
+          canvas.width = videoElement.videoWidth;
+          canvas.height = videoElement.videoHeight;
 
-      // Vẽ khung hình từ video
-      ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+          // Áp dụng bộ lọc màu sắc
+          ctx.filter = "contrast(1.4) brightness(1.3) saturate(1.8)";
 
-      // Lấy dữ liệu hình ảnh từ canvas
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          // Vẽ khung hình từ video
+          ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
-      // Áp dụng bộ lọc làm nét
-      const filteredData = applySharpen(imageData, sharpenKernel);
-      ctx.putImageData(filteredData, 0, 0);
+          // Lấy dữ liệu hình ảnh từ canvas
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+          // Áp dụng bộ lọc làm nét
+          const filteredData = applySharpen(imageData, sharpenKernel);
+          ctx.putImageData(filteredData, 0, 0);
+      } else {
+          console.warn("Video element chưa có kích thước. Đang chờ video sẵn sàng...");
+      }
 
       requestAnimationFrame(updateFrame); // Vẽ lại mỗi khung hình
   };
