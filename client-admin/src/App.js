@@ -378,10 +378,19 @@ const applySharpen = (imageData, kernel) => {
   
   const handleScan = (result) => {
     if (result) {
-      setScanResult(result.text);
-      window.location.href = result.text; // Redirect to the scanned URL
+        const scannedText = result.text;
+        console.log("Kết quả quét:", scannedText); // Kiểm tra kết quả trên console
+
+        // Kiểm tra nếu kết quả là URL hợp lệ
+        const isValidURL = scannedText.startsWith("http://") || scannedText.startsWith("https://");
+        if (isValidURL) {
+            setScanResult(scannedText);
+            window.location.href = scannedText; // Chuyển hướng nếu là URL
+        } else {
+            alert("Mã QR không chứa URL hợp lệ!");
+        }
     }
-  };
+};
   
   const handleError = (err) => {
     console.error(err);
@@ -896,7 +905,6 @@ const AppContent = ({
                   </TransformComponent>
                 </TransformWrapper>
               )}
-              <p>Hãy zoom lên khi bạn ngồi quá xa!</p>
               {scanResult && (
                 <div>
                   <p>Kết quả quét: <a href={scanResult} target="_blank" rel="noopener noreferrer">{scanResult}</a></p>
