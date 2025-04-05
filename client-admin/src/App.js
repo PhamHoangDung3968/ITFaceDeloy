@@ -238,35 +238,60 @@ const App = () => {
   //   });
   //   codeReaderRef.current = codeReader;
   // };
-  const startScanner = () => {
+  const startScanner = async () => {
     const codeReader = new BrowserMultiFormatReader();
-    const videoConstraints = {
-      width: { ideal: 3840 }, // Set width resolution
-      height: { ideal: 2160 }, // Set height resolution
-      facingMode: "environment" // Use the back camera if available
-    };
   
-    navigator.mediaDevices
-      .getUserMedia({ video: videoConstraints })
-      .then((stream) => {
-        const videoElement = document.getElementById("video");
-        videoElement.srcObject = stream;
-        videoElement.play();
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoInputDevices = devices.filter(device => device.kind === "videoinput");
   
-        codeReader.decodeFromVideoElement(videoElement, (result, err) => {
-          if (result) {
-            handleScan(result);
-          }
-          if (err) {
-            handleError(err);
-          }
-        });
-        codeReaderRef.current = codeReader;
-      })
-      .catch((err) => {
-        console.error("Error accessing the camera: ", err);
-        handleError(err);
+      if (videoInputDevices.length === 0) {
+        throw new Error("Không tìm thấy camera nào!");
+      }
+  
+      // Lấy thông tin từ camera đầu tiên
+      const constraints = { video: { deviceId: { exact: videoInputDevices[0].deviceId } } };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const videoTrack = stream.getVideoTracks()[0];
+      const capabilities = videoTrack.getCapabilities();
+  
+      // Ưu tiên độ phân giải 4K nếu khả dụng
+      let videoConstraints = {};
+      if (capabilities.width && capabilities.height) {
+        videoConstraints = {
+          width: { ideal: 3840, max: capabilities.width.max }, // Độ phân giải 4K hoặc tối đa
+          height: { ideal: 2160, max: capabilities.height.max }, 
+          facingMode: "environment"
+        };
+      } else {
+        // Thiết bị không hỗ trợ 4K, fallback xuống tiêu chuẩn thấp hơn
+        videoConstraints = {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "environment"
+        };
+      }
+  
+      // Reset stream với ràng buộc mới
+      const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+      const videoElement = document.getElementById("video");
+      videoElement.srcObject = optimizedStream;
+      videoElement.play();
+  
+      codeReader.decodeFromVideoElement(videoElement, (result, err) => {
+        if (result) {
+          handleScan(result);
+        }
+        if (err) {
+          handleError(err);
+        }
       });
+  
+      codeReaderRef.current = codeReader;
+    } catch (err) {
+      console.error("Lỗi khi truy cập camera: ", err);
+      handleError(err);
+    }
   };
   
   const stopScanner = () => {
