@@ -240,7 +240,7 @@ const App = () => {
   // };
   const startScanner = async () => {
     const codeReader = new BrowserMultiFormatReader();
-  
+
     try {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoInputDevices = devices.filter(device => device.kind === "videoinput");
@@ -250,7 +250,11 @@ const App = () => {
         }
 
         // Lấy thông tin từ camera đầu tiên
-        const constraints = { video: { deviceId: { exact: videoInputDevices[0].deviceId } } };
+        const constraints = { 
+            video: { 
+                deviceId: { exact: videoInputDevices[0].deviceId } 
+            } 
+        };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         const videoTrack = stream.getVideoTracks()[0];
         const capabilities = videoTrack.getCapabilities();
@@ -264,29 +268,30 @@ const App = () => {
                 facingMode: "environment"
             };
         } else {
-            // Thiết bị không hỗ trợ 4K, fallback xuống tiêu chuẩn thấp hơn
+            // Nếu thiết bị không hỗ trợ 4K, sử dụng cài đặt fallback
             videoConstraints = {
                 width: { ideal: 1280 },
                 height: { ideal: 720 },
-                facingMode: "environment"
+                facingMode: "environment" // Đảm bảo logic này được giữ nguyên
             };
         }
 
         // Reset stream với ràng buộc mới
-        // const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
-        // const videoElement = document.getElementById("video");
-        // videoElement.srcObject = optimizedStream;
-        // videoElement.play();
+        const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+        const videoElement = document.getElementById("video");
+        videoElement.srcObject = optimizedStream;
+        videoElement.play();
 
-        // // Áp dụng bộ lọc để cải thiện chất lượng
-        // applyFilter(videoElement);
+        // Áp dụng bộ lọc để cải thiện chất lượng hiển thị
+        applyFilter(videoElement);
 
+        // Quét mã QR từ video element
         codeReader.decodeFromVideoElement(videoElement, (result, err) => {
             if (result) {
-                handleScan(result);
+                handleScan(result); // Xử lý kết quả quét
             }
             if (err) {
-                handleError(err);
+                handleError(err); // Xử lý lỗi
             }
         });
 
@@ -298,50 +303,50 @@ const App = () => {
 };
 
 const applyFilter = (videoElement) => {
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  const container = document.getElementById("canvas-container");
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const container = document.getElementById("canvas-container");
 
-  if (!container) {
-      const newContainer = document.createElement("div");
-      newContainer.id = "canvas-container";
-      document.body.appendChild(newContainer);
-      newContainer.appendChild(canvas);
-  } else {
-      container.appendChild(canvas);
-  }
+    if (!container) {
+        const newContainer = document.createElement("div");
+        newContainer.id = "canvas-container";
+        document.body.appendChild(newContainer);
+        newContainer.appendChild(canvas);
+    } else {
+        container.appendChild(canvas);
+    }
 
-  const sharpenKernel = [
-      -1, -1, -1,
-      -1,  9, -1,
-      -1, -1, -1
-  ]; // Kernel mạnh hơn để làm nét hình ảnh
+    const sharpenKernel = [
+        -1, -1, -1,
+        -1,  9, -1,
+        -1, -1, -1
+    ]; // Kernel mạnh hơn để làm nét hình ảnh
 
-  const updateFrame = () => {
-      if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
-          canvas.width = videoElement.videoWidth;
-          canvas.height = videoElement.videoHeight;
+    const updateFrame = () => {
+        if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
 
-          // Áp dụng bộ lọc màu sắc
-          ctx.filter = "contrast(1.4) brightness(1.3) saturate(1.8)";
+            // Áp dụng bộ lọc màu sắc
+            ctx.filter = "contrast(1.4) brightness(1.3) saturate(1.8)";
 
-          // Vẽ khung hình từ video lên canvas
-          ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            // Vẽ khung hình từ video lên canvas
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
-          // Lấy dữ liệu hình ảnh từ canvas
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            // Lấy dữ liệu hình ảnh từ canvas
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-          // Áp dụng bộ lọc làm nét
-          const filteredData = applySharpen(imageData, sharpenKernel);
-          ctx.putImageData(filteredData, 0, 0);
-      } else {
-          console.warn("Video element chưa có kích thước. Đang chờ video sẵn sàng...");
-      }
+            // Áp dụng bộ lọc làm nét
+            const filteredData = applySharpen(imageData, sharpenKernel);
+            ctx.putImageData(filteredData, 0, 0);
+        } else {
+            console.warn("Video element chưa có kích thước. Đang chờ video sẵn sàng...");
+        }
 
-      requestAnimationFrame(updateFrame); // Vẽ lại mỗi khung hình
-  };
+        requestAnimationFrame(updateFrame); // Vẽ lại mỗi khung hình
+    };
 
-  updateFrame(); // Bắt đầu xử lý
+    updateFrame(); // Bắt đầu xử lý
 };
 
 
