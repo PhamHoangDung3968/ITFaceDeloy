@@ -852,6 +852,7 @@ const AppContent = ({
                   </TransformComponent>
                 </TransformWrapper>
               )}
+              <p>Hãy zoom lên khi bạn ngồi quá xa!</p>
               {scanResult && (
                 <div>
                   <p>Kết quả quét: <a href={scanResult} target="_blank" rel="noopener noreferrer">{scanResult}</a></p>
