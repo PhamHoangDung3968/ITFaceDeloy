@@ -272,7 +272,7 @@ const App = () => {
             videoConstraints = {
                 width: { ideal: 1280 },
                 height: { ideal: 720 },
-                facingMode: "environment" // Đảm bảo logic này được giữ nguyên
+                facingMode: "environment"
             };
         }
 
@@ -282,20 +282,31 @@ const App = () => {
         videoElement.srcObject = optimizedStream;
         videoElement.play();
 
-        // Áp dụng bộ lọc để cải thiện chất lượng hiển thị
-        applyFilter(videoElement);
+        // Tùy chỉnh logic decodeFromVideoDevice
+        const processFrame = async () => {
+            try {
+                const frame = new OffscreenCanvas(videoElement.videoWidth, videoElement.videoHeight);
+                const ctx = frame.getContext("2d");
+                ctx.drawImage(videoElement, 0, 0, videoElement.videoWidth, videoElement.videoHeight);
 
-        // Quét mã QR từ video element
-        codeReader.decodeFromVideoElement(videoElement, (result, err) => {
-            if (result) {
-                handleScan(result); // Xử lý kết quả quét
-            }
-            if (err) {
-                handleError(err); // Xử lý lỗi
-            }
-        });
+                const imageData = ctx.getImageData(0, 0, videoElement.videoWidth, videoElement.videoHeight);
+                const result = await codeReader.decodeFromImage(imageData);
 
+                if (result) {
+                    handleScan(result); // Xử lý kết quả quét
+                }
+            } catch (err) {
+                // Không làm gì nếu không tìm thấy mã QR (chỉ báo lỗi)
+                console.warn("Không tìm thấy mã QR:", err);
+            }
+
+            requestAnimationFrame(processFrame);
+        };
+
+        // Bắt đầu quét mã từ video element
+        processFrame();
         codeReaderRef.current = codeReader;
+
     } catch (err) {
         console.error("Lỗi khi truy cập camera: ", err);
         handleError(err);
