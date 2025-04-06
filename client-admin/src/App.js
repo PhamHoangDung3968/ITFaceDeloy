@@ -494,6 +494,82 @@ const App = () => {
 
 
 
+// const startScanner = async () => {
+//   const codeReader = new BrowserMultiFormatReader();
+
+//   try {
+//       const devices = await navigator.mediaDevices.enumerateDevices();
+//       const videoInputDevices = devices.filter(device => device.kind === "videoinput");
+
+//       if (videoInputDevices.length === 0) {
+//           throw new Error("Không tìm thấy camera nào!");
+//       }
+
+//       // Lấy thông tin từ camera đầu tiên
+//       const constraints = { 
+//           video: { 
+//               deviceId: { exact: videoInputDevices[0].deviceId } 
+//           } 
+//       };
+
+//       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+//       const videoTrack = stream.getVideoTracks()[0];
+//       const capabilities = videoTrack.getCapabilities();
+
+//       // Tăng độ phân giải tối đa dựa vào khả năng thiết bị
+//       let videoConstraints = {};
+//       if (capabilities.width && capabilities.height) {
+//           const maxWidth = capabilities.width.max || 7680; // Dùng độ phân giải tối đa (8K) nếu có
+//           const maxHeight = capabilities.height.max || 4320;
+//           const idealWidth = Math.min(maxWidth, 7680); // Giới hạn 8K
+//           const idealHeight = Math.min(maxHeight, 4320);
+
+//           videoConstraints = {
+//               width: { ideal: idealWidth, max: maxWidth },
+//               height: { ideal: idealHeight, max: maxHeight },
+//               facingMode: "environment" // Camera sau
+//           };
+//       } else {
+//           // Fallback xuống độ phân giải tiêu chuẩn
+//           videoConstraints = {
+//               width: { ideal: 3840 },
+//               height: { ideal: 2160 },
+//               facingMode: "environment"
+//           };
+//       }
+
+//       // Áp dụng stream với cấu hình tối ưu
+//       const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+//       const videoElement = document.getElementById("video");
+//       videoElement.srcObject = optimizedStream;
+//       videoElement.play();
+
+//       // Tiến hành quét mã QR sau khi camera đã khởi động
+//       codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+//           if (result) {
+//               console.log("Quét thành công:", result.text);
+//               handleScan(result);
+//           }
+//           if (err) {
+//               console.warn("Lỗi khi quét mã:", err);
+//               handleError(err);
+//           }
+//       });
+
+//       codeReaderRef.current = codeReader;
+
+//       // Ghi log thông tin độ phân giải
+//       videoElement.onloadedmetadata = () => {
+//           alert(`Độ phân giải camera: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+//       };
+//   } catch (err) {
+//       console.error("Lỗi khi truy cập camera hoặc quét mã:", err);
+//       handleError(err);
+//   }
+// };
+
+
+
 const startScanner = async () => {
   const codeReader = new BrowserMultiFormatReader();
 
@@ -505,69 +581,54 @@ const startScanner = async () => {
           throw new Error("Không tìm thấy camera nào!");
       }
 
-      // Lấy thông tin từ camera đầu tiên
-      const constraints = { 
-          video: { 
-              deviceId: { exact: videoInputDevices[0].deviceId } 
-          } 
+      const deviceId = videoInputDevices[0].deviceId;
+
+      // Define your desired video constraints
+      const videoConstraints = {
+          width: { ideal: 3840, max: 7680 }, // Try for 4K, up to 8K
+          height: { ideal: 2160, max: 4320 },
+          facingMode: "environment"
+      };
+
+      const constraints = {
+          video: {
+              deviceId: { exact: deviceId },
+              ...videoConstraints // Apply desired constraints directly
+          }
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      const videoTrack = stream.getVideoTracks()[0];
-      const capabilities = videoTrack.getCapabilities();
-
-      // Tăng độ phân giải tối đa dựa vào khả năng thiết bị
-      let videoConstraints = {};
-      if (capabilities.width && capabilities.height) {
-          const maxWidth = capabilities.width.max || 7680; // Dùng độ phân giải tối đa (8K) nếu có
-          const maxHeight = capabilities.height.max || 4320;
-          const idealWidth = Math.min(maxWidth, 7680); // Giới hạn 8K
-          const idealHeight = Math.min(maxHeight, 4320);
-
-          videoConstraints = {
-              width: { ideal: idealWidth, max: maxWidth },
-              height: { ideal: idealHeight, max: maxHeight },
-              facingMode: "environment" // Camera sau
-          };
-      } else {
-          // Fallback xuống độ phân giải tiêu chuẩn
-          videoConstraints = {
-              width: { ideal: 3840 },
-              height: { ideal: 2160 },
-              facingMode: "environment"
-          };
-      }
-
-      // Áp dụng stream với cấu hình tối ưu
-      const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
       const videoElement = document.getElementById("video");
-      videoElement.srcObject = optimizedStream;
-      videoElement.play();
+      videoElement.srcObject = stream;
 
-      // Tiến hành quét mã QR sau khi camera đã khởi động
-      codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-          if (result) {
-              console.log("Quét thành công:", result.text);
-              handleScan(result);
-          }
-          if (err) {
-              console.warn("Lỗi khi quét mã:", err);
-              handleError(err);
-          }
+      videoElement.onloadedmetadata = () => {
+          alert(`Độ phân giải camera sau khi tải metadata: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+      };
+
+      videoElement.play().then(() => {
+          console.log(`Độ phân giải camera đang phát: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+          // Tiến hành quét mã QR sau khi camera đã khởi động và metadata đã được tải
+          codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+              if (result) {
+                  console.log("Quét thành công:", result.text);
+                  handleScan(result);
+              }
+              if (err) {
+                  console.warn("Lỗi khi quét mã:", err);
+                  handleError(err);
+              }
+          });
+          codeReaderRef.current = codeReader;
+      }).catch(error => {
+          console.error("Lỗi khi phát video:", error);
+          handleError(error);
       });
 
-      codeReaderRef.current = codeReader;
-
-      // Ghi log thông tin độ phân giải
-      videoElement.onloadedmetadata = () => {
-          alert(`Độ phân giải camera: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-      };
   } catch (err) {
       console.error("Lỗi khi truy cập camera hoặc quét mã:", err);
       handleError(err);
   }
 };
-
   
   const stopScanner = () => {
     if (codeReaderRef.current) {
@@ -1091,13 +1152,7 @@ const AppContent = ({
                   pinch={{ disabled: false }}
                 >
                   <TransformComponent>
-                    {/* <video id="video" width="100%" height="auto"></video> */}
-                    <video
-                        id="video"
-                        style={{ width: '100%', height: 'auto', maxWidth: '3024px', maxHeight: '4032px' }}
-                        playsInline
-                    ></video>
-
+                    <video id="video" width="100%" height="auto"></video>
                   </TransformComponent>
                 </TransformWrapper>
               )}
