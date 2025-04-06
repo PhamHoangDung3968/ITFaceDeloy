@@ -573,8 +573,10 @@ const App = () => {
 const startScanner = async () => {
   const codeReader = new BrowserMultiFormatReader();
   let videoInputDevices = []; // Khai báo ở ngoài khối try
-  const desiredWidth = 3840; // Độ phân giải mong muốn (4K)
-  const desiredHeight = 2160;
+  // const desiredWidth = 1920; // Độ phân giải mong muốn
+  // const desiredHeight = 1080;
+  const desiredWidth = 2560; // Thử QHD
+const desiredHeight = 1440;
 
   try {
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -586,56 +588,32 @@ const startScanner = async () => {
 
       const deviceId = videoInputDevices[0].deviceId;
 
-      // Cố gắng đặt độ phân giải chính xác (ưu tiên 4K)
-      const videoConstraintsExact = {
+      // Cố gắng đặt độ phân giải chính xác
+      const videoConstraints = {
           width: { exact: desiredWidth },
           height: { exact: desiredHeight },
           facingMode: "environment"
       };
 
-      const constraintsExact = {
+      const constraints = {
           video: {
               deviceId: { exact: deviceId },
-              ...videoConstraintsExact
+              ...videoConstraints
           }
       };
 
-      let stream;
-      try {
-          stream = await navigator.mediaDevices.getUserMedia(constraintsExact);
-          console.log(`Đã lấy stream với độ phân giải yêu cầu (exact 4K): ${desiredWidth}x${desiredHeight}`);
-      } catch (errorExact) {
-          console.warn(`Không thể lấy stream với độ phân giải chính xác ${desiredWidth}x${desiredHeight}:`, errorExact);
-          alert(`Không thể thiết lập camera ở độ phân giải ${desiredWidth}x${desiredHeight}. Thử độ phân giải tối ưu.`);
-
-          // Fallback với độ phân giải ideal cao hơn (ưu tiên Full HD, max 4K)
-          const videoConstraintsIdeal = {
-              width: { ideal: 1920, max: 3840 },
-              height: { ideal: 1080, max: 2160 },
-              facingMode: "environment"
-          };
-
-          const constraintsIdeal = {
-              video: {
-                  deviceId: { exact: deviceId },
-                  ...videoConstraintsIdeal
-              }
-          };
-          stream = await navigator.mediaDevices.getUserMedia(constraintsIdeal);
-          console.log(`Đã lấy stream với độ phân giải ideal (ưu tiên Full HD, max 4K): 1920x1080 (tối đa ${desiredWidth}x${desiredHeight})`);
-      }
-
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       const videoElement = document.getElementById("video");
       if (videoElement) {
           videoElement.srcObject = stream;
 
           videoElement.onloadedmetadata = () => {
-              console.log(`Độ phân giải camera sau khi tải metadata: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-              alert(`Độ phân giải camera đang phát: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+              console.log(`Độ phân giải camera (yêu cầu): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
           };
 
           videoElement.play().then(() => {
               alert(`Độ phân giải camera đang phát (thực tế): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+              // Tiến hành quét mã QR sau khi camera đã khởi động và metadata đã được tải
               codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
                   if (result) {
                       console.log("Quét thành công:", result.text);
@@ -656,9 +634,58 @@ const startScanner = async () => {
       }
 
   } catch (error) {
-      console.error("Lỗi khi truy cập camera hoặc quét mã:", error);
-      handleError(error);
-      alert("Không thể khởi động camera. Vui lòng kiểm tra quyền truy cập.");
+      console.error(`Không thể lấy luồng với độ phân giải ${desiredWidth}x${desiredHeight}:`, error);
+      alert(`Không thể thiết lập camera ở độ phân giải ${desiredWidth}x${desiredHeight}. Trình duyệt sẽ cố gắng sử dụng độ phân giải mặc định.`);
+
+      // Thử lại mà không có ràng buộc độ phân giải chính xác
+      const fallbackConstraints = {
+          video: {
+              deviceId: videoInputDevices.length > 0 ? { exact: videoInputDevices[0].deviceId } : undefined,
+              width: { ideal: 1920, max: 3840 },
+              height: { ideal: 1080, max: 2160 },
+              facingMode: "environment"
+          }
+      };
+
+      if (fallbackConstraints.video.deviceId) {
+          try {
+              const fallbackStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+              const videoElement = document.getElementById("video");
+              if (videoElement) {
+                  videoElement.srcObject = fallbackStream;
+                  videoElement.onloadedmetadata = () => {
+                      console.log(`Độ phân giải camera (fallback): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+                  };
+                  videoElement.play().then(() => {
+                      console.log(`Độ phân giải camera đang phát (fallback): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+                      codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+                          if (result) {
+                              console.log("Quét thành công (fallback):", result.text);
+                              handleScan(result);
+                          }
+                          if (err) {
+                              console.warn("Lỗi khi quét mã (fallback):", err);
+                              handleError(err);
+                          }
+                      });
+                      codeReaderRef.current = codeReader;
+                  }).catch(fallbackError => {
+                      console.error("Lỗi khi phát video (fallback):", fallbackError);
+                      handleError(fallbackError);
+                  });
+              } else {
+                  console.error("Không tìm thấy phần tử video với id 'video' trong fallback");
+              }
+          } catch (fallbackError) {
+              console.error("Lỗi khi truy cập camera (fallback):", fallbackError);
+              handleError(fallbackError);
+              alert("Không thể khởi động camera. Vui lòng kiểm tra quyền truy cập.");
+          }
+      } else {
+          console.error("Không có camera nào được tìm thấy để fallback.");
+          alert("Không thể khởi động camera. Vui lòng kiểm tra quyền truy cập.");
+          handleError(error);
+      }
   }
 };
   
