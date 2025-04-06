@@ -25,22 +25,46 @@ class RegistFaceID extends Component {
     this.checkUserRegistration();
   }
 
-  handleOpenWebcam = async () => {
+  // handleOpenWebcam = async () => {
+  //   if (navigator.mediaDevices?.getUserMedia) {
+  //     try {
+  //       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  //       if (this.videoRef.current) {
+  //         this.videoRef.current.srcObject = stream;
+  //         this.videoRef.current.play();
+  //         this.setState({ isWebcamOpen: true });
+  //         this.showToast('Bật camera thành công!');
+  //       }
+  //     } catch (error) {
+  //       console.error('Error accessing webcam:', error);
+  //       this.showErrorToast('Không truy cập được camera!');
+  //     }
+  //   }
+  // };
+
+  handleOpenWebcam = () => {
     if (navigator.mediaDevices?.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        if (this.videoRef.current) {
-          this.videoRef.current.srcObject = stream;
-          this.videoRef.current.play();
-          this.setState({ isWebcamOpen: true });
-          this.showToast('Bật camera thành công!');
-        }
-      } catch (error) {
-        console.error('Error accessing webcam:', error);
-        this.showErrorToast('Không truy cập được camera!');
-      }
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          if (this.videoRef.current) {
+            this.videoRef.current.srcObject = stream;
+            this.videoRef.current.play();
+            this.setState({ isWebcamOpen: true });
+            this.showToast('Bật camera thành công!');
+  
+            // Get video track settings
+            const videoTrack = stream.getVideoTracks()[0];
+            const settings = videoTrack.getSettings();
+            alert(`Độ phân giải camera: ${settings.width}x${settings.height}`);
+          }
+        })
+        .catch(error => {
+          console.error('Error accessing webcam:', error);
+          this.showErrorToast('Không truy cập được camera!');
+        });
     }
   };
+  
   
   handleCloseWebcam = () => {
     if (this.videoRef.current?.srcObject) {
