@@ -560,7 +560,7 @@ const startScanner = async () => {
 
       // Ghi log thông tin độ phân giải
       videoElement.onloadedmetadata = () => {
-          console.log(`Độ phân giải camera: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+          alert(`Độ phân giải camera: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
       };
   } catch (err) {
       console.error("Lỗi khi truy cập camera hoặc quét mã:", err);
