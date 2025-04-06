@@ -573,8 +573,10 @@ const App = () => {
 const startScanner = async () => {
   const codeReader = new BrowserMultiFormatReader();
   let videoInputDevices = []; // Khai báo ở ngoài khối try
-  const desiredWidth = 1920; // Độ phân giải mong muốn
-  const desiredHeight = 1080;
+  // const desiredWidth = 1920; // Độ phân giải mong muốn
+  // const desiredHeight = 1080;
+  const desiredWidth = 2560; // Thử QHD
+  const desiredHeight = 1440;
 
   try {
       const devices = await navigator.mediaDevices.enumerateDevices();
