@@ -396,7 +396,7 @@ const startScanner = async () => {
       if (capabilities.width && capabilities.height) {
           const maxWidth = capabilities.width.max || 3840;
           const maxHeight = capabilities.height.max || 2160;
-          const idealWidth = Math.min(maxWidth, 3840); // Ưu tiên 4K nhưng không vượt quá khả năng thiết bị
+          const idealWidth = Math.min(maxWidth, 3840);
           const idealHeight = Math.min(maxHeight, 2160);
 
           videoConstraints = {
@@ -405,7 +405,6 @@ const startScanner = async () => {
               facingMode: "environment"
           };
       } else {
-          // Fallback xuống độ phân giải tiêu chuẩn
           videoConstraints = {
               width: { ideal: 1920 },
               height: { ideal: 1080 },
@@ -413,14 +412,26 @@ const startScanner = async () => {
           };
       }
 
-      // Áp dụng lấy nét liên tục nếu được hỗ trợ
+      // Kích hoạt lấy nét hoặc zoom nếu hỗ trợ
       if (capabilities.focusMode && capabilities.focusMode.includes("continuous")) {
           console.log("Camera hỗ trợ lấy nét liên tục");
           videoTrack.applyConstraints({
               advanced: [{ focusMode: "continuous" }]
           });
+      } else if (capabilities.focusMode && capabilities.focusMode.includes("manual")) {
+          console.log("Camera hỗ trợ lấy nét thủ công");
+          videoTrack.applyConstraints({
+              advanced: [{ focusMode: "manual", focusDistance: 10 }] // Khoảng cách lấy nét tùy chỉnh
+          });
       } else {
-          console.warn("Camera không hỗ trợ lấy nét liên tục");
+          console.warn("Camera không hỗ trợ lấy nét liên tục hoặc thủ công");
+      }
+
+      if (capabilities.zoom) {
+          console.log(`Camera hỗ trợ zoom, giá trị tối đa: ${capabilities.zoom.max}`);
+          videoTrack.applyConstraints({
+              advanced: [{ zoom: Math.min(capabilities.zoom.max, 2) }] // Tăng zoom (tối đa x2 hoặc giá trị khả dụng)
+          });
       }
 
       // Áp dụng stream với cấu hình tối ưu
@@ -429,7 +440,7 @@ const startScanner = async () => {
       videoElement.srcObject = optimizedStream;
       videoElement.play();
 
-      // Tăng chất lượng hình ảnh với bộ lọc (chỉ hiển thị, không ảnh hưởng quét QR)
+      // Tăng chất lượng hình ảnh với bộ lọc
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       const container = document.getElementById("canvas-container");
@@ -455,11 +466,11 @@ const startScanner = async () => {
           updateFrame();
       });
 
-      // Tiến hành quét mã QR sau khi camera đã khởi động
+      // Quét mã QR
       codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
           if (result) {
               console.log("Quét thành công:", result.text);
-              handleScan(result); // Xử lý kết quả quét
+              handleScan(result);
           }
           if (err) {
               console.warn("Lỗi khi quét mã:", err);
