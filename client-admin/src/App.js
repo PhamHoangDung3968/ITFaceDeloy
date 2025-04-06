@@ -238,158 +238,201 @@ const App = () => {
   //   });
   //   codeReaderRef.current = codeReader;
   // };
-  const startScanner = async () => {
-    const codeReader = new BrowserMultiFormatReader();
+//   const startScanner = async () => {
+//     const codeReader = new BrowserMultiFormatReader();
+  
+//     try {
+//         const devices = await navigator.mediaDevices.enumerateDevices();
+//         const videoInputDevices = devices.filter(device => device.kind === "videoinput");
 
-    try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoInputDevices = devices.filter(device => device.kind === "videoinput");
+//         if (videoInputDevices.length === 0) {
+//             throw new Error("Không tìm thấy camera nào!");
+//         }
 
-        if (videoInputDevices.length === 0) {
-            throw new Error("Không tìm thấy camera nào!");
-        }
+//         // Lấy thông tin từ camera đầu tiên
+//         const constraints = { video: { deviceId: { exact: videoInputDevices[0].deviceId } } };
+//         const stream = await navigator.mediaDevices.getUserMedia(constraints);
+//         const videoTrack = stream.getVideoTracks()[0];
+//         const capabilities = videoTrack.getCapabilities();
 
-        // Lấy thông tin từ camera đầu tiên
-        const constraints = { 
-            video: { 
-                deviceId: { exact: videoInputDevices[0].deviceId } 
-            } 
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        const videoTrack = stream.getVideoTracks()[0];
-        const capabilities = videoTrack.getCapabilities();
+//         // Ưu tiên độ phân giải 4K nếu khả dụng
+//         let videoConstraints = {};
+//         if (capabilities.width && capabilities.height) {
+//             videoConstraints = {
+//                 width: { ideal: 3840, max: capabilities.width.max }, // Độ phân giải 4K hoặc tối đa
+//                 height: { ideal: 2160, max: capabilities.height.max },
+//                 facingMode: "environment"
+//             };
+//         } else {
+//             // Thiết bị không hỗ trợ 4K, fallback xuống tiêu chuẩn thấp hơn
+//             videoConstraints = {
+//                 width: { ideal: 1280 },
+//                 height: { ideal: 720 },
+//                 facingMode: "environment"
+//             };
+//         }
 
-        // Ưu tiên độ phân giải 4K nếu khả dụng
-        let videoConstraints = {};
-        if (capabilities.width && capabilities.height) {
-            videoConstraints = {
-                width: { ideal: 3840, max: capabilities.width.max }, // Độ phân giải 4K hoặc tối đa
-                height: { ideal: 2160, max: capabilities.height.max },
-                facingMode: "environment"
-            };
-        } else {
-            // Nếu thiết bị không hỗ trợ 4K, sử dụng cài đặt fallback
-            videoConstraints = {
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                facingMode: "environment"
-            };
-        }
+//         // Reset stream với ràng buộc mới
+//         const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+//         const videoElement = document.getElementById("video");
+//         videoElement.srcObject = optimizedStream;
+//         videoElement.play();
 
-        // Reset stream với ràng buộc mới
-        const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
-        const videoElement = document.getElementById("video");
-        videoElement.srcObject = optimizedStream;
-        videoElement.play();
+//         // Áp dụng bộ lọc để cải thiện chất lượng
+//         applyFilter(videoElement);
 
-        // Tùy chỉnh logic decodeFromVideoDevice
-        const processFrame = async () => {
-            try {
-                const frame = new OffscreenCanvas(videoElement.videoWidth, videoElement.videoHeight);
-                const ctx = frame.getContext("2d");
-                ctx.drawImage(videoElement, 0, 0, videoElement.videoWidth, videoElement.videoHeight);
+//         codeReader.decodeFromVideoElement(videoElement, (result, err) => {
+//             if (result) {
+//                 handleScan(result);
+//             }
+//             if (err) {
+//                 handleError(err);
+//             }
+//         });
 
-                const imageData = ctx.getImageData(0, 0, videoElement.videoWidth, videoElement.videoHeight);
-                const result = await codeReader.decodeFromImage(imageData);
+//         codeReaderRef.current = codeReader;
+//     } catch (err) {
+//         console.error("Lỗi khi truy cập camera: ", err);
+//         handleError(err);
+//     }
+// };
 
-                if (result) {
-                    handleScan(result); // Xử lý kết quả quét
-                }
-            } catch (err) {
-                // Không làm gì nếu không tìm thấy mã QR (chỉ báo lỗi)
-                console.warn("Không tìm thấy mã QR:", err);
-            }
+// const applyFilter = (videoElement) => {
+//   const canvas = document.createElement("canvas");
+//   const ctx = canvas.getContext("2d");
+//   const container = document.getElementById("canvas-container");
 
-            requestAnimationFrame(processFrame);
-        };
+//   if (!container) {
+//       const newContainer = document.createElement("div");
+//       newContainer.id = "canvas-container";
+//       document.body.appendChild(newContainer);
+//       newContainer.appendChild(canvas);
+//   } else {
+//       container.appendChild(canvas);
+//   }
 
-        // Bắt đầu quét mã từ video element
-        processFrame();
-        codeReaderRef.current = codeReader;
-
-    } catch (err) {
-        console.error("Lỗi khi truy cập camera: ", err);
-        handleError(err);
-    }
-};
-
-const applyFilter = (videoElement) => {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const container = document.getElementById("canvas-container");
-
-    if (!container) {
-        const newContainer = document.createElement("div");
-        newContainer.id = "canvas-container";
-        document.body.appendChild(newContainer);
-        newContainer.appendChild(canvas);
-    } else {
-        container.appendChild(canvas);
-    }
-
-    const sharpenKernel = [
-        -1, -1, -1,
-        -1,  9, -1,
-        -1, -1, -1
-    ]; // Kernel mạnh hơn để làm nét hình ảnh
-
-    const updateFrame = () => {
-        if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
-            canvas.width = videoElement.videoWidth;
-            canvas.height = videoElement.videoHeight;
-
-            // Áp dụng bộ lọc màu sắc
-            ctx.filter = "contrast(1.4) brightness(1.3) saturate(1.8)";
-
-            // Vẽ khung hình từ video lên canvas
-            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-            // Lấy dữ liệu hình ảnh từ canvas
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-            // Áp dụng bộ lọc làm nét
-            const filteredData = applySharpen(imageData, sharpenKernel);
-            ctx.putImageData(filteredData, 0, 0);
-        } else {
-            console.warn("Video element chưa có kích thước. Đang chờ video sẵn sàng...");
-        }
-
-        requestAnimationFrame(updateFrame); // Vẽ lại mỗi khung hình
-    };
-
-    updateFrame(); // Bắt đầu xử lý
-};
+//   const sharpenKernel = [
+//         -1, -1, -1,
+//         -1,  9, -1,
+//         -1, -1, -1
+//     ]; // Kernel mạnh hơn để làm nét hình ảnh
 
 
-const applySharpen = (imageData, kernel) => {
-  const { width, height, data } = imageData;
-  const result = new Uint8ClampedArray(data); // Lưu kết quả
+//   const updateFrame = () => {
+//       canvas.width = videoElement.videoWidth;
+//       canvas.height = videoElement.videoHeight;
 
-  // Áp dụng bộ lọc kernel (matrix convolution)
-  const kernelSize = Math.sqrt(kernel.length);
-  const half = Math.floor(kernelSize / 2);
+//       // Vẽ khung hình từ video
+//       ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
-  for (let y = half; y < height - half; y++) {
-      for (let x = half; x < width - half; x++) {
-          let r = 0, g = 0, b = 0;
-          for (let ky = -half; ky <= half; ky++) {
-              for (let kx = -half; kx <= half; kx++) {
-                  const pixelIndex = ((y + ky) * width + (x + kx)) * 4;
-                  const weight = kernel[(ky + half) * kernelSize + (kx + half)];
-                  r += data[pixelIndex] * weight;
-                  g += data[pixelIndex + 1] * weight;
-                  b += data[pixelIndex + 2] * weight;
-              }
-          }
+//       // Lấy dữ liệu hình ảnh từ canvas
+//       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-          const index = (y * width + x) * 4;
-          result[index] = Math.min(Math.max(r, 0), 255);
-          result[index + 1] = Math.min(Math.max(g, 0), 255);
-          result[index + 2] = Math.min(Math.max(b, 0), 255);
+//       // Áp dụng bộ lọc làm nét
+//       const filteredData = applySharpen(imageData, sharpenKernel);
+//       ctx.putImageData(filteredData, 0, 0);
+
+//       requestAnimationFrame(updateFrame); // Vẽ lại mỗi khung hình
+//   };
+
+//   updateFrame(); // Bắt đầu xử lý
+// };
+
+// const applySharpen = (imageData, kernel) => {
+//   const { width, height, data } = imageData;
+//   const result = new Uint8ClampedArray(data); // Lưu kết quả
+
+//   // Áp dụng bộ lọc kernel (matrix convolution)
+//   const kernelSize = Math.sqrt(kernel.length);
+//   const half = Math.floor(kernelSize / 2);
+
+//   for (let y = half; y < height - half; y++) {
+//       for (let x = half; x < width - half; x++) {
+//           let r = 0, g = 0, b = 0;
+//           for (let ky = -half; ky <= half; ky++) {
+//               for (let kx = -half; kx <= half; kx++) {
+//                   const pixelIndex = ((y + ky) * width + (x + kx)) * 4;
+//                   const weight = kernel[(ky + half) * kernelSize + (kx + half)];
+//                   r += data[pixelIndex] * weight;
+//                   g += data[pixelIndex + 1] * weight;
+//                   b += data[pixelIndex + 2] * weight;
+//               }
+//           }
+
+//           const index = (y * width + x) * 4;
+//           result[index] = Math.min(Math.max(r, 0), 255);
+//           result[index + 1] = Math.min(Math.max(g, 0), 255);
+//           result[index + 2] = Math.min(Math.max(b, 0), 255);
+//       }
+//   }
+
+//   return new ImageData(result, width, height);
+// };
+
+const startScanner = async () => {
+  const codeReader = new BrowserMultiFormatReader();
+
+  try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoInputDevices = devices.filter(device => device.kind === "videoinput");
+
+      if (videoInputDevices.length === 0) {
+          throw new Error("Không tìm thấy camera nào!");
       }
-  }
 
-  return new ImageData(result, width, height);
+      // Lấy thông tin từ camera đầu tiên
+      const constraints = { 
+          video: { 
+              deviceId: { exact: videoInputDevices[0].deviceId } 
+          } 
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const videoTrack = stream.getVideoTracks()[0];
+      const capabilities = videoTrack.getCapabilities();
+
+      // Xác định độ phân giải dựa vào khả năng thiết bị
+      let videoConstraints = {};
+      if (capabilities.width && capabilities.height) {
+          const maxWidth = capabilities.width.max || 1920; // Dùng độ phân giải tối đa nếu có
+          const maxHeight = capabilities.height.max || 1080;
+          const idealWidth = Math.min(maxWidth, 3840); // Ưu tiên 4K nhưng không vượt quá maxWidth
+          const idealHeight = Math.min(maxHeight, 2160);
+
+          videoConstraints = {
+              width: { ideal: idealWidth, max: maxWidth },
+              height: { ideal: idealHeight, max: maxHeight },
+              facingMode: "environment" // Camera sau
+          };
+      } else {
+          // Fallback xuống độ phân giải tiêu chuẩn nếu không có capabilities
+          videoConstraints = {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              facingMode: "environment"
+          };
+      }
+
+      // Áp dụng stream với cấu hình độ phân giải
+      const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+      const videoElement = document.getElementById("video");
+      videoElement.srcObject = optimizedStream;
+      videoElement.play();
+
+      // Tiến hành quét mã QR sau khi camera đã khởi động
+      codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+          if (result) {
+              handleScan(result); // Xử lý kết quả quét
+          }
+          if (err) {
+              handleError(err); // Xử lý lỗi
+          }
+      });
+
+      codeReaderRef.current = codeReader;
+  } catch (err) {
+      console.error("Lỗi khi truy cập camera hoặc quét mã:", err);
+      handleError(err);
+  }
 };
 
   
@@ -401,19 +444,10 @@ const applySharpen = (imageData, kernel) => {
   
   const handleScan = (result) => {
     if (result) {
-        const scannedText = result.text;
-        console.log("Kết quả quét:", scannedText); // Kiểm tra kết quả trên console
-
-        // Kiểm tra nếu kết quả là URL hợp lệ
-        const isValidURL = scannedText.startsWith("http://") || scannedText.startsWith("https://");
-        if (isValidURL) {
-            setScanResult(scannedText);
-            window.location.href = scannedText; // Chuyển hướng nếu là URL
-        } else {
-            alert("Mã QR không chứa URL hợp lệ!");
-        }
+      setScanResult(result.text);
+      window.location.href = result.text; // Redirect to the scanned URL
     }
-};
+  };
   
   const handleError = (err) => {
     console.error(err);
@@ -928,6 +962,7 @@ const AppContent = ({
                   </TransformComponent>
                 </TransformWrapper>
               )}
+              <p>Hãy zoom lên khi bạn ngồi quá xa!</p>
               {scanResult && (
                 <div>
                   <p>Kết quả quét: <a href={scanResult} target="_blank" rel="noopener noreferrer">{scanResult}</a></p>
