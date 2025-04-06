@@ -610,7 +610,7 @@ const startScanner = async () => {
           };
 
           videoElement.play().then(() => {
-              console.log(`Độ phân giải camera đang phát (thực tế): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+              alert(`Độ phân giải camera đang phát (thực tế): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
               // Tiến hành quét mã QR sau khi camera đã khởi động và metadata đã được tải
               codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
                   if (result) {
