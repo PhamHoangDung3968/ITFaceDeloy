@@ -53,6 +53,25 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
 
     const formattedDay = day ? formatDate(day) : '';
     const [isProcessing, setIsProcessing] = useState(false);
+    useEffect(() => {
+      // Check if user is authenticated
+      axios.get('/user')
+          .then(response => {
+              if (!response.data) {
+                  // Redirect to Microsoft login if not authenticated
+                  window.location.href = 'http://localhost:3000/auth/microsoft';
+              }
+          })
+          .catch(error => {
+              console.error('Error checking authentication:', error);
+              window.location.href = 'http://localhost:3000/auth/microsoft';
+          });
+  
+      return () => {
+          localStorage.removeItem('token');
+      };
+  }, []);
+  
 
 
     useEffect(() => {
