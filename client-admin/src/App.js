@@ -226,18 +226,30 @@ const App = () => {
   };
   //Scanner
   const codeReaderRef = useRef(null);
-  // const startScanner = () => {
-  //   const codeReader = new BrowserMultiFormatReader();
-  //   codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-  //     if (result) {
-  //       handleScan(result);
-  //     }
-  //     if (err) {
-  //       handleError(err);
-  //     }
-  //   });
-  //   codeReaderRef.current = codeReader;
-  // };
+  const startScanner = (handleScan, handleError, videoElementRef) => {
+    const codeReader = new BrowserMultiFormatReader();
+    const videoElement = videoElementRef.current; // Get the actual video element
+  
+    codeReader.decodeFromVideoDevice(undefined, videoElement, (result, err) => {
+      if (result) {
+        handleScan(result.text); // Pass only the text value
+      }
+      if (err) {
+        handleError(err);
+      }
+    });
+  
+    // Store the codeReader instance if needed for later control
+    // codeReaderRef.current = codeReader; // Assuming codeReaderRef is defined elsewhere
+  
+    if (videoElement) {
+      videoElement.onloadedmetadata = () => {
+        alert(`Độ phân giải camera: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+      };
+    } else {
+      console.error("Không tìm thấy phần tử video.");
+    }
+  };
 //   const startScanner = async () => {
 //     const codeReader = new BrowserMultiFormatReader();
   
@@ -369,126 +381,126 @@ const App = () => {
 //   return new ImageData(result, width, height);
 // };
 
-const startScanner = async () => {
-  const codeReader = new BrowserMultiFormatReader();
+// const startScanner = async () => {
+//   const codeReader = new BrowserMultiFormatReader();
 
-  try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoInputDevices = devices.filter(device => device.kind === "videoinput");
+//   try {
+//       const devices = await navigator.mediaDevices.enumerateDevices();
+//       const videoInputDevices = devices.filter(device => device.kind === "videoinput");
 
-      if (videoInputDevices.length === 0) {
-          throw new Error("Không tìm thấy camera nào!");
-      }
+//       if (videoInputDevices.length === 0) {
+//           throw new Error("Không tìm thấy camera nào!");
+//       }
 
-      // Lấy thông tin từ camera đầu tiên
-      const constraints = { 
-          video: { 
-              deviceId: { exact: videoInputDevices[0].deviceId } 
-          } 
-      };
+//       // Lấy thông tin từ camera đầu tiên
+//       const constraints = { 
+//           video: { 
+//               deviceId: { exact: videoInputDevices[0].deviceId } 
+//           } 
+//       };
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      const videoTrack = stream.getVideoTracks()[0];
-      const capabilities = videoTrack.getCapabilities();
+//       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+//       const videoTrack = stream.getVideoTracks()[0];
+//       const capabilities = videoTrack.getCapabilities();
 
-      // Xác định độ phân giải và chế độ lấy nét
-      let videoConstraints = {};
-      if (capabilities.width && capabilities.height) {
-          const maxWidth = capabilities.width.max || 3840;
-          const maxHeight = capabilities.height.max || 2160;
-          const idealWidth = Math.min(maxWidth, 3840);
-          const idealHeight = Math.min(maxHeight, 2160);
+//       // Xác định độ phân giải và chế độ lấy nét
+//       let videoConstraints = {};
+//       if (capabilities.width && capabilities.height) {
+//           const maxWidth = capabilities.width.max || 3840;
+//           const maxHeight = capabilities.height.max || 2160;
+//           const idealWidth = Math.min(maxWidth, 3840);
+//           const idealHeight = Math.min(maxHeight, 2160);
 
-          videoConstraints = {
-              width: { ideal: idealWidth, max: maxWidth },
-              height: { ideal: idealHeight, max: maxHeight },
-              facingMode: "environment"
-          };
-      } else {
-          videoConstraints = {
-              width: { ideal: 1920 },
-              height: { ideal: 1080 },
-              facingMode: "environment"
-          };
-      }
+//           videoConstraints = {
+//               width: { ideal: idealWidth, max: maxWidth },
+//               height: { ideal: idealHeight, max: maxHeight },
+//               facingMode: "environment"
+//           };
+//       } else {
+//           videoConstraints = {
+//               width: { ideal: 1920 },
+//               height: { ideal: 1080 },
+//               facingMode: "environment"
+//           };
+//       }
 
-      // Kích hoạt lấy nét hoặc zoom nếu hỗ trợ
-      if (capabilities.focusMode && capabilities.focusMode.includes("continuous")) {
-          console.log("Camera hỗ trợ lấy nét liên tục");
-          videoTrack.applyConstraints({
-              advanced: [{ focusMode: "continuous" }]
-          });
-      } else if (capabilities.focusMode && capabilities.focusMode.includes("manual")) {
-          console.log("Camera hỗ trợ lấy nét thủ công");
-          videoTrack.applyConstraints({
-              advanced: [{ focusMode: "manual", focusDistance: 10 }] // Khoảng cách lấy nét tùy chỉnh
-          });
-      } else {
-          console.warn("Camera không hỗ trợ lấy nét liên tục hoặc thủ công");
-      }
+//       // Kích hoạt lấy nét hoặc zoom nếu hỗ trợ
+//       if (capabilities.focusMode && capabilities.focusMode.includes("continuous")) {
+//           console.log("Camera hỗ trợ lấy nét liên tục");
+//           videoTrack.applyConstraints({
+//               advanced: [{ focusMode: "continuous" }]
+//           });
+//       } else if (capabilities.focusMode && capabilities.focusMode.includes("manual")) {
+//           console.log("Camera hỗ trợ lấy nét thủ công");
+//           videoTrack.applyConstraints({
+//               advanced: [{ focusMode: "manual", focusDistance: 10 }] // Khoảng cách lấy nét tùy chỉnh
+//           });
+//       } else {
+//           console.warn("Camera không hỗ trợ lấy nét liên tục hoặc thủ công");
+//       }
 
-      if (capabilities.zoom) {
-          console.log(`Camera hỗ trợ zoom, giá trị tối đa: ${capabilities.zoom.max}`);
-          videoTrack.applyConstraints({
-              advanced: [{ zoom: Math.min(capabilities.zoom.max, 2) }] // Tăng zoom (tối đa x2 hoặc giá trị khả dụng)
-          });
-      }
+//       if (capabilities.zoom) {
+//           console.log(`Camera hỗ trợ zoom, giá trị tối đa: ${capabilities.zoom.max}`);
+//           videoTrack.applyConstraints({
+//               advanced: [{ zoom: Math.min(capabilities.zoom.max, 2) }] // Tăng zoom (tối đa x2 hoặc giá trị khả dụng)
+//           });
+//       }
 
-      // Áp dụng stream với cấu hình tối ưu
-      const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
-      const videoElement = document.getElementById("video");
-      videoElement.srcObject = optimizedStream;
-      videoElement.play();
+//       // Áp dụng stream với cấu hình tối ưu
+//       const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+//       const videoElement = document.getElementById("video");
+//       videoElement.srcObject = optimizedStream;
+//       videoElement.play();
 
-      // Tăng chất lượng hình ảnh với bộ lọc
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      const container = document.getElementById("canvas-container");
-      if (!container) {
-          const newContainer = document.createElement("div");
-          newContainer.id = "canvas-container";
-          document.body.appendChild(newContainer);
-          newContainer.appendChild(canvas);
-      } else {
-          container.appendChild(canvas);
-      }
+//       // Tăng chất lượng hình ảnh với bộ lọc
+//       const canvas = document.createElement("canvas");
+//       const ctx = canvas.getContext("2d");
+//       const container = document.getElementById("canvas-container");
+//       if (!container) {
+//           const newContainer = document.createElement("div");
+//           newContainer.id = "canvas-container";
+//           document.body.appendChild(newContainer);
+//           newContainer.appendChild(canvas);
+//       } else {
+//           container.appendChild(canvas);
+//       }
 
-      videoElement.addEventListener("play", () => {
-          const updateFrame = () => {
-              canvas.width = videoElement.videoWidth;
-              canvas.height = videoElement.videoHeight;
+//       videoElement.addEventListener("play", () => {
+//           const updateFrame = () => {
+//               canvas.width = videoElement.videoWidth;
+//               canvas.height = videoElement.videoHeight;
 
-              ctx.filter = "contrast(1.5) brightness(1.2) saturate(1.3)";
-              ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+//               ctx.filter = "contrast(1.5) brightness(1.2) saturate(1.3)";
+//               ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
-              requestAnimationFrame(updateFrame);
-          };
-          updateFrame();
-      });
+//               requestAnimationFrame(updateFrame);
+//           };
+//           updateFrame();
+//       });
 
-      // Quét mã QR
-      codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-          if (result) {
-              console.log("Quét thành công:", result.text);
-              handleScan(result);
-          }
-          if (err) {
-              console.warn("Lỗi khi quét mã:", err);
-              handleError(err);
-          }
-      });
+//       // Quét mã QR
+//       codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+//           if (result) {
+//               console.log("Quét thành công:", result.text);
+//               handleScan(result);
+//           }
+//           if (err) {
+//               console.warn("Lỗi khi quét mã:", err);
+//               handleError(err);
+//           }
+//       });
 
-      codeReaderRef.current = codeReader;
+//       codeReaderRef.current = codeReader;
 
-      // Ghi log thông tin độ phân giải
-      videoElement.onloadedmetadata = () => {
-          alert(`Độ phân giải camera: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-      };
-  } catch (err) {
-      console.error("Lỗi khi truy cập camera hoặc quét mã:", err);
-      handleError(err);
-  }
-};
+//       // Ghi log thông tin độ phân giải
+//       videoElement.onloadedmetadata = () => {
+//           alert(`Độ phân giải camera: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+//       };
+//   } catch (err) {
+//       console.error("Lỗi khi truy cập camera hoặc quét mã:", err);
+//       handleError(err);
+//   }
+// };
 
   
   const stopScanner = () => {
