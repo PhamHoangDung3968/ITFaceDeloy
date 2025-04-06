@@ -393,8 +393,8 @@ const startScanner = async () => {
       // Xác định độ phân giải dựa vào khả năng thiết bị
       let videoConstraints = {};
       if (capabilities.width && capabilities.height) {
-          const maxWidth = capabilities.width.max || 1920; // Dùng độ phân giải tối đa nếu có
-          const maxHeight = capabilities.height.max || 1080;
+          const maxWidth = capabilities.width.max || 3840; // Dùng độ phân giải tối đa nếu có
+          const maxHeight = capabilities.height.max || 2160;
           const idealWidth = Math.min(maxWidth, 3840); // Ưu tiên 4K nhưng không vượt quá maxWidth
           const idealHeight = Math.min(maxHeight, 2160);
 
@@ -406,8 +406,8 @@ const startScanner = async () => {
       } else {
           // Fallback xuống độ phân giải tiêu chuẩn nếu không có capabilities
           videoConstraints = {
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
               facingMode: "environment"
           };
       }
