@@ -572,12 +572,13 @@ const App = () => {
 
 const startScanner = async () => {
   const codeReader = new BrowserMultiFormatReader();
-  const desiredWidth = 1920; // Độ phân giải mong muốn (ví dụ: Full HD)
+  let videoInputDevices = []; // Khai báo ở ngoài khối try
+  const desiredWidth = 1920; // Độ phân giải mong muốn
   const desiredHeight = 1080;
 
   try {
       const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoInputDevices = devices.filter(device => device.kind === "videoinput");
+      videoInputDevices = devices.filter(device => device.kind === "videoinput");
 
       if (videoInputDevices.length === 0) {
           throw new Error("Không tìm thấy camera nào!");
@@ -601,73 +602,87 @@ const startScanner = async () => {
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       const videoElement = document.getElementById("video");
-      videoElement.srcObject = stream;
+      if (videoElement) {
+          videoElement.srcObject = stream;
 
-      videoElement.onloadedmetadata = () => {
-          alert(`Độ phân giải camera (yêu cầu): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-      };
+          videoElement.onloadedmetadata = () => {
+              console.log(`Độ phân giải camera (yêu cầu): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+          };
 
-      videoElement.play().then(() => {
-          console.log(`Độ phân giải camera đang phát (thực tế): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-          // Tiến hành quét mã QR sau khi camera đã khởi động và metadata đã được tải
-          codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-              if (result) {
-                  console.log("Quét thành công:", result.text);
-                  handleScan(result);
-              }
-              if (err) {
-                  console.warn("Lỗi khi quét mã:", err);
-                  handleError(err);
-              }
+          videoElement.play().then(() => {
+              console.log(`Độ phân giải camera đang phát (thực tế): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+              // Tiến hành quét mã QR sau khi camera đã khởi động và metadata đã được tải
+              codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+                  if (result) {
+                      console.log("Quét thành công:", result.text);
+                      handleScan(result);
+                  }
+                  if (err) {
+                      console.warn("Lỗi khi quét mã:", err);
+                      handleError(err);
+                  }
+              });
+              codeReaderRef.current = codeReader;
+          }).catch(error => {
+              console.error("Lỗi khi phát video:", error);
+              handleError(error);
           });
-          codeReaderRef.current = codeReader;
-      }).catch(error => {
-          console.error("Lỗi khi phát video:", error);
-          handleError(error);
-      });
+      } else {
+          console.error("Không tìm thấy phần tử video với id 'video'");
+      }
 
   } catch (error) {
       console.error(`Không thể lấy luồng với độ phân giải ${desiredWidth}x${desiredHeight}:`, error);
       alert(`Không thể thiết lập camera ở độ phân giải ${desiredWidth}x${desiredHeight}. Trình duyệt sẽ cố gắng sử dụng độ phân giải mặc định.`);
 
-      // Thử lại mà không có ràng buộc độ phân giải chính xác (sử dụng ideal/max nếu cần)
+      // Thử lại mà không có ràng buộc độ phân giải chính xác
       const fallbackConstraints = {
           video: {
-              deviceId: { exact: videoInputDevices[0].deviceId },
-              width: { ideal: 1920, max: 3840 }, // Thử với ideal và max
+              deviceId: videoInputDevices.length > 0 ? { exact: videoInputDevices[0].deviceId } : undefined,
+              width: { ideal: 1920, max: 3840 },
               height: { ideal: 1080, max: 2160 },
               facingMode: "environment"
           }
       };
 
-      try {
-          const fallbackStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
-          const videoElement = document.getElementById("video");
-          videoElement.srcObject = fallbackStream;
-          videoElement.onloadedmetadata = () => {
-              alert(`Độ phân giải camera (fallback): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-          };
-          videoElement.play().then(() => {
-              console.log(`Độ phân giải camera đang phát (fallback): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-              codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-                  if (result) {
-                      console.log("Quét thành công (fallback):", result.text);
-                      handleScan(result);
-                  }
-                  if (err) {
-                      console.warn("Lỗi khi quét mã (fallback):", err);
-                      handleError(err);
-                  }
-              });
-              codeReaderRef.current = codeReader;
-          }).catch(fallbackError => {
-              console.error("Lỗi khi phát video (fallback):", fallbackError);
+      if (fallbackConstraints.video.deviceId) {
+          try {
+              const fallbackStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+              const videoElement = document.getElementById("video");
+              if (videoElement) {
+                  videoElement.srcObject = fallbackStream;
+                  videoElement.onloadedmetadata = () => {
+                      console.log(`Độ phân giải camera (fallback): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+                  };
+                  videoElement.play().then(() => {
+                      console.log(`Độ phân giải camera đang phát (fallback): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+                      codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+                          if (result) {
+                              console.log("Quét thành công (fallback):", result.text);
+                              handleScan(result);
+                          }
+                          if (err) {
+                              console.warn("Lỗi khi quét mã (fallback):", err);
+                              handleError(err);
+                          }
+                      });
+                      codeReaderRef.current = codeReader;
+                  }).catch(fallbackError => {
+                      console.error("Lỗi khi phát video (fallback):", fallbackError);
+                      handleError(fallbackError);
+                  });
+              } else {
+                  console.error("Không tìm thấy phần tử video với id 'video' trong fallback");
+              }
+          } catch (fallbackError) {
+              console.error("Lỗi khi truy cập camera (fallback):", fallbackError);
               handleError(fallbackError);
-          });
-      } catch (fallbackError) {
-          console.error("Lỗi khi truy cập camera (fallback):", fallbackError);
-          handleError(fallbackError);
+              alert("Không thể khởi động camera. Vui lòng kiểm tra quyền truy cập.");
+          }
+      } else {
+          console.error("Không có camera nào được tìm thấy để fallback.");
           alert("Không thể khởi động camera. Vui lòng kiểm tra quyền truy cập.");
+          handleError(error);
       }
   }
 };
