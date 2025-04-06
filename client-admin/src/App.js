@@ -1091,7 +1091,13 @@ const AppContent = ({
                   pinch={{ disabled: false }}
                 >
                   <TransformComponent>
-                    <video id="video" width="100%" height="auto"></video>
+                    {/* <video id="video" width="100%" height="auto"></video> */}
+                    <video
+                        id="video"
+                        style={{ width: '100%', height: 'auto', maxWidth: '3024px', maxHeight: '4032px' }}
+                        playsInline
+                    ></video>
+
                   </TransformComponent>
                 </TransformWrapper>
               )}
