@@ -695,13 +695,23 @@ const App = () => {
 //     }
 //   };
   
+//   const handleScan = (result) => {
+//     if (result) {
+//       setScanResult(result.text);
+//       window.location.href = result.text; // Redirect to the scanned URL
+//     }
+//   };
+
+
+
+
 const startScanner = async (videoRef, setScanResult, showToast, showErrorToast) => {
   if (navigator.mediaDevices?.getUserMedia) {
       try {
           const constraints = {
               video: {
-                  facingMode: "environment",
-                  width: { ideal: 1920, max: 3840 },
+                  facingMode: "environment", // Camera sau
+                  width: { ideal: 1920, max: 3840 }, // Yêu cầu HD hoặc cao hơn nếu có
                   height: { ideal: 1080, max: 2160 },
               },
           };
@@ -713,15 +723,16 @@ const startScanner = async (videoRef, setScanResult, showToast, showErrorToast) 
 
               showToast('Bật camera thành công với độ phân giải HD!');
 
+              // Tạo đối tượng codeReader từ @zxing/library
               const codeReader = new BrowserMultiFormatReader();
               codeReader.decodeFromVideoElement(videoRef.current)
                   .then((result) => {
                       console.log("Quét thành công:", result.text);
                       if (result.text.startsWith('http')) {
-                          setScanResult(result.text); // Store the result
-                          window.location.href = result.text; // Redirect to the URL
+                          setScanResult(result.text); // Lưu kết quả
+                          window.location.href = result.text; // Điều hướng URL nếu là liên kết
                       } else {
-                          alert(`Dữ liệu quét: ${result.text}`); // Show data if not a URL
+                          alert(`Dữ liệu quét: ${result.text}`); // Hiển thị kết quả nếu không phải liên kết
                       }
                   })
                   .catch((err) => {
@@ -729,7 +740,7 @@ const startScanner = async (videoRef, setScanResult, showToast, showErrorToast) 
                       showErrorToast('Đã xảy ra lỗi khi quét mã QR!');
                   });
 
-              return codeReader; // Return for potential further management
+              return codeReader; // Trả về codeReader để quản lý sau này nếu cần
           }
       } catch (error) {
           console.error('Không thể truy cập camera:', error);
@@ -742,37 +753,24 @@ const startScanner = async (videoRef, setScanResult, showToast, showErrorToast) 
           }
       }
   }
-};
-
-const stopScanner = (videoRef, codeReader, showToast) => {
+};const stopScanner = (videoRef, codeReader, showToast) => {
   if (videoRef.current && videoRef.current.srcObject) {
       const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
+      tracks.forEach(track => track.stop()); // Dừng tất cả các track đang hoạt động
       videoRef.current.srcObject = null;
       showToast('Đã tắt camera.');
   }
   if (codeReader) {
-      codeReader.reset();
+      codeReader.reset(); // Reset codeReader để dừng việc quét mã QR
   }
-};
-
-const handleScan = (resultText, setScanResult) => {
+};const handleScan = (resultText, setScanResult) => {
   if (resultText.startsWith('http')) {
-      setScanResult(resultText);
-      window.location.href = resultText;
+      setScanResult(resultText); // Lưu kết quả
+      window.location.href = resultText; // Điều hướng URL nếu là liên kết
   } else {
-      alert(`Dữ liệu quét: ${resultText}`);
+      alert(`Dữ liệu quét: ${resultText}`); // Hiển thị dữ liệu nếu không phải liên kết
   }
 };
-  // const handleScan = (result) => {
-  //   if (result) {
-  //     setScanResult(result.text);
-  //     window.location.href = result.text; // Redirect to the scanned URL
-  //   }
-  // };
-
-
-
   
   const handleError = (err) => {
     console.error(err);
