@@ -386,25 +386,26 @@ const startScanner = async () => {
               deviceId: { exact: videoInputDevices[0].deviceId } 
           } 
       };
+
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       const videoTrack = stream.getVideoTracks()[0];
       const capabilities = videoTrack.getCapabilities();
 
-      // Xác định độ phân giải dựa vào khả năng thiết bị
+      // Xác định độ phân giải và chế độ lấy nét
       let videoConstraints = {};
       if (capabilities.width && capabilities.height) {
-          const maxWidth = capabilities.width.max || 3840; // Dùng độ phân giải tối đa nếu có
+          const maxWidth = capabilities.width.max || 3840;
           const maxHeight = capabilities.height.max || 2160;
-          const idealWidth = Math.min(maxWidth, 3840); // Ưu tiên 4K nhưng không vượt quá maxWidth
+          const idealWidth = Math.min(maxWidth, 3840); // Ưu tiên 4K nhưng không vượt quá khả năng thiết bị
           const idealHeight = Math.min(maxHeight, 2160);
 
           videoConstraints = {
               width: { ideal: idealWidth, max: maxWidth },
               height: { ideal: idealHeight, max: maxHeight },
-              facingMode: "environment" // Camera sau
+              facingMode: "environment"
           };
       } else {
-          // Fallback xuống độ phân giải tiêu chuẩn nếu không có capabilities
+          // Fallback xuống độ phân giải tiêu chuẩn
           videoConstraints = {
               width: { ideal: 1920 },
               height: { ideal: 1080 },
@@ -412,23 +413,66 @@ const startScanner = async () => {
           };
       }
 
-      // Áp dụng stream với cấu hình độ phân giải
+      // Áp dụng lấy nét liên tục nếu được hỗ trợ
+      if (capabilities.focusMode && capabilities.focusMode.includes("continuous")) {
+          console.log("Camera hỗ trợ lấy nét liên tục");
+          videoTrack.applyConstraints({
+              advanced: [{ focusMode: "continuous" }]
+          });
+      } else {
+          console.warn("Camera không hỗ trợ lấy nét liên tục");
+      }
+
+      // Áp dụng stream với cấu hình tối ưu
       const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
       const videoElement = document.getElementById("video");
       videoElement.srcObject = optimizedStream;
       videoElement.play();
 
+      // Tăng chất lượng hình ảnh với bộ lọc (chỉ hiển thị, không ảnh hưởng quét QR)
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const container = document.getElementById("canvas-container");
+      if (!container) {
+          const newContainer = document.createElement("div");
+          newContainer.id = "canvas-container";
+          document.body.appendChild(newContainer);
+          newContainer.appendChild(canvas);
+      } else {
+          container.appendChild(canvas);
+      }
+
+      videoElement.addEventListener("play", () => {
+          const updateFrame = () => {
+              canvas.width = videoElement.videoWidth;
+              canvas.height = videoElement.videoHeight;
+
+              ctx.filter = "contrast(1.5) brightness(1.2) saturate(1.3)";
+              ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+              requestAnimationFrame(updateFrame);
+          };
+          updateFrame();
+      });
+
       // Tiến hành quét mã QR sau khi camera đã khởi động
       codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
           if (result) {
+              console.log("Quét thành công:", result.text);
               handleScan(result); // Xử lý kết quả quét
           }
           if (err) {
-              handleError(err); // Xử lý lỗi
+              console.warn("Lỗi khi quét mã:", err);
+              handleError(err);
           }
       });
 
       codeReaderRef.current = codeReader;
+
+      // Ghi log thông tin độ phân giải
+      videoElement.onloadedmetadata = () => {
+          console.log(`Độ phân giải camera: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+      };
   } catch (err) {
       console.error("Lỗi khi truy cập camera hoặc quét mã:", err);
       handleError(err);
