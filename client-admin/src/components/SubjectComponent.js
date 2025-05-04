@@ -791,16 +791,18 @@ class Subject extends Component {
             
             {userRole !== 'Giảng viên'  && userRole !== 'Sinh viên' && (
               <>
-                <Link  onClick={() => this.startEditingSubjectTerm(item)} className="icon-button edit far fa-edit"></Link>
-                <button className="icon-button delete far fa-trash-alt" onClick={(e) => this.btnDeleteClickSubjectTerm(e, item)}></button>
+                <Link  onClick={() => this.startEditingSubjectTerm(item)} title='Sửa' className="icon-button edit far fa-edit"></Link>
+                <button className="icon-button delete far fa-trash-alt" onClick={(e) => this.btnDeleteClickSubjectTerm(e, item)} title='Xóa'></button>
               </>
             )}
             <Link 
-                  className="icon-button" 
-                  to={`/admin/classsections/${item._id}`} 
-                >
-                  <IonIcon name="list-circle-outline" style={{ fontSize: '26px', marginTop: '-16px' }} />
-                </Link>
+            className="icon-button" 
+            to={`/admin/classsections/${item._id}`} 
+            title="Danh sách lớp học phần"
+          >
+            <IonIcon name="list-circle-outline" style={{ fontSize: '26px', marginTop: '-16px' }} />
+          </Link>
+
           </div>
         </td>
       </tr>

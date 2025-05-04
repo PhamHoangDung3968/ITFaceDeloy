@@ -380,11 +380,11 @@ class Student extends Component {
         </td>
         <td>
           <div className="action-buttons">
-          <Link className="icon-button" style={{padding:'1px 6px'}} onClick={() => this.profileUser(item)} >
+          <Link className="icon-button" style={{padding:'1px 6px'}} onClick={() => this.profileUser(item)} title='Thông tin sinh viên' >
           <span><IonIcon name="information-circle-outline" style={{ fontSize: '20px',height: '1em',width: '1.3em'}} /></span>
           </Link>
-          <button className="icon-button edit far fa-edit" onClick={() => this.startEditing(item)}></button>
-          <button className="icon-button delete far fa-trash-alt" onClick={(e) => this.btnDeleteClick(e, item)}></button>
+          <button className="icon-button edit far fa-edit" onClick={() => this.startEditing(item)} title='Sửa'></button>
+          <button className="icon-button delete far fa-trash-alt" onClick={(e) => this.btnDeleteClick(e, item)} title='Xóa'></button>
           </div>
         </td>
       </tr>

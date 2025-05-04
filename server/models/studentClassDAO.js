@@ -9,6 +9,8 @@ const XLSX = require('xlsx');
 const ExcelJS = require('exceljs'); // Import the exceljs library
 const { Readable } = require('stream');
 const path = require('path'); // Import thư viện path
+const NoticeWarning = require('./NoticeWarning'); // Import mô hình NoticeWarning
+
 
 
 
@@ -1201,129 +1203,274 @@ async getAttendanceStatus(classCode, studentId, date) {
 //       throw error;
 //   }
 // },
-async exportAttendanceToExcel(classCode) {
-  try {
-      // Find classSection based on classCode
-      const classSection = await Classsection.findOne({ classCode: classCode });
-      if (!classSection) {
-          throw new Error('Class section not found');
-      }
+  async exportAttendanceToExcel(classCode) {
+    try {
+        // Find classSection based on classCode
+        const classSection = await Classsection.findOne({ classCode: classCode });
+        if (!classSection) {
+            throw new Error('Class section not found');
+        }
 
-      // Find all studentClass entries for the classSection
-      const studentClasses = await studentClass.find({ classsectionID: classSection._id }).populate('studentID');
+        // Find all studentClass entries for the classSection
+        const studentClasses = await studentClass.find({ classsectionID: classSection._id }).populate('studentID');
 
-      // Prepare data for the Excel file
-      const data = [];
-      const headers = [
-          'STT', 'Mã SV', 'Họ và tên', 'Email'
-      ];
+        // Prepare data for the Excel file
+        const data = [];
+        const headers = [
+            'STT', 'Mã SV', 'Họ và tên', 'Email'
+        ];
 
-      const allDates = new Set();
-      for (const studentClassEntry of studentClasses) {
-          const attendance = await Attendance.findOne({ studentclasssection: studentClassEntry._id });
-          if (attendance) {
-              attendance.attendanceRecords.forEach(record => {
-                  allDates.add(record.date.toISOString().split('T')[0]);
-              });
-          }
-      }
+        const allDates = new Set();
+        for (const studentClassEntry of studentClasses) {
+            const attendance = await Attendance.findOne({ studentclasssection: studentClassEntry._id });
+            if (attendance) {
+                attendance.attendanceRecords.forEach(record => {
+                    allDates.add(record.date.toISOString().split('T')[0]);
+                });
+            }
+        }
 
-      // Sort dates
-      const sortedDates = Array.from(allDates).sort();
-      headers.push(...sortedDates);
+        // Sort dates
+        const sortedDates = Array.from(allDates).sort();
+        headers.push(...sortedDates);
 
-      // Prepare student data
-      let index = 1;
-      for (const studentClassEntry of studentClasses) {
-          const user = studentClassEntry.studentID;
-          const attendance = await Attendance.findOne({ studentclasssection: studentClassEntry._id });
+        // Prepare student data
+        let index = 1;
+        for (const studentClassEntry of studentClasses) {
+            const user = studentClassEntry.studentID;
+            const attendance = await Attendance.findOne({ studentclasssection: studentClassEntry._id });
 
-          const rowData = {
-              STT: index++,
-              'Mã SV': user.userCode || '',
-              'Họ và tên': user.fullName || '',
-              'Email': user.email
-          };
+            const rowData = {
+                STT: index++,
+                'Mã SV': user.userCode || '',
+                'Họ và tên': user.fullName || '',
+                'Email': user.email
+            };
 
-          // Add attendance data
-          if (attendance) {
-              sortedDates.forEach(date => {
-                  const record = attendance.attendanceRecords.find(record => record.date.toISOString().split('T')[0] === date);
-                  rowData[date] = record ? record.status : '';
-              });
-          } else {
-              sortedDates.forEach(date => {
-                  rowData[date] = '';
-              });
-          }
+            // Add attendance data
+            if (attendance) {
+                sortedDates.forEach(date => {
+                    const record = attendance.attendanceRecords.find(record => record.date.toISOString().split('T')[0] === date);
+                    rowData[date] = record ? record.status : '';
+                });
+            } else {
+                sortedDates.forEach(date => {
+                    rowData[date] = '';
+                });
+            }
 
-          data.push(rowData);
-      }
+            data.push(rowData);
+        }
 
-      // Create a new workbook and worksheet
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Attendance');
+        // Create a new workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Attendance');
 
-      // Add the title rows
-      const titleRow1 = worksheet.addRow(['TRƯỜNG ĐẠI HỌC VĂN LANG']);
-      titleRow1.font = { bold: true, size: 16 };
-      titleRow1.alignment = { vertical: 'middle' };
-      worksheet.mergeCells('A1:Q1');
+        // === LOGO ===
+        const logoPath = path.join(__dirname, '../uploads/logovanlang1.png');
+        const logo = workbook.addImage({
+            filename: logoPath,
+            extension: 'png',
+        });
+        
+        // Logo nằm ở giữa phía trên 2 dòng tiêu đề, ví dụ từ B1 đến C3
+        worksheet.addImage(logo, {
+            tl: { col: 1.6, row: 0 }, // B1 là col: 1 (0-indexed)
+            ext: { width: 60, height: 53 }, // Tùy chỉnh theo kích thước logo thật tế
+        });
+        
+        // === TÊN TRƯỜNG ===
+        worksheet.mergeCells('A4:H4');
+        worksheet.getCell('A4').value = 'TRƯỜNG ĐẠI HỌC VĂN LANG';
+        worksheet.getCell('A4').font = { bold: true, size: 16 };
+        worksheet.getCell('A4').alignment = { vertical: 'middle', horizontal: 'left' };
 
-      const titleRow2 = worksheet.addRow(['KHOA CÔNG NGHỆ THÔNG TIN']);
-      titleRow2.font = { bold: true, size: 16 };
-      titleRow2.alignment = { vertical: 'middle' };
-      worksheet.mergeCells('A2:Q2');
+        // === TÊN KHOA ===
+        worksheet.mergeCells('A5:H5');
+        worksheet.getCell('A5').value = 'KHOA CÔNG NGHỆ THÔNG TIN';
+        worksheet.getCell('A5').font = { bold: true, size: 16 };
+        worksheet.getCell('A5').alignment = { vertical: 'middle', horizontal: 'left' };
 
-      // Add the logo
-      const logoPath = path.join(__dirname, '../uploads/logovanlang1.png'); // Cập nhật đường dẫn chính xác đến file logo
-      const logo = workbook.addImage({
-          filename: logoPath,
-          extension: 'png',
-      });
-      worksheet.addImage(logo, 'E1:E5'); // Cố định logo ở 'F1:G5'
+        // === TIÊU ĐỀ THỐNG KÊ ===
+        worksheet.mergeCells('A7:N7');
+        worksheet.getCell('A7').value = 'SỐ LƯỢNG SINH VIÊN TỪNG BUỔI';
+        worksheet.getCell('A7').font = { bold: true, size: 14 };
+        worksheet.getCell('A7').alignment = { vertical: 'middle', horizontal: 'center' };
 
-      // Add the statistics title row
-      const statsTitleRow = worksheet.addRow(['SỐ LƯỢNG SINH VIÊN TỪNG BUỔI']);
-      statsTitleRow.font = { bold: true, size: 14 };
-      statsTitleRow.alignment = { vertical: 'middle', horizontal: 'center' };
-      worksheet.mergeCells('A7:N7');
+        // === DÒNG TRỐNG ===
+        worksheet.addRow([null]);
 
-      worksheet.addRow([]);
-
-      // Add the column headers
+        // Add the column headers
+        // Add the column headers
       const headerRow = worksheet.addRow(headers);
       headerRow.eachCell((cell) => {
-          cell.font = { bold: true }; // Làm đậm tiêu đề cột
+          // cell.font = { bold: true };
+          cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FF2400' } // Màu đỏ (ARGB: AARRGGBB — FF=opacity, FF0000=red)
+          };
       });
 
-      // Set column widths
-      const columnWidths = [5, 15, 22, 30, ...Array(sortedDates.length).fill(15)];
-      worksheet.columns.forEach((column, index) => {
-          column.width = columnWidths[index];
+        // Set column widths
+        const columnWidths = [5, 15, 22, 30, ...Array(sortedDates.length).fill(15)];
+        worksheet.columns.forEach((column, index) => {
+            column.width = columnWidths[index];
+        });
+
+        // Add the student data
+        data.forEach((rowData) => {
+            worksheet.addRow(Object.values(rowData));
+        });
+
+        // Add the final rows with the date and signature
+        const finalRow1 = worksheet.addRow(['TP.Hồ Chí Minh, ngày   tháng    năm 2025']);
+        finalRow1.font = { italic: true };
+        finalRow1.alignment = { horizontal: 'right' };
+        worksheet.mergeCells(`A${finalRow1.number}:N${finalRow1.number}`);
+
+        const finalRow2 = worksheet.addRow(['Người lập danh sách                ']);
+        finalRow2.font = { italic: true };
+        finalRow2.alignment = { horizontal: 'right' };
+        worksheet.mergeCells(`A${finalRow2.number}:N${finalRow2.number}`);
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        return buffer;
+    } catch (error) {
+        console.error('Error exporting attendance to Excel:', error);
+        throw error;
+    }
+  },
+
+async incrementNotificationCount(studentId, classCode) {
+  try {
+    // Tìm kiếm classSection dựa trên classCode
+    const classSection = await Classsection.findOne({ classCode: classCode });
+    if (!classSection) {
+      throw new Error('Class section not found');
+    }
+
+    // Tìm kiếm bản ghi NoticeWarning dựa trên studentID và classsectionID
+    let noticeWarning = await NoticeWarning.findOne({
+      studentID: studentId,
+      classsectionID: classSection._id
+    });
+
+    if (noticeWarning) {
+      // Nếu bản ghi tồn tại, tăng giá trị numberNotifications lên 1
+      noticeWarning.numberNotifications += 1;
+    } else {
+      // Nếu bản ghi không tồn tại, tạo một bản ghi mới với numberNotifications là 1
+      noticeWarning = new NoticeWarning({
+        _id: new mongoose.Types.ObjectId(),
+        studentID: studentId,
+        classsectionID: classSection._id,
+        numberNotifications: 1
       });
+    }
 
-      // Add the student data
-      data.forEach((rowData) => {
-          worksheet.addRow(Object.values(rowData));
-      });
+    // Lưu bản ghi NoticeWarning
+    await noticeWarning.save();
 
-      // Add the final rows with the date and signature
-      const finalRow1 = worksheet.addRow(['TP.Hồ Chí Minh, ngày   tháng    năm 2025']);
-      finalRow1.font = { italic: true };
-      finalRow1.alignment = { horizontal: 'right' };
-      worksheet.mergeCells(`A${finalRow1.number}:N${finalRow1.number}`);
-
-      const finalRow2 = worksheet.addRow(['Người lập danh sách                ']);
-      finalRow2.font = { italic: true };
-      finalRow2.alignment = { horizontal: 'right' };
-      worksheet.mergeCells(`A${finalRow2.number}:N${finalRow2.number}`);
-
-      const buffer = await workbook.xlsx.writeBuffer();
-      return buffer;
+    return noticeWarning;
   } catch (error) {
-      console.error('Error exporting attendance to Excel:', error);
-      throw error;
+    console.error('Error incrementing notification count:', error);
+    throw error;
+  }
+},
+async getNotificationCount(studentId, classCode) {
+  try {
+    // Tìm kiếm classSection và NoticeWarning song song
+    const [classSection, noticeWarning] = await Promise.all([
+      Classsection.findOne({ classCode: classCode }).lean(),
+      NoticeWarning.findOne({
+        studentID: studentId,
+        classsectionID: (await Classsection.findOne({ classCode: classCode }).lean())._id
+      }).lean()
+    ]);
+
+    if (!classSection) {
+      throw new Error('Class section not found');
+    }
+
+    // Trả về số lượng thông báo hoặc 0 nếu không có bản ghi
+    return noticeWarning ? noticeWarning.numberNotifications : 0;
+  } catch (error) {
+    console.error('Error getting notification count:', error);
+    throw error;
+  }
+},
+async getUsersAndNotificationCountsByClassCode(classCode) {
+  try {
+    const mongoose = require('mongoose');
+
+    // Tìm kiếm classSection dựa trên classCode
+    const classSection = await Classsection.findOne({ classCode: classCode }).lean();
+    if (!classSection) {
+      throw new Error('Class section not found');
+    }
+
+    // Tìm kiếm users và số lượng thông báo
+    const users = await studentClass.aggregate([
+      {
+        $lookup: {
+          from: 'classsections',
+          localField: 'classsectionID',
+          foreignField: '_id',
+          as: 'classSection'
+        }
+      },
+      { $unwind: '$classSection' },
+      { $match: { 'classSection.classCode': classCode } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'studentID',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'user.role',
+          foreignField: '_id',
+          as: 'role'
+        }
+      },
+      { $unwind: '$role' },
+      { $match: { 'role.tenrole': 'Sinh viên' } },
+      {
+        $lookup: {
+          from: 'noticewarnings',
+          let: { studentId: '$user._id', classSectionId: classSection._id },
+          pipeline: [
+            { $match: { $expr: { $and: [{ $eq: ['$studentID', '$$studentId'] }, { $eq: ['$classsectionID', '$$classSectionId'] }] } } },
+            { $project: { numberNotifications: 1 } }
+          ],
+          as: 'noticeWarning'
+        }
+      },
+      { $unwind: { path: '$noticeWarning', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: '$user._id',
+          displayName: '$user.displayName',
+          email: '$user.email',
+          phone: '$user.phone',
+          fullName: '$user.fullName',
+          userCode: '$user.userCode',
+          numberNotifications: { $ifNull: ['$noticeWarning.numberNotifications', 0] }
+        }
+      }
+    ]).exec();
+
+    return users;
+  } catch (error) {
+    console.error('Error fetching users and notification counts by classCode:', error);
+    throw error;
   }
 }
 

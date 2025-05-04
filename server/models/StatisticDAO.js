@@ -8,7 +8,9 @@ const ExcelJS = require('exceljs'); // Import the exceljs library
 const SubjectTerm = require('./SubjectTerm');
 const Term = require('./Term'); // Import mô hình Role
 const classsection = require('./Classsection'); // Import mô hình Classsection
+const CountLoginFaceID = require('./CountLoginFaceid');
 const path = require('path'); // Import thư viện path
+
 
 
 const StatisticDAO = {
@@ -88,192 +90,6 @@ const StatisticDAO = {
         }
     },
 
-    // async getAllClassSectionsAndTotalDates() {
-    //     try {
-    //         const classSections = await Classsection.aggregate([
-    //             {
-    //                 $lookup: {
-    //                     from: 'subjectterms',
-    //                     localField: 'subjecttermID',
-    //                     foreignField: '_id',
-    //                     as: 'subjectterm'
-    //                 }
-    //             },
-    //             { $unwind: '$subjectterm' },
-    //             {
-    //                 $lookup: {
-    //                     from: 'subjects',
-    //                     localField: 'subjectterm.subjectID',
-    //                     foreignField: '_id',
-    //                     as: 'subject'
-    //                 }
-    //             },
-    //             { $unwind: '$subject' },
-    //             {
-    //                 $lookup: {
-    //                     from: 'terms',
-    //                     localField: 'subjectterm.termID',
-    //                     foreignField: '_id',
-    //                     as: 'term'
-    //                 }
-    //             },
-    //             { $unwind: '$term' },
-    //             {
-    //                 $lookup: {
-    //                     from: 'studentclasses',
-    //                     localField: '_id',
-    //                     foreignField: 'classsectionID',
-    //                     as: 'studentClasses'
-    //                 }
-    //             },
-    //             {
-    //                 $lookup: {
-    //                     from: 'attendances',
-    //                     localField: 'studentClasses._id',
-    //                     foreignField: 'studentclasssection',
-    //                     as: 'attendances'
-    //                 }
-    //             },
-    //             {
-    //                 $addFields: {
-    //                     totalStudents: { $size: '$studentClasses' },
-    //                     totalNullTimes: {
-    //                         $sum: {
-    //                             $map: {
-    //                                 input: '$attendances',
-    //                                 as: 'attendance',
-    //                                 in: {
-    //                                     $size: {
-    //                                         $filter: {
-    //                                             input: '$$attendance.attendanceRecords',
-    //                                             as: 'record',
-    //                                             cond: { $eq: ['$$record.time', null] }
-    //                                         }
-    //                                     }
-    //                                 }
-    //                             }
-    //                         }
-    //                     },
-    //                     totalDaysWithExcusedAbsence: {
-    //                         $sum: {
-    //                             $map: {
-    //                                 input: '$attendances',
-    //                                 as: 'attendance',
-    //                                 in: {
-    //                                     $size: {
-    //                                         $filter: {
-    //                                             input: '$$attendance.attendanceRecords',
-    //                                             as: 'record',
-    //                                             cond: { $eq: ['$$record.status', 'Vắng có phép'] }
-    //                                         }
-    //                                     }
-    //                                 }
-    //                             }
-    //                         }
-    //                     },
-    //                     totalDays: {
-    //                         $sum: {
-    //                             $map: {
-    //                                 input: {
-    //                                     $filter: {
-    //                                         input: '$attendances',
-    //                                         as: 'attendance',
-    //                                         cond: { $eq: ['$$attendance.studentclasssection', { $arrayElemAt: ['$studentClasses._id', 0] }] }
-    //                                     }
-    //                                 },
-    //                                 as: 'attendance',
-    //                                 in: { $size: '$$attendance.attendanceRecords' }
-    //                             }
-    //                         }
-    //                     },
-    //                     totalNonNullTimes: {
-    //                         $sum: {
-    //                             $map: {
-    //                                 input: '$attendances',
-    //                                 as: 'attendance',
-    //                                 in: {
-    //                                     $size: {
-    //                                         $filter: {
-    //                                             input: '$$attendance.attendanceRecords',
-    //                                             as: 'record',
-    //                                             cond: { $ne: ['$$record.time', null] }
-    //                                         }
-    //                                     }
-    //                                 }
-    //                             }
-    //                         }
-    //                     }
-    //                 }
-    //             },
-    //             {
-    //                 $project: {
-    //                     _id: 1,
-    //                     classCode: 1,
-    //                     classType: 1,
-    //                     schoolDay: 1,
-    //                     lesson: 1,
-    //                     subjecttermID: '$subjectterm._id',
-    //                     subjectID: '$subject._id',
-    //                     subjectName: '$subject.subjectName',
-    //                     termID: '$term._id',
-    //                     totalDaysWithExcusedAbsence: 1,
-    //                     totalNullTimes: 1,
-    //                     totalStudents: 1,
-    //                     totalDays: 1, // Thêm tổng số ngày học
-    //                     totalNonNullTimes: 1 // Thêm tổng thời gian không null
-    //                 }
-    //             }
-    //         ]);
-
-    //         return classSections;
-    //     } catch (error) {
-    //         console.error('Error fetching all class sections and total dates:', error);
-    //         throw error;
-    //     }
-    // },
-    // async exportTKAverageParticipationExcel(filePath) {
-    //     try {
-    //       const classSections = await this.getAllClassSectionsAndTotalDates();
-    
-    //       const workbook = new ExcelJS.Workbook();
-    //       const worksheet = workbook.addWorksheet('AverageParticipation');
-    
-    //       // Add the column headers
-    //       const columnHeaders = [
-    //         'Mã lớp học phần', 'Tên lớp học phần', 'Số lượng sinh viên tham gia trung bình', 'Tổng số sinh viên'
-    //         // 'Total Days With Excused Absence', 
-    //         // 'Total Null Times', 'Total Students', 'Total Days', 'Total Non-Null Times'
-    //       ];
-    //       const headerRow = worksheet.addRow(columnHeaders);
-    //       headerRow.eachCell((cell) => {
-    //         cell.font = { bold: true }; // Make the column headers bold
-    //       });
-    
-    //       // Add the class section data
-    //       classSections.forEach(classSection => {
-    //         const nullTimesPerStudent = (classSection.totalStudents === 0 || classSection.totalNullTimes === 0) 
-    //       ? 'Chưa có dữ liệu' 
-    //       : (classSection.totalNonNullTimes / classSection.totalStudents).toFixed(2);
-    //         worksheet.addRow([
-    //           classSection.classCode,
-    //           classSection.subjectName,
-    //           nullTimesPerStudent,
-    //         //   classSection.totalDaysWithExcusedAbsence,
-    //         //   classSection.totalNullTimes,
-    //           classSection.totalStudents,
-    //         //   classSection.totalDays,
-    //         //   classSection.totalNonNullTimes
-    //         ]);
-    //       });
-    //       const buffer = await workbook.xlsx.writeBuffer();
-    //       return buffer;
-    //     } catch (error) {
-    //       console.error('Error exporting class sections to Excel:', error);
-    //       throw error;
-    //     }
-    //   },
-
-
       async exportTKAverageAbsentExcel(filePath) {
         try {
           const classSections = await this.getAllClassSectionsAndTotalDates();
@@ -318,11 +134,29 @@ const StatisticDAO = {
 
     async getClassSectionsAndTotalDatesByTeacherID(teacherID) {
         try {
-            const classSections = await Classsection.aggregate([
+            const students = await User.aggregate([
+                {
+                    $lookup: {
+                        from: 'studentclasses',
+                        localField: '_id',
+                        foreignField: 'studentID',
+                        as: 'studentClasses'
+                    }
+                },
+                { $unwind: '$studentClasses' },
+                {
+                    $lookup: {
+                        from: 'classsections',
+                        localField: 'studentClasses.classsectionID',
+                        foreignField: '_id',
+                        as: 'classSection'
+                    }
+                },
+                { $unwind: '$classSection' },
                 {
                     $lookup: {
                         from: 'teachingassignments',
-                        localField: '_id',
+                        localField: 'classSection._id',
                         foreignField: 'classsectionID',
                         as: 'teachingAssignments'
                     }
@@ -335,7 +169,7 @@ const StatisticDAO = {
                 {
                     $lookup: {
                         from: 'subjectterms',
-                        localField: 'subjecttermID',
+                        localField: 'classSection.subjecttermID',
                         foreignField: '_id',
                         as: 'subjectterm'
                     }
@@ -361,14 +195,6 @@ const StatisticDAO = {
                 { $unwind: '$term' },
                 {
                     $lookup: {
-                        from: 'studentclasses',
-                        localField: '_id',
-                        foreignField: 'classsectionID',
-                        as: 'studentClasses'
-                    }
-                },
-                {
-                    $lookup: {
                         from: 'attendances',
                         localField: 'studentClasses._id',
                         foreignField: 'studentclasssection',
@@ -376,27 +202,32 @@ const StatisticDAO = {
                     }
                 },
                 {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'studentClasses.studentID',
-                        foreignField: '_id',
-                        as: 'students'
-                    }
-                },
-                {
                     $addFields: {
-                        totalDays: {
+                        totalNullTimes: {
                             $sum: {
                                 $map: {
                                     input: {
                                         $filter: {
                                             input: '$attendances',
                                             as: 'attendance',
-                                            cond: { $eq: ['$$attendance.studentclasssection', { $arrayElemAt: ['$studentClasses._id', 0] }] }
+                                            cond: { $eq: ['$$attendance.studentclasssection', '$studentClasses._id'] }
                                         }
                                     },
                                     as: 'attendance',
-                                    in: { $size: '$$attendance.attendanceRecords' }
+                                    in: {
+                                        $size: {
+                                            $filter: {
+                                                input: '$$attendance.attendanceRecords',
+                                                as: 'record',
+                                                cond: {
+                                                    $and: [
+                                                        { $eq: ['$$record.time', null] },
+                                                        { $lte: ['$$record.date', new Date()] }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -405,202 +236,176 @@ const StatisticDAO = {
                 {
                     $project: {
                         _id: 1,
-                        classCode: 1,
-                        classType: 1,
-                        schoolDay: 1,
-                        lesson: 1,
-                        subjecttermID: '$subjectterm._id',
-                        subjectID: '$subject._id',
-                        subjectName: '$subject.subjectName',
-                        termID: '$term._id',
-                        totalDays: 1,
-                        students: {
-                            $map: {
-                                input: '$students',
-                                as: 'student',
-                                in: {
-                                    email: { $ifNull: ['$$student.email', null] },
-                                    usercode: { $ifNull: ['$$student.userCode', null] },
-                                    fullName: { $ifNull: ['$$student.fullName', null] },
-                                    totalNullTimes: {
-                                        $sum: {
-                                            $map: {
-                                                input: {
-                                                    $filter: {
-                                                        input: '$attendances',
-                                                        as: 'attendance',
-                                                        cond: { $eq: ['$$attendance.studentclasssection', { $arrayElemAt: ['$studentClasses._id', { $indexOfArray: ['$studentClasses.studentID', '$$student._id'] }] }] }
-                                                    }
-                                                },
+                        email: 1,
+                        userCode: 1,
+                        fullName: 1,
+                        totalNullTimes: 1,
+                        classSection: {
+                            _id: 1,
+                            classCode: 1,
+                            classType: 1,
+                            schoolDay: 1,
+                            lesson: 1,
+                            subjecttermID: '$subjectterm._id',
+                            subjectID: '$subject._id',
+                            subjectName: '$subject.subjectName',
+                            termID: '$term._id',
+                            totalDays: {
+                                $sum: {
+                                    $map: {
+                                        input: {
+                                            $filter: {
+                                                input: '$attendances',
                                                 as: 'attendance',
-                                                in: {
-                                                    $size: {
-                                                        $filter: {
-                                                            input: '$$attendance.attendanceRecords',
-                                                            as: 'record',
-                                                            cond: {
-                                                                $and: [
-                                                                    { $eq: ['$$record.time', null] },
-                                                                    { $lte: ['$$record.date', new Date()] }
-                                                                ]
-                                                            }
-                                                        }
-                                                    }
-                                                }
+                                                cond: { $eq: ['$$attendance.studentclasssection', '$studentClasses._id'] }
                                             }
-                                        }
-                                    },
+                                        },
+                                        as: 'attendance',
+                                        in: { $size: '$$attendance.attendanceRecords' }
+                                    }
                                 }
                             }
                         }
                     }
+                },
+                {
+                    $match: {
+                        'classSection._id': { $ne: null }
+                    }
                 }
             ]);
-
-            return classSections;
+    
+            return students;
         } catch (error) {
-            console.error('Error fetching class sections and total dates by teacherID:', error);
+            console.error('Error fetching students and class sections by teacherID:', error);
             throw error;
         }
     },
 
-    
-    // async exportTKClassSectionsToExcel(teacherID) {
-    //     try {
-    //         const classSections = await this.getClassSectionsAndTotalDatesByTeacherID(teacherID);
-    
-    //         const workbook = new ExcelJS.Workbook();
-    
-    //         classSections.forEach((classSection) => {
-    //             const worksheet = workbook.addWorksheet(classSection.classCode);
-    
-    //             // Add the merged header row
-    //             worksheet.mergeCells('A1', 'E1');
-    //             const headerCell = worksheet.getCell('A1');
-    //             headerCell.value = `${classSection.classCode} - ${classSection.subjectName}`;
-    //             headerCell.alignment = { horizontal: 'center' };
-    //             headerCell.font = { bold: true }; // Make the header bold
-    
-    //             // Add the column headers
-    //             const columnHeaders = ['STT', 'Email', 'Mã số SV', 'Họ tên', 'Tổng số buổi vắng'];
-    //             const headerRow = worksheet.addRow(columnHeaders);
-    //             headerRow.eachCell((cell) => {
-    //                 cell.font = { bold: true }; // Make the column headers bold
-    //             });
-    
-    //             // Add the student data with index
-    //             classSection.students.forEach((student, index) => {
-    //                 worksheet.addRow([
-    //                     index + 1, // STT
-    //                     student.email,
-    //                     student.usercode,
-    //                     student.fullName,
-    //                     student.totalNullTimes
-    //                 ]);
-    //             });
-    //         });
-    
-    //         const buffer = await workbook.xlsx.writeBuffer();
-    //         return buffer;
-    //     } catch (error) {
-    //         console.error('Error exporting class sections to Excel:', error);
-    //         throw error;
-    //     }
-    // },
-
-    async exportTKClassSectionsToExcel(teacherID, termID, totalNullTimes, classCode) {
+    //Xuất trang DSSV vắng nhiều của role Giảng viên
+    async exportTKClassSectionsToExcel(teacherID, termID, totalNullTimesStart, totalNullTimesEnd) {
         try {
-            // Lấy dữ liệu các lớp học phần theo teacherID và termID
+            // Truy vấn termID để lấy thông tin term
+            const term = await Term.findById(termID).select('term').lean();
+            if (!term) {
+                throw new Error('Term not found');
+            }
+
+            //cái getClassSectionsAndTotalDatesByTeacherID là lấy hàm phía trên
             const classSections = await this.getClassSectionsAndTotalDatesByTeacherID(teacherID);
-    
-            // Lọc dữ liệu theo termID, totalNullTimes và classCode
+
+            // Lọc dữ liệu theo termID và khoảng totalNullTimes
             const filteredClassSections = classSections.filter(classSection => 
-                classSection.termID.toString() === termID &&
-                classSection.classCode === classCode &&
-                classSection.students.some(student => student.totalNullTimes === totalNullTimes)
+                classSection.classSection && classSection.classSection.termID && classSection.classSection.termID.toString() === termID &&
+                classSection.totalNullTimes >= totalNullTimesStart && classSection.totalNullTimes <= totalNullTimesEnd
             );
-    
+
             if (filteredClassSections.length === 0) {
                 console.log('No data found for the given criteria');
                 return null;
             }
-    
+
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('ClassSection');
-    
-            const classSection = filteredClassSections[0];
-    
-            // Add the title rows
-            const titleRow1 = worksheet.addRow(['TRƯỜNG ĐẠI HỌC VĂN LANG']);
-            titleRow1.font = { bold: true, size: 16 };
-            titleRow1.alignment = { vertical: 'middle' };
-            worksheet.mergeCells('A1:E1');
-    
-            const titleRow2 = worksheet.addRow(['KHOA CÔNG NGHỆ THÔNG TIN']);
-            titleRow2.font = { bold: true, size: 16 };
-            titleRow2.alignment = { vertical: 'middle' };
-            worksheet.mergeCells('A2:E2');
-    
-            // Add the logo
-            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png'); // Cập nhật đường dẫn chính xác đến file logo
+
+            // === LOGO ===
+            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png');
             const logo = workbook.addImage({
                 filename: logoPath,
                 extension: 'png',
             });
-            worksheet.addImage(logo, 'F1:G5'); // Cố định logo ở 'F1:G5'
-    
-            // Add the merged header row
-            worksheet.mergeCells('A3:E3');
-            const headerCell = worksheet.getCell('A3');
-            headerCell.value = `${classSection.classCode} - ${classSection.subjectName}`;
-            headerCell.alignment = { horizontal: 'center' };
-            headerCell.font = { bold: true, size: 14 }; // Make the header bold and larger
-    
-            // Add the sub-header row
-            worksheet.mergeCells('A4:E4');
-            const subHeaderCell = worksheet.getCell('A4');
-            subHeaderCell.value = `DANH SÁCH SINH VIÊN VẮNG ${totalNullTimes} BUỔI`;
-            subHeaderCell.alignment = { horizontal: 'center' };
-            subHeaderCell.font = { bold: true, size: 14 }; // Make the sub-header bold and larger
-    
-            // Add the column headers
-            const columnHeaders = ['STT', 'Email', 'Mã số SV', 'Họ tên', 'Tổng số buổi vắng'];
+            worksheet.addImage(logo, {
+                tl: { col: 1.6, row: 0 }, // B1 là col: 1 (0-indexed)
+                ext: { width: 60, height: 53 }, // Tùy chỉnh theo kích thước logo thật tế
+            });
+
+            // === TÊN TRƯỜNG ===
+            worksheet.mergeCells('A4:H4');
+            worksheet.getCell('A4').value = 'TRƯỜNG ĐẠI HỌC VĂN LANG';
+            worksheet.getCell('A4').font = { bold: true, size: 16 };
+            worksheet.getCell('A4').alignment = { vertical: 'middle', horizontal: 'left' };
+
+            // === TÊN KHOA ===
+            worksheet.mergeCells('A5:H5');
+            worksheet.getCell('A5').value = 'KHOA CÔNG NGHỆ THÔNG TIN';
+            worksheet.getCell('A5').font = { bold: true, size: 16 };
+            worksheet.getCell('A5').alignment = { vertical: 'middle', horizontal: 'left' };
+
+            // === DÒNG TRỐNG ===
+            worksheet.addRow([null]);
+
+            // === TIÊU ĐỀ DANH SÁCH ===
+            worksheet.mergeCells('A7:H7');
+            worksheet.getCell('A7').value = 'DANH SÁCH SINH VIÊN VẮNG NHIỀU';
+            worksheet.getCell('A7').font = { bold: true, size: 14 };
+            worksheet.getCell('A7').alignment = { vertical: 'middle', horizontal: 'center' };
+
+            // === HỌC KỲ ===
+            worksheet.mergeCells('A8:H8');
+            worksheet.getCell('A8').value = `HỌC KỲ: ${term.term}`;
+            worksheet.getCell('A8').font = { bold: true, size: 12 };
+            worksheet.getCell('A8').alignment = { vertical: 'middle', horizontal: 'center' };
+            worksheet.mergeCells('A9:H9');
+            worksheet.getCell('A9').value = `VẮNG TỪ ${totalNullTimesStart} BUỔI ĐẾN ${totalNullTimesEnd} BUỔI`;
+            worksheet.getCell('A9').font = { bold: true, size: 12 };
+            worksheet.getCell('A9').alignment = { vertical: 'middle', horizontal: 'center' };
+            const columnHeaders = ['STT', 'Mã lớp', 'Tên môn học', 'Email', 'Mã số SV', 'Họ và tên', 'Số buổi vắng', 'Tổng số buổi học'];
             const headerRow = worksheet.addRow(columnHeaders);
             headerRow.eachCell((cell) => {
-                cell.font = { bold: true }; // Make the column headers bold
+                // cell.font = { bold: true};
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FF2400' }, // Red background
+                };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
             });
-    
+
             // Set column widths
             worksheet.getColumn(1).width = 5; // STT
-            worksheet.getColumn(2).width = 30; // Email
-            worksheet.getColumn(3).width = 15; // Mã số SV
-            worksheet.getColumn(4).width = 25; // Họ tên
-            worksheet.getColumn(5).width = 20; // Tổng số buổi vắng
-    
+            worksheet.getColumn(2).width = 22; // Mã lớp
+            worksheet.getColumn(3).width = 45; // Tên môn học
+            worksheet.getColumn(4).width = 35; // Email
+            worksheet.getColumn(5).width = 15; // Mã số SV
+            worksheet.getColumn(6).width = 30; // Họ và tên
+            worksheet.getColumn(7).width = 20; // Số buổi vắng
+            worksheet.getColumn(8).width = 20; // Tổng số buổi học
+
             // Add the student data with index
-            classSection.students.forEach((student, index) => {
-                if (student.totalNullTimes === totalNullTimes) {
+            let rowIndex = 1;
+            filteredClassSections.forEach(student => {
+                if (student.classSection) {
                     worksheet.addRow([
-                        index + 1, // STT
+                        rowIndex++, // STT
+                        student.classSection.classCode,
+                        student.classSection.subjectName,
                         student.email,
-                        student.usercode,
+                        student.userCode,
                         student.fullName,
-                        student.totalNullTimes
+                        student.totalNullTimes,
+                        student.classSection.totalDays
                     ]);
                 }
             });
-    
+
             // Add the final rows with the date and signature
             const finalRow1 = worksheet.addRow(['TP.Hồ Chí Minh, ngày   tháng    năm 2025']);
             finalRow1.font = { italic: true };
             finalRow1.alignment = { horizontal: 'right' };
-            worksheet.mergeCells(`A${finalRow1.number}:E${finalRow1.number}`);
-    
+            worksheet.mergeCells(`A${finalRow1.number}:H${finalRow1.number}`);
+
             const finalRow2 = worksheet.addRow(['Người lập danh sách                ']);
             finalRow2.font = { italic: true };
             finalRow2.alignment = { horizontal: 'right' };
-            worksheet.mergeCells(`A${finalRow2.number}:E${finalRow2.number}`);
-    
+            worksheet.mergeCells(`A${finalRow2.number}:H${finalRow2.number}`);
+
             const buffer = await workbook.xlsx.writeBuffer();
             return buffer;
         } catch (error) {
@@ -608,22 +413,32 @@ const StatisticDAO = {
             throw error;
         }
     },
-
-      async getClassSectionsAndTotalDates() {
+    
+    async getClassSectionsAndTotalDates() {
         try {
-            const classSections = await Classsection.aggregate([
+            const students = await User.aggregate([
                 {
                     $lookup: {
-                        from: 'teachingassignments',
+                        from: 'studentclasses',
                         localField: '_id',
-                        foreignField: 'classsectionID',
-                        as: 'teachingAssignments'
+                        foreignField: 'studentID',
+                        as: 'studentClasses'
                     }
                 },
+                { $unwind: '$studentClasses' },
+                {
+                    $lookup: {
+                        from: 'classsections',
+                        localField: 'studentClasses.classsectionID',
+                        foreignField: '_id',
+                        as: 'classSection'
+                    }
+                },
+                { $unwind: '$classSection' },
                 {
                     $lookup: {
                         from: 'subjectterms',
-                        localField: 'subjecttermID',
+                        localField: 'classSection.subjecttermID',
                         foreignField: '_id',
                         as: 'subjectterm'
                     }
@@ -649,14 +464,6 @@ const StatisticDAO = {
                 { $unwind: '$term' },
                 {
                     $lookup: {
-                        from: 'studentclasses',
-                        localField: '_id',
-                        foreignField: 'classsectionID',
-                        as: 'studentClasses'
-                    }
-                },
-                {
-                    $lookup: {
                         from: 'attendances',
                         localField: 'studentClasses._id',
                         foreignField: 'studentclasssection',
@@ -664,36 +471,32 @@ const StatisticDAO = {
                     }
                 },
                 {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'studentClasses.studentID',
-                        foreignField: '_id',
-                        as: 'students'
-                    }
-                },
-                {
                     $addFields: {
-                        // totalDays: {
-                        //     $sum: {
-                        //         $map: {
-                        //             input: '$attendances',
-                        //             as: 'attendance',
-                        //             in: { $size: '$$attendance.attendanceRecords' }
-                        //         }
-                        //     }
-                        // }
-                        totalDays: {
+                        totalNullTimes: {
                             $sum: {
                                 $map: {
                                     input: {
                                         $filter: {
                                             input: '$attendances',
                                             as: 'attendance',
-                                            cond: { $eq: ['$$attendance.studentclasssection', { $arrayElemAt: ['$studentClasses._id', 0] }] }
+                                            cond: { $eq: ['$$attendance.studentclasssection', '$studentClasses._id'] }
                                         }
                                     },
                                     as: 'attendance',
-                                    in: { $size: '$$attendance.attendanceRecords' }
+                                    in: {
+                                        $size: {
+                                            $filter: {
+                                                input: '$$attendance.attendanceRecords',
+                                                as: 'record',
+                                                cond: {
+                                                    $and: [
+                                                        { $eq: ['$$record.time', null] },
+                                                        { $lte: ['$$record.date', new Date()] }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -702,199 +505,171 @@ const StatisticDAO = {
                 {
                     $project: {
                         _id: 1,
-                        classCode: 1,
-                        classType: 1,
-                        schoolDay: 1,
-                        lesson: 1,
-                        subjecttermID: '$subjectterm._id',
-                        subjectID: '$subject._id',
-                        subjectName: '$subject.subjectName',
-                        termID: '$term._id',
-                        totalDays: 1,
-                        students: {
-                            $map: {
-                                input: '$students',
-                                as: 'student',
-                                in: {
-                                    email: { $ifNull: ['$$student.email', null] },
-                                    usercode: { $ifNull: ['$$student.userCode', null] },
-                                    fullName: { $ifNull: ['$$student.fullName', null] },
-                                    totalNullTimes: {
-                                        $sum: {
-                                            $map: {
-                                                input: {
-                                                    $filter: {
-                                                        input: '$attendances',
-                                                        as: 'attendance',
-                                                        cond: { $eq: ['$$attendance.studentclasssection', { $arrayElemAt: ['$studentClasses._id', { $indexOfArray: ['$studentClasses.studentID', '$$student._id'] }] }] }
-                                                    }
-                                                },
+                        email: 1,
+                        userCode: 1,
+                        fullName: 1,
+                        totalNullTimes: 1,
+                        classSection: {
+                            _id: 1,
+                            classCode: 1,
+                            classType: 1,
+                            schoolDay: 1,
+                            lesson: 1,
+                            subjecttermID: '$subjectterm._id',
+                            subjectID: '$subject._id',
+                            subjectName: '$subject.subjectName',
+                            termID: '$term._id',
+                            totalDays: {
+                                $sum: {
+                                    $map: {
+                                        input: {
+                                            $filter: {
+                                                input: '$attendances',
                                                 as: 'attendance',
-                                                in: {
-                                                    $size: {
-                                                        $filter: {
-                                                            input: '$$attendance.attendanceRecords',
-                                                            as: 'record',
-                                                            cond: {
-                                                                $and: [
-                                                                    { $eq: ['$$record.time', null] },
-                                                                    { $lte: ['$$record.date', new Date()] }
-                                                                ]
-                                                            }
-                                                        }
-                                                    }
-                                                }
+                                                cond: { $eq: ['$$attendance.studentclasssection', '$studentClasses._id'] }
                                             }
-                                        }
-                                    },
+                                        },
+                                        as: 'attendance',
+                                        in: { $size: '$$attendance.attendanceRecords' }
+                                    }
                                 }
                             }
                         }
                     }
+                },
+                {
+                    $match: {
+                        'classSection._id': { $ne: null }
+                    }
                 }
             ]);
     
-            return classSections;
+            return students;
         } catch (error) {
-            console.error('Error fetching class sections and total dates:', error);
+            console.error('Error fetching students and class sections:', error);
             throw error;
         }
     },
-    // async exportTKClassSectionsToExcelWithoutTeacherID() {
-    //     try {
-    //         const classSections = await this.getClassSectionsAndTotalDates();
-    
-    //         const workbook = new ExcelJS.Workbook();
-    
-    //         classSections.forEach((classSection) => {
-    //             const worksheet = workbook.addWorksheet(classSection.classCode);
-    
-    //             // Add the merged header row
-    //             worksheet.mergeCells('A1', 'E1');
-    //             const headerCell = worksheet.getCell('A1');
-    //             headerCell.value = `${classSection.classCode} - ${classSection.subjectName}`;
-    //             headerCell.alignment = { horizontal: 'center' };
-    //             headerCell.font = { bold: true }; // Make the header bold
-    
-    //             // Add the column headers
-    //             const columnHeaders = ['STT', 'Email', 'Mã số SV', 'Họ tên', 'Tổng số buổi vắng'];
-    //             const headerRow = worksheet.addRow(columnHeaders);
-    //             headerRow.eachCell((cell) => {
-    //                 cell.font = { bold: true }; // Make the column headers bold
-    //             });
-    
-    //             // Add the student data with index
-    //             classSection.students.forEach((student, index) => {
-    //                 worksheet.addRow([
-    //                     index + 1, // STT
-    //                     student.email,
-    //                     student.usercode,
-    //                     student.fullName,
-    //                     student.totalNullTimes
-    //                 ]);
-    //             });
-    //         });
-    
-    //         const buffer = await workbook.xlsx.writeBuffer();
-    //         return buffer;
-    //     } catch (error) {
-    //         console.error('Error exporting class sections to Excel:', error);
-    //         throw error;
-    //     }
-    // },
-    async exportTKClassSectionsToExcelWithoutTeacherID(termID, totalNullTimes, classCode) {
+
+    //Xuất excel trang DSSV vắng nhiều của Ban chủ nhiệm khoa
+    async exportTKClassSectionsToExcelWithoutTeacherID(termID, totalNullTimesStart, totalNullTimesEnd) {
         try {
-            // Lấy dữ liệu các lớp học phần
+            // Truy vấn termID để lấy thông tin term
+            const term = await Term.findById(termID).select('term').lean();
+            if (!term) {
+                throw new Error('Term not found');
+            }
+
+            //cái getClassSectionsAndTotalDates là lấy hàm phía trên
             const classSections = await this.getClassSectionsAndTotalDates();
-    
-            // Lọc dữ liệu theo termID, totalNullTimes và classCode
+
+            // Lọc dữ liệu theo termID và khoảng totalNullTimes
             const filteredClassSections = classSections.filter(classSection => 
-                classSection.termID.toString() === termID &&
-                classSection.classCode === classCode &&
-                classSection.students.some(student => student.totalNullTimes === totalNullTimes)
+                classSection.classSection && classSection.classSection.termID && classSection.classSection.termID.toString() === termID &&
+                classSection.totalNullTimes >= totalNullTimesStart && classSection.totalNullTimes <= totalNullTimesEnd
             );
-    
+
             if (filteredClassSections.length === 0) {
                 console.log('No data found for the given criteria');
                 return null;
             }
-    
+
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('ClassSection');
-    
-            const classSection = filteredClassSections[0];
-    
-            // Add the title rows
-            const titleRow1 = worksheet.addRow(['TRƯỜNG ĐẠI HỌC VĂN LANG']);
-            titleRow1.font = { bold: true, size: 16 };
-            titleRow1.alignment = { vertical: 'middle' };
-            worksheet.mergeCells('A1:E1');
-    
-            const titleRow2 = worksheet.addRow(['KHOA CÔNG NGHỆ THÔNG TIN']);
-            titleRow2.font = { bold: true, size: 16 };
-            titleRow2.alignment = { vertical: 'middle' };
-            worksheet.mergeCells('A2:E2');
-    
-            // Add the logo
-            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png'); // Cập nhật đường dẫn chính xác đến file logo
+            // === THÊM LOGO ===
+            // === LOGO ===
+            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png');
             const logo = workbook.addImage({
-                filename: logoPath,
-                extension: 'png',
+            filename: logoPath,
+            extension: 'png',
             });
-            worksheet.addImage(logo, 'F1:G5'); // Cố định logo ở 'F1:G5'
-    
-            // Add the merged header row
-            worksheet.mergeCells('A3:E3');
-            const headerCell = worksheet.getCell('A3');
-            headerCell.value = `${classSection.classCode} - ${classSection.subjectName}`;
-            headerCell.alignment = { horizontal: 'center' };
-            headerCell.font = { bold: true, size: 14 }; // Make the header bold and larger
-    
-            // Add the sub-header row
-            worksheet.mergeCells('A4:E4');
-            const subHeaderCell = worksheet.getCell('A4');
-            subHeaderCell.value = `DANH SÁCH SINH VIÊN VẮNG ${totalNullTimes} BUỔI`;
-            subHeaderCell.alignment = { horizontal: 'center' };
-            subHeaderCell.font = { bold: true, size: 14 }; // Make the sub-header bold and larger
-    
-            // Add the column headers
-            const columnHeaders = ['STT', 'Email', 'Mã số SV', 'Họ tên', 'Tổng số buổi vắng'];
+
+            worksheet.addImage(logo, {
+                tl: { col: 1.6, row: 0 }, // B1 là col: 1 (0-indexed)
+                ext: { width: 60, height: 53 }, // Tùy chỉnh theo kích thước logo thật tế
+            });
+
+            // === TÊN TRƯỜNG ===
+            worksheet.mergeCells('A4:H4');
+            worksheet.getCell('A4').value = 'TRƯỜNG ĐẠI HỌC VĂN LANG';
+            worksheet.getCell('A4').font = { bold: true, size: 16 };
+            worksheet.getCell('A4').alignment = { vertical: 'middle', horizontal: 'left' };
+
+            // === TÊN KHOA ===
+            worksheet.mergeCells('A5:H5');
+            worksheet.getCell('A5').value = 'KHOA CÔNG NGHỆ THÔNG TIN';
+            worksheet.getCell('A5').font = { bold: true, size: 16 };
+            worksheet.getCell('A5').alignment = { vertical: 'middle', horizontal: 'left' };
+
+            // === DÒNG TRỐNG ===
+            worksheet.addRow([null]); // Thêm dòng trống với một giá trị null thay vì mảng trống.
+
+            // === TIÊU ĐỀ DANH SÁCH ===
+            worksheet.mergeCells('A7:H7');
+            worksheet.getCell('A7').value = 'DANH SÁCH SINH VIÊN VẮNG NHIỀU';
+            worksheet.getCell('A7').font = { bold: true, size: 14 };
+            worksheet.getCell('A7').alignment = { vertical: 'middle', horizontal: 'center' };
+
+            // === HỌC KỲ ===
+            worksheet.mergeCells('A8:H8');
+            worksheet.getCell('A8').value = `HỌC KỲ: ${term.term}`;
+            worksheet.getCell('A8').font = { bold: true, size: 12 };
+            worksheet.getCell('A8').alignment = { vertical: 'middle', horizontal: 'center' };
+            worksheet.mergeCells('A9:H9');
+            worksheet.getCell('A9').value = `VẮNG TỪ ${totalNullTimesStart} BUỔI ĐẾN ${totalNullTimesEnd} BUỔI`;
+            worksheet.getCell('A9').font = { bold: true, size: 12 };
+            worksheet.getCell('A9').alignment = { vertical: 'middle', horizontal: 'center' };
+            const columnHeaders = ['STT', 'Mã lớp', 'Tên môn học', 'Email', 'Mã số SV', 'Họ và tên', 'Số buổi vắng', 'Tổng số buổi học'];
             const headerRow = worksheet.addRow(columnHeaders);
+
             headerRow.eachCell((cell) => {
-                cell.font = { bold: true }; // Make the column headers bold
+                // cell.font = { bold: true };
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FF2400' } // Màu đỏ (ARGB: Alpha-Red-Green-Blue)
+                };
             });
-    
+
             // Set column widths
             worksheet.getColumn(1).width = 5; // STT
-            worksheet.getColumn(2).width = 30; // Email
-            worksheet.getColumn(3).width = 15; // Mã số SV
-            worksheet.getColumn(4).width = 25; // Họ tên
-            worksheet.getColumn(5).width = 20; // Tổng số buổi vắng
-    
+            worksheet.getColumn(2).width = 22; // Mã lớp
+            worksheet.getColumn(3).width = 45; // Tên môn học
+            worksheet.getColumn(4).width = 35; // Email
+            worksheet.getColumn(5).width = 15; // Mã số SV
+            worksheet.getColumn(6).width = 30; // Họ và tên
+            worksheet.getColumn(7).width = 20; // Số buổi vắng
+            worksheet.getColumn(8).width = 20; // Tổng số buổi học
+
             // Add the student data with index
-            classSection.students.forEach((student, index) => {
-                if (student.totalNullTimes === totalNullTimes) {
+            let rowIndex = 1;
+            filteredClassSections.forEach(student => {
+                if (student.classSection) {
                     worksheet.addRow([
-                        index + 1, // STT
+                        rowIndex++, // STT
+                        student.classSection.classCode,
+                        student.classSection.subjectName,
                         student.email,
-                        student.usercode,
+                        student.userCode,
                         student.fullName,
-                        student.totalNullTimes
+                        student.totalNullTimes,
+                        student.classSection.totalDays
                     ]);
                 }
             });
-    
+
             // Add the final rows with the date and signature
             const finalRow1 = worksheet.addRow(['TP.Hồ Chí Minh, ngày   tháng    năm 2025']);
             finalRow1.font = { italic: true };
             finalRow1.alignment = { horizontal: 'right' };
-            worksheet.mergeCells(`A${finalRow1.number}:E${finalRow1.number}`);
-    
+            worksheet.mergeCells(`A${finalRow1.number}:H${finalRow1.number}`);
+
             const finalRow2 = worksheet.addRow(['Người lập danh sách                ']);
             finalRow2.font = { italic: true };
             finalRow2.alignment = { horizontal: 'right' };
-            worksheet.mergeCells(`A${finalRow2.number}:E${finalRow2.number}`);
-    
+            worksheet.mergeCells(`A${finalRow2.number}:H${finalRow2.number}`);
+
             const buffer = await workbook.xlsx.writeBuffer();
             return buffer;
         } catch (error) {
@@ -902,7 +677,6 @@ const StatisticDAO = {
             throw error;
         }
     },
-
     async getClassSectionsAndDatesWithNonNullTimesByTeacherID(teacherID) {
         try {
             // Tính totalStudents cho mỗi lớp
@@ -1169,89 +943,8 @@ const StatisticDAO = {
             throw error;
         }
     },
-    // async exportClassSectionsAndDatesWithNonNullTimesToExcel(teacherID) {
-    //     try {
-    //         const classSections = await this.getClassSectionsAndDatesWithNonNullTimesByTeacherID(teacherID);
-    
-    //         const workbook = new ExcelJS.Workbook();
-    //         const worksheet = workbook.addWorksheet('ClassSections');
-    
-    //         // Add the column headers
-    //         const columnHeaders = [
-    //             'STT', 'Mã lớp học phần', 'Tên lớp học phần', 
-    //             ...Array.from({ length: 15 }, (_, i) => `Buổi ${i + 1}`), 
-    //             'Tổng số sinh viên'
-    //         ];
-    //         const headerRow = worksheet.addRow(columnHeaders);
-    //         headerRow.eachCell((cell) => {
-    //             cell.font = { bold: true }; // Make the column headers bold
-    //         });
-    
-    //         // Add the class section data
-    //         classSections.forEach((classSection, index) => {
-    //             const rowData = [
-    //                 index + 1, // STT
-    //                 classSection.classCode,
-    //                 classSection.subjectName,
-    //                 ...Array.from({ length: 15 }, (_, i) => {
-    //                     const sessionDate = new Date(classSection.datesWithNonNullTimes[0].date);
-    //                     sessionDate.setDate(sessionDate.getDate() + i);
-    //                     const dateWithNonNullTimes = classSection.datesWithNonNullTimes.find(d => new Date(d.date).getTime() === sessionDate.getTime());
-    //                     return dateWithNonNullTimes ? dateWithNonNullTimes.nonNullTimesCount : '';
-    //                 }),
-    //                 classSection.totalStudents
-    //             ];
-    //             worksheet.addRow(rowData);
-    //         });
-    
-    //         const buffer = await workbook.xlsx.writeBuffer();
-    //         return buffer;
-    //     } catch (error) {
-    //         console.error('Error exporting class sections and dates with non-null times to Excel:', error);
-    //         throw error;
-    //     }
-    // },
-    // async exportClassSectionsAndDatesWithNonNullTimesToExcel(teacherID) {
-    //     try {
-    //         const classSections = await this.getClassSectionsAndDatesWithNonNullTimesByTeacherID(teacherID);
-    
-    //         const workbook = new ExcelJS.Workbook();
-    //         const worksheet = workbook.addWorksheet('ClassSections');
-    
-    //         // Add the column headers
-    //         const columnHeaders = [
-    //             'STT', 'Mã lớp học phần', 'Tên lớp học phần', 
-    //             ...Array.from({ length: 15 }, (_, i) => `Buổi ${i + 1}`), 
-    //             'Tổng số sinh viên'
-    //         ];
-    //         const headerRow = worksheet.addRow(columnHeaders);
-    //         headerRow.eachCell((cell) => {
-    //             cell.font = { bold: true }; // Make the column headers bold
-    //         });
-    
-    //         // Add the class section data
-    //         classSections.forEach((classSection, index) => {
-    //             const rowData = [
-    //                 index + 1, // STT
-    //                 classSection.classCode,
-    //                 classSection.subjectName,
-    //                 ...Array.from({ length: 15 }, (_, i) => {
-    //                     const dateWithNonNullTimes = classSection.datesWithNonNullTimes[i];
-    //                     return dateWithNonNullTimes ? dateWithNonNullTimes.nonNullTimesCount : '';
-    //                 }),
-    //                 classSection.totalStudents
-    //             ];
-    //             worksheet.addRow(rowData);
-    //         });
-    
-    //         const buffer = await workbook.xlsx.writeBuffer();
-    //         return buffer;
-    //     } catch (error) {
-    //         console.error('Error exporting class sections and dates with non-null times to Excel:', error);
-    //         throw error;
-    //     }
-    // },
 
+    //Xuất trang Thống kê tình hình học theo LHP của giảng viên
     async exportClassSectionsAndDatesWithNonNullTimesToExcel(teacherID, termID) {
         try {
             // Truy vấn termID để lấy thông tin term
@@ -1274,38 +967,41 @@ const StatisticDAO = {
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('ClassSections');
     
-            // Add the title rows
-            const titleRow1 = worksheet.addRow(['TRƯỜNG ĐẠI HỌC VĂN LANG']);
-            titleRow1.font = { bold: true, size: 16 };
-            titleRow1.alignment = { vertical: 'middle' };
-            worksheet.mergeCells('A1:Q1');
-    
-            const titleRow2 = worksheet.addRow(['KHOA CÔNG NGHỆ THÔNG TIN']);
-            titleRow2.font = { bold: true, size: 16 };
-            titleRow2.alignment = { vertical: 'middle' };
-            worksheet.mergeCells('A2:Q2');
-    
-            // Add the logo
-            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png'); // Cập nhật đường dẫn chính xác đến file logo
+            // === TÊN TRƯỜNG ===
+            worksheet.mergeCells('A4:H4');
+            worksheet.getCell('A4').value = 'TRƯỜNG ĐẠI HỌC VĂN LANG';
+            worksheet.getCell('A4').font = { bold: true, size: 16 };
+            worksheet.getCell('A4').alignment = { vertical: 'middle', horizontal: 'left' };
+
+            // === TÊN KHOA ===
+            worksheet.mergeCells('A5:H5');
+            worksheet.getCell('A5').value = 'KHOA CÔNG NGHỆ THÔNG TIN';
+            worksheet.getCell('A5').font = { bold: true, size: 16 };
+            worksheet.getCell('A5').alignment = { vertical: 'middle', horizontal: 'left' };
+
+            // === LOGO ===
+            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png');
             const logo = workbook.addImage({
                 filename: logoPath,
                 extension: 'png',
             });
-            worksheet.addImage(logo, 'F1:G5'); // Cố định logo ở 'F1:G5'
-    
-            // Add the statistics title row
-            const statsTitleRow = worksheet.addRow(['SỐ LƯỢNG SINH VIÊN TỪNG BUỔI']);
-            statsTitleRow.font = { bold: true, size: 14 };
-            statsTitleRow.alignment = { vertical: 'middle', horizontal: 'center' };
+            worksheet.addImage(logo, {
+                tl: { col: 1.6, row: 0 }, // B1 là col: 1 (0-indexed)
+                ext: { width: 60, height: 53 }, // Tùy chỉnh theo kích thước logo thật tế
+            });
+
+            // === TIÊU ĐỀ THỐNG KÊ ===
             worksheet.mergeCells('A7:S7');
-    
-            // Add the term row
-            const termRow = worksheet.addRow([`Học kỳ: ${term.term}`]);
-            termRow.font = { bold: true, size: 14 };
-            termRow.alignment = { vertical: 'middle', horizontal: 'center' };
+            worksheet.getCell('A7').value = 'SỐ LƯỢNG SINH VIÊN TỪNG BUỔI';
+            worksheet.getCell('A7').font = { bold: true, size: 14 };
+            worksheet.getCell('A7').alignment = { vertical: 'middle', horizontal: 'center' };
+
+            // === HỌC KỲ ===
             worksheet.mergeCells('A8:S8');
-            worksheet.addRow([]);
-    
+            worksheet.getCell('A8').value = `Học kỳ: ${term.term}`;
+            worksheet.getCell('A8').font = { bold: true, size: 14 };
+            worksheet.getCell('A8').alignment = { vertical: 'middle', horizontal: 'center' };
+
             // Add the column headers
             const columnHeaders = [
                 'STT', 'Mã lớp học phần', 'Tên lớp học phần', 
@@ -1313,9 +1009,24 @@ const StatisticDAO = {
                 'Tổng số sinh viên'
             ];
             const headerRow = worksheet.addRow(columnHeaders);
+            
             headerRow.eachCell((cell) => {
-                cell.font = { bold: true }; // Làm đậm tiêu đề cột
+                // cell.font = { bold: true};
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FF2400' } // Nền đỏ
+                };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
             });
+            
     
             // Set column widths
             const columnWidths = [10, 22, 50, ...Array(15).fill(7), 20];
@@ -1356,8 +1067,6 @@ const StatisticDAO = {
             throw error;
         }
     },
-
-
 
     async getAllClassSectionsAndDatesWithNonNullTimes() {
         try {
@@ -1596,45 +1305,7 @@ const StatisticDAO = {
         }
     },
 
-    // async exportAllClassSectionsAndDatesWithNonNullTimesToExcel() {
-    //     try {
-    //         const classSections = await this.getAllClassSectionsAndDatesWithNonNullTimes();
-
-    //         const workbook = new ExcelJS.Workbook();
-    //         const worksheet = workbook.addWorksheet('ClassSections');
-
-    //         // Add the column headers
-    //         const columnHeaders = [
-    //             'STT', 'Mã lớp học phần', 'Tên lớp học phần', 'Tổng SLSV', 'SLSV tham gia TB'
-    //         ];
-    //         const headerRow = worksheet.addRow(columnHeaders);
-    //         headerRow.eachCell((cell) => {
-    //             cell.font = { bold: true }; // Make the column headers bold
-    //         });
-
-    //         // Add the class section data
-    //         classSections.forEach((classSection, index) => {
-    //             const totalNonNullTimesCount = classSection.datesWithNonNullTimes.reduce((sum, record) => sum + record.nonNullTimesCount, 0);
-    //             const averageNonNullTimesCount = classSection.datesWithNonNullTimes.length > 0 ? (totalNonNullTimesCount / classSection.datesWithNonNullTimes.length).toFixed(2) : 'Chưa có dữ liệu';
-
-    //             const rowData = [
-    //                 index + 1, // STT
-    //                 classSection.classCode,
-    //                 classSection.subjectName,
-    //                 classSection.totalStudents,
-    //                 averageNonNullTimesCount
-    //             ];
-    //             worksheet.addRow(rowData);
-    //         });
-
-    //         const buffer = await workbook.xlsx.writeBuffer();
-    //         return buffer;
-    //     } catch (error) {
-    //         console.error('Error exporting class sections and dates with non-null times to Excel:', error);
-    //         throw error;
-    //     }
-    // },
-
+    //Xuất trang Thống kê tỉ lệ SV điểm danh
     async exportAllClassSectionsAndDatesWithNonNullTimesToExcel(termID) {
         try {
             // Truy vấn termID để lấy thông tin term
@@ -1652,46 +1323,66 @@ const StatisticDAO = {
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('ClassSections');
     
-            // Add the title rows
-            const titleRow1 = worksheet.addRow(['TRƯỜNG ĐẠI HỌC VĂN LANG']);
-            titleRow1.font = { bold: true, size: 16 };
-            titleRow1.alignment = { vertical: 'middle' };
-            worksheet.mergeCells('A1:E1');
-    
-            const titleRow2 = worksheet.addRow(['KHOA CÔNG NGHỆ THÔNG TIN']);
-            titleRow2.font = { bold: true, size: 16 };
-            titleRow2.alignment = { vertical: 'middle' };
-            worksheet.mergeCells('A2:E2');
-    
-            // Add the logo
-            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png'); // Cập nhật đường dẫn chính xác đến file logo
+            // === LOGO ===
+            const logoPath = path.join(__dirname, '../uploads/logovanlang1.png');
             const logo = workbook.addImage({
                 filename: logoPath,
                 extension: 'png',
             });
-            worksheet.addImage(logo, 'F1:G5'); // Phóng to logo
-    
-            // Add the statistics title row
-            const statsTitleRow = worksheet.addRow(['THỐNG KÊ SỐ LƯỢNG SINH VIÊN THAM GIA']);
-            statsTitleRow.font = { bold: true, size: 14 };
-            statsTitleRow.alignment = { vertical: 'middle', horizontal: 'center' };
-            worksheet.mergeCells('A7:E7');
-    
-            // Add the term row
-            const termRow = worksheet.addRow([`Học kỳ: ${term.term}`]);
-            termRow.font = { bold: true, size: 14 };
-            termRow.alignment = { vertical: 'middle', horizontal: 'center' };
-            worksheet.mergeCells('A8:E8');
-            worksheet.addRow([]);
-    
-            // Add the column headers
+            worksheet.addImage(logo, {
+                tl: { col: 1.6, row: 0 }, // B1 là col: 1 (0-indexed)
+                ext: { width: 60, height: 53 }, // Tùy chỉnh theo kích thước logo thật tế
+            });
+            
+            
+            // === TÊN TRƯỜNG ===
+            worksheet.mergeCells('A4:H4');
+            worksheet.getCell('A4').value = 'TRƯỜNG ĐẠI HỌC VĂN LANG';
+            worksheet.getCell('A4').font = { bold: true, size: 16 };
+            worksheet.getCell('A4').alignment = { vertical: 'middle', horizontal: 'left' };
+            
+            // === TÊN KHOA ===
+            worksheet.mergeCells('A5:H5');
+            worksheet.getCell('A5').value = 'KHOA CÔNG NGHỆ THÔNG TIN';
+            worksheet.getCell('A5').font = { bold: true, size: 16 };
+            worksheet.getCell('A5').alignment = { vertical: 'middle', horizontal: 'left' };
+            
+            // === DÒNG TRỐNG ===
+            worksheet.addRow([null]);
+            
+            // === TIÊU ĐỀ THỐNG KÊ ===
+            worksheet.mergeCells('A7:H7');
+            worksheet.getCell('A7').value = 'THỐNG KÊ SỐ LƯỢNG SINH VIÊN THAM GIA';
+            worksheet.getCell('A7').font = { bold: true, size: 14 };
+            worksheet.getCell('A7').alignment = { vertical: 'middle', horizontal: 'center' };
+            
+            // === HỌC KỲ ===
+            worksheet.mergeCells('A8:H8');
+            worksheet.getCell('A8').value = `Học kỳ: ${term.term}`;
+            worksheet.getCell('A8').font = { bold: true, size: 12 };
+            worksheet.getCell('A8').alignment = { vertical: 'middle', horizontal: 'center' };
             const columnHeaders = [
                 'STT', 'Mã lớp học phần', 'Tên lớp học phần', 'Tổng SLSV', 'SLSV tham gia TB'
             ];
             const headerRow = worksheet.addRow(columnHeaders);
+            
             headerRow.eachCell((cell) => {
-                cell.font = { bold: true }; // Make the column headers bold
+                // cell.font = { bold: true };
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FF2400' }, // Nền đỏ
+                };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' },
+                };
             });
+            
     
             // Set column widths
             const columnWidths = [10, 22, 50, 15, 20];
@@ -1732,16 +1423,6 @@ const StatisticDAO = {
             throw error;
         }
     },
-
-
-
-
-
-
-
-
-
-
 
     //Chạy local
     // async getAttendanceStatistics() {
@@ -1985,74 +1666,118 @@ const StatisticDAO = {
     return results;
   },
 
-  async getAllSuccessAttendanceFaceIDStudentCount() {
-    // Lấy tất cả các học kỳ
-    const terms = await Term.find();
+  //ver0.1
+//   async getAllSuccessAttendanceFaceIDStudentCount() {
+//     // Lấy tất cả các học kỳ
+//     const terms = await Term.find();
 
+//     const results = [];
+
+//     for (const term of terms) {
+//       // Tìm tất cả các subjectTermID liên quan đến học kỳ hiện tại
+//       const subjectTerms = await SubjectTerm.find({ termID: term._id });
+
+//       const subjectTermIDs = subjectTerms.map(subjectTerm => subjectTerm._id);
+
+//       // Tìm tất cả các classsectionID liên quan đến các subjectTermID
+//       const classSections = await Classsection.find({ subjecttermID: { $in: subjectTermIDs } });
+
+//       const classSectionIDs = classSections.map(classSection => classSection._id);
+
+//       const studentAttendance = await Attendance.aggregate([
+//         {
+//           $unwind: '$attendanceRecords'
+//         },
+//         {
+//           $match: {
+//             'attendanceRecords.time': { $ne: null },
+//             'attendanceRecords.status': 'Có mặt'
+//           }
+//         },
+//         {
+//           $lookup: {
+//             from: 'studentclasses',
+//             localField: 'studentclasssection',
+//             foreignField: '_id',
+//             as: 'studentClass'
+//           }
+//         },
+//         {
+//           $unwind: '$studentClass'
+//         },
+//         {
+//           $match: {
+//             'studentClass.classsectionID': { $in: classSectionIDs }
+//           }
+//         },
+//         {
+//           $group: {
+//             _id: '$studentClass.studentID',
+//             attendanceCount: { $sum: 1 }
+//           }
+//         },
+//         {
+//           $match: {
+//             attendanceCount: { $gt: 0 }
+//           }
+//         }
+//       ]);
+
+//       const studentIDs = studentAttendance.map(record => record._id);
+//       const totalStudentCount = studentIDs.length;
+
+//       results.push({
+//         termID: term._id,
+//         totalStudentCount: totalStudentCount,
+//         // studentIDs: studentIDs
+//       });
+//     }
+
+//     return results;
+//   },
+  //ver0.2
+  async getAllSuccessAttendanceFaceIDStudentCount() {
+    const terms = await Term.find();
     const results = [];
 
     for (const term of terms) {
-      // Tìm tất cả các subjectTermID liên quan đến học kỳ hiện tại
-      const subjectTerms = await SubjectTerm.find({ termID: term._id });
+        const subjectTerms = await SubjectTerm.find({ termID: term._id });
+        const subjectTermIDs = subjectTerms.map(subjectTerm => subjectTerm._id);
+        const classSections = await Classsection.find({ subjecttermID: { $in: subjectTermIDs } });
+        const classSectionIDs = classSections.map(classSection => classSection._id);
 
-      const subjectTermIDs = subjectTerms.map(subjectTerm => subjectTerm._id);
+        const studentAttendance = await Attendance.aggregate([
+            { $unwind: '$attendanceRecords' },
+            { $match: { 'attendanceRecords.status': 'Có mặt' } },
+            { 
+                $lookup: { 
+                    from: 'studentclasses', 
+                    localField: 'studentclasssection', 
+                    foreignField: '_id', 
+                    as: 'studentClass' 
+                } 
+            },
+            { $unwind: '$studentClass' },
+            { $match: { 'studentClass.classsectionID': { $in: classSectionIDs } } },
+            { 
+                $group: { 
+                    _id: '$studentClass.studentID', 
+                    attendanceCount: { $sum: 1 } // Đếm số lần "Có mặt" của mỗi sinh viên
+                } 
+            }
+        ]);
 
-      // Tìm tất cả các classsectionID liên quan đến các subjectTermID
-      const classSections = await Classsection.find({ subjecttermID: { $in: subjectTermIDs } });
+        const totalAttendanceCount = studentAttendance.reduce((acc, student) => acc + student.attendanceCount, 0);
 
-      const classSectionIDs = classSections.map(classSection => classSection._id);
-
-      const studentAttendance = await Attendance.aggregate([
-        {
-          $unwind: '$attendanceRecords'
-        },
-        {
-          $match: {
-            'attendanceRecords.time': { $ne: null },
-            'attendanceRecords.status': 'Có mặt'
-          }
-        },
-        {
-          $lookup: {
-            from: 'studentclasses',
-            localField: 'studentclasssection',
-            foreignField: '_id',
-            as: 'studentClass'
-          }
-        },
-        {
-          $unwind: '$studentClass'
-        },
-        {
-          $match: {
-            'studentClass.classsectionID': { $in: classSectionIDs }
-          }
-        },
-        {
-          $group: {
-            _id: '$studentClass.studentID',
-            attendanceCount: { $sum: 1 }
-          }
-        },
-        {
-          $match: {
-            attendanceCount: { $gt: 0 }
-          }
-        }
-      ]);
-
-      const studentIDs = studentAttendance.map(record => record._id);
-      const totalStudentCount = studentIDs.length;
-
-      results.push({
-        termID: term._id,
-        totalStudentCount: totalStudentCount,
-        // studentIDs: studentIDs
-      });
+        results.push({
+            termID: term._id,
+            totalAttendanceCount: totalAttendanceCount,
+            studentAttendanceDetails: studentAttendance // Danh sách số lần có mặt của từng sinh viên
+        });
     }
 
     return results;
-  },
+},
 
   async getTopAbsentClasses() {
     try {
@@ -2178,7 +1903,38 @@ const StatisticDAO = {
       console.error('Error fetching top absent classes:', error);
       throw error;
     }
-  }
+  },
+  async increaseLoginCount() {
+    try {
+        const record = await CountLoginFaceID.findOne();
+        
+        if (record) {
+            record.totalLoginFaceID += 1;
+            await record.save();
+        } else {
+            const newRecord = new CountLoginFaceID({
+                _id: new mongoose.Types.ObjectId(),
+                totalLoginFaceID: 1
+            });
+            await newRecord.save();
+        }
+        return { success: true, message: 'Login count updated successfully' };
+    } catch (error) {
+        console.error('Error updating login count:', error);
+        return { success: false, message: 'Error updating login count' };
+    }
+},
+async getTotalLoginFaceID() {
+    try {
+        const record = await CountLoginFaceID.findOne();
+        return { success: true, totalLoginFaceID: record ? record.totalLoginFaceID : 0 };
+    } catch (error) {
+        console.error('Error fetching total login FaceID count:', error);
+        return { success: false, message: 'Internal Server Error' };
+    }
+}
+
+
 
 };
 

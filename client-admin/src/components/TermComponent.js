@@ -445,8 +445,8 @@ class Term extends Component {
           <div className="action-buttons">
           {userRole !== 'Giảng viên' && userRole !== 'Sinh viên'  && (
                             <>
-                              <button className="icon-button edit far fa-edit" onClick={() => this.handleEditClick(item)}></button>
-                              <button className="icon-button delete far fa-trash-alt" onClick={(e) => this.btnDeleteClick1(e, item)}></button>
+                              <button className="icon-button edit far fa-edit" onClick={() => this.handleEditClick(item)} title='Sửa'></button>
+                              <button className="icon-button delete far fa-trash-alt" onClick={(e) => this.btnDeleteClick1(e, item)} title='Xóa'></button>
                             </>
                           )}
             

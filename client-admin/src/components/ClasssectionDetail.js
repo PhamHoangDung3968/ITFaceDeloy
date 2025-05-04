@@ -208,7 +208,8 @@ const ClassSectionDetail = ({ userRole }) => {
             position: "top-right"
           });
         };
-        const handleAddEmail = async () => {
+        
+const handleAddEmail = async () => {
   // Trim leading and trailing spaces from the email
   const trimmedEmail = newEmail.trim();
 
@@ -226,6 +227,8 @@ const ClassSectionDetail = ({ userRole }) => {
     return;
   }
 
+  setIsLoading(true); // Bắt đầu hiệu ứng loading
+
   try {
     const response = await axios.post(`/api/admin/studentclass/${classcode}`, { email: trimmedEmail, classcode });
     showToast('Thêm email thành công');
@@ -234,8 +237,11 @@ const ClassSectionDetail = ({ userRole }) => {
   } catch (error) {
     console.error('Error adding email:', error);
     showErrorToast('Thêm email thất bại');
+  } finally {
+    setIsLoading(false); // Kết thúc hiệu ứng loading
   }
 };
+
 const openImportModal = () => {
   setShowModalImport(true);
 };
@@ -450,10 +456,10 @@ return `${hours}:${minutes}:${seconds}`;
                   </td> */}
                   <td>
   <div className="action-buttons">
-    <Link className="icon-button" style={{padding:'1px 6px'}} onClick={() => openProfileModal(section)}>
+    <Link className="icon-button" style={{padding:'1px 6px'}} onClick={() => openProfileModal(section)} title='Thông tin sinh viên'>
       <span><IonIcon name="information-circle-outline" style={{ fontSize: '20px', height: '1em', width: '1.3em' }} /></span>
     </Link>
-    <button className="icon-button delete far fa-trash-alt" onClick={() => openDeleteModal(section._id)}></button>
+    <button className="icon-button delete far fa-trash-alt" onClick={() => openDeleteModal(section._id)} title='Xóa'></button>
   </div>
 </td>
                 </tr>

@@ -26,6 +26,7 @@
     "passport": "^0.7.0",
     "passport-microsoft": "^2.1.0",
     "qrcode": "^1.5.4",
+    "short-uuid": "^5.2.0",
     "uuid": "^11.0.3",
     "xlsx": "^0.18.5"
   }

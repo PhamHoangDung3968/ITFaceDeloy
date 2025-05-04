@@ -13,6 +13,7 @@ const Profile = ({ userID, userRole }) => {
     typeLecturer: ''
   });
 
+  
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -233,5 +234,6 @@ const Profile = ({ userID, userRole }) => {
     </div>
   );
 };
+
 
 export default Profile;

@@ -298,8 +298,8 @@ class Major extends Component {
         </td>
         <td>
           <div className="action-buttons">
-            <button className="icon-button edit far fa-edit" onClick={() => this.handleEditClickMajor(item)}></button>
-            <button className="icon-button delete far fa-trash-alt" onClick={(e) => this.btnDeleteClick(e, item)}></button>
+            <button className="icon-button edit far fa-edit" onClick={() => this.handleEditClickMajor(item)} title='Sửa'></button>
+            <button className="icon-button delete far fa-trash-alt" onClick={(e) => this.btnDeleteClick(e, item)} title='Xóa'></button>
           </div>
         </td>
                             </>

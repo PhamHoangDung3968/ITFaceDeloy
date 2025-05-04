@@ -47,40 +47,6 @@ passport.use(new MicrosoftStrategy({
   authorizationURL: 'https://login.microsoftonline.com/3011a54b-0a5d-4929-bf02-a00787877c6a/oauth2/v2.0/authorize',
   tokenURL: 'https://login.microsoftonline.com/3011a54b-0a5d-4929-bf02-a00787877c6a/oauth2/v2.0/token'
 },
-// async function(accessToken, refreshToken, profile, done) {
-//   try {
-//     // Find or create user in MongoDB
-//     let user = await User.findOne({ microsoftId: profile.id });
-//     if (!user) {
-//       // Find the "sinh viên" role
-//       const studentRole = await Role.findOne({ tenrole: 'Chưa phân quyền' });
-//       user = new User({
-//         microsoftId: profile.id,
-//         displayName: profile.displayName,
-//         email: profile.emails[0].value,
-//         accessToken: accessToken,
-//         lastLogin: Date.now(), // Lưu ngày giờ đăng nhập
-//         role: studentRole ? studentRole._id : null, // Đặt role mặc định là "Chưa phân quyền"
-//         status: 1, // Đặt trạng thái mặc định là 1
-//         phone: profile.mobilePhone
-//       });
-//       await user.save();
-//     } else {
-//       // Update accessToken and lastLogin if user already exists
-//       user.accessToken = accessToken;
-//       user.lastLogin = Date.now(); // Cập nhật ngày giờ đăng nhập
-//       await user.save();
-//     }
-
-//     // Check user status
-//     if (user.status === 0) {
-//       return done(null, false, { message: 'User is not allowed to log in' });
-//     }
-//     return done(null, user);
-//   } catch (err) {
-//     return done(err);
-//   }
-// }));
 async function(accessToken, refreshToken, profile, done) {
   try {
     let user = await User.findOne({ $or: [{ microsoftId: profile.id }, { email: profile.emails[0].value }] });
@@ -91,13 +57,13 @@ async function(accessToken, refreshToken, profile, done) {
 
       if (profile.emails[0].value.endsWith('@vanlanguni.vn')) {
         role = await Role.findOne({ tenrole: 'Sinh viên' });
-        // Extract usercode from displayName
         const displayNameParts = profile.displayName.split(' - ');
         if (displayNameParts.length > 0) {
           usercode = displayNameParts[0];
         }
       } else if (profile.emails[0].value.endsWith('@vlu.edu.vn')) {
         role = await Role.findOne({ tenrole: 'Giảng viên' });
+        usercode = null; // Thiết lập userCode là null nếu không có giá trị ban đầu
       } else {
         role = await Role.findOne({ tenrole: 'Chưa phân quyền' });
       }
@@ -107,37 +73,33 @@ async function(accessToken, refreshToken, profile, done) {
         displayName: profile.displayName,
         email: profile.emails[0].value,
         accessToken: accessToken,
-        lastLogin: Date.now(), // Lưu ngày giờ đăng nhập
-        role: role ? role._id : null, // Đặt role mặc định là "Chưa phân quyền"
-        status: 1, // Đặt trạng thái mặc định là 1
+        lastLogin: Date.now(),
+        role: role ? role._id : null,
+        status: 1,
         phone: profile.mobilePhone,
-        userCode: usercode // Add usercode to the user object
+        userCode: usercode
       });
       await user.save();
     } else {
-      // Update user details if user already exists
       user.microsoftId = profile.id;
       user.displayName = profile.displayName;
       user.email = profile.emails[0].value;
       user.accessToken = accessToken;
-      user.lastLogin = Date.now(); // Cập nhật ngày giờ đăng nhập
+      user.lastLogin = Date.now();
       user.phone = profile.mobilePhone;
       user.status = 1;
 
-      // Update usercode if email ends with @vanlanguni.vn
       if (profile.emails[0].value.endsWith('@vanlanguni.vn')) {
         const displayNameParts = profile.displayName.split(' - ');
         if (displayNameParts.length > 0) {
           user.userCode = displayNameParts[0];
         }
-      } else {
-        user.userCode = null;
+      } else if (profile.emails[0].value.endsWith('@vlu.edu.vn') && user.userCode === undefined) {
+        user.userCode = null; // Thiết lập userCode là null nếu không có giá trị ban đầu
       }
-
       await user.save();
     }
 
-    // Check user status
     if (user.status === 0) {
       return done(null, false, { message: 'User is not allowed to log in' });
     }
@@ -157,12 +119,6 @@ passport.deserializeUser((obj, done) => {
 
 // Routes
 app.get('/auth/microsoft', passport.authenticate('microsoft'));
-
-// app.get('/api/auth/callback',
-//   passport.authenticate('microsoft', { failureRedirect: 'http://localhost:3001/admin' }),
-//   (req, res) => {
-//     res.redirect('http://localhost:3001/admin/home');
-//   });
 app.get('/api/auth/callback',
   passport.authenticate('microsoft', { failureRedirect: 'https://itface.onrender.com/admin?error=login_failed' }),
   (req, res) => {
@@ -175,27 +131,6 @@ app.get('/logout', (req, res, next) => {
     res.redirect('https://itface.onrender.com/admin');
   });
 });
-
-// app.get('/user', (req, res) => {
-//   if (!req.isAuthenticated()) {
-//     return res.status(401).json({ message: 'User not authenticated' });
-//   }
-
-//   const accessToken = req.user.accessToken;
-
-//   axios.get('https://graph.microsoft.com/v1.0/me', {
-//     headers: {
-//       Authorization: `Bearer ${accessToken}`
-//     }
-//   })
-//   .then(response => {
-//     res.json(response.data);
-//   })
-//   .catch(error => {
-//     res.status(500).json({ message: 'Error fetching user data' });
-//   });
-// });
-
 app.get('/user', async (req, res) => {
   if (!req.isAuthenticated()) {
     return res.status(401).json({ message: 'User not authenticated' });
@@ -233,6 +168,88 @@ app.get('/user', async (req, res) => {
     res.status(500).json({ message: 'Error fetching user data' });
   }
 });
+// Endpoint để đăng nhập và lấy userCode
+app.post('/login_v02_user', async (req, res) => {
+  try {
+    const { image } = req.body;
+
+    console.log('Sending request to Python API for user login...');
+    const response = await axios.post('http://127.0.0.1:5000/api/login_v02', { image });
+
+    console.log('Received response from Python API:', response.data);
+
+    if (response.data.status === 'success') {
+      const userCode = response.data.message;
+
+      // Lưu userCode vào session hoặc một biến toàn cục
+      req.session.userCode = userCode;
+
+      return res.json({ message: 'Login successful', userCode });
+    } else {
+      return res.status(401).json({ message: 'Login failed' });
+    }
+  } catch (error) {
+    console.error('Error calling Python API:', error);
+
+    if (error.response) {
+      console.log('Error status:', error.response.status);
+      console.log('Error response data:', error.response.data);
+
+      if (error.response.status === 403) {
+        res.status(403).json({ message: 'Vui lòng trung thực!' });
+      } else if (error.response.status === 401) {
+        res.status(401).json({ message: 'Vui lòng đăng nhập bằng tài khoản Microsoft để đăng ký FaceID và trải nghiệm tốt hơn lần sau!' });
+      } else {
+        res.status(error.response.status).json({ message: 'Error calling Python API', error: error.response.data });
+      }
+    } else {
+      res.status(500).json({ message: 'Error calling Python API', error });
+    }
+  }
+});
+
+// Endpoint để lấy thông tin người dùng dựa trên userCode
+app.get('/user_v02', async (req, res) => {
+  try {
+    // Lấy userCode từ session, đảm bảo nó tồn tại
+    const userCode = req.session?.userCode; // Sử dụng optional chaining để tránh lỗi nếu req.session là undefined
+    if (!userCode) {
+      return res.status(400).json({ message: 'User code not found in session' });
+    }
+    // Truy vấn dữ liệu người dùng từ cơ sở dữ liệu
+    const user = await User.findOne({ userCode }).populate('role');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found with the provided code' });
+    }
+    // Chuẩn bị dữ liệu người dùng để trả về
+    const userData = {
+      _id: user._id,
+      personalEmail: user.personalEmail || null,
+      phone: user.phone || null,
+      role: user.role?.tenrole || null,
+      userCode: user.userCode,
+      microsoftData: {
+        displayName: user.displayName || null,
+        email: user.email || null,
+        businessPhones: [],
+        givenName: user.displayName?.split(' - ')[1] || null,
+        jobTitle: null,
+        mail: user.email || null,
+        mobilePhone: user.phone || null,
+        officeLocation: null,
+        preferredLanguage: null,
+        surname: user.displayName?.split(' - ')[2] || null,
+        userPrincipalName: user.email || null,
+        id: user.microsoftId
+      },
+    };
+    return res.json(userData);
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ message: 'Failed to fetch user data', error: error.message }); // Gửi kèm error message để debug dễ hơn
+  }
+});
+
 
 // Serve static files
 app.use('/admin', express.static(path.resolve(__dirname, '../client-admin/build')));
@@ -247,7 +264,6 @@ app.get('/hello', (req, res) => {
 
 // Additional APIs
 app.use('/api/admin', require('./api/admin.js'));
-// app.use('/api/customer', require('./api/customer.js'));
 
 // Start server
 app.listen(PORT, () => {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import icon_face from "../dist/img/icon_face.png"; // Cập nhật đường dẫn ảnh
 import Test from './test';
 
 const Dashboard = () => {
@@ -12,11 +11,7 @@ const Dashboard = () => {
   const [totalsuccessFaceIDStudents, setTotalSuccessFaceIDStudents] = useState(0);
   const [totalAdminAndBCNK, setTotalAdminAndBCNK] = useState(0);
   const [totalRegisteredUsers, setTotalRegisteredUsers] = useState(0);
-
-
-
-
-
+  const [totalLoginFaceID, setTotalLoginFaceID] = useState(0);
 
   // Gọi API để lấy danh sách sinh viên
   useEffect(() => {
@@ -89,7 +84,7 @@ const Dashboard = () => {
       try {
         const response = await axios.get("/api/admin/thongke-soluong-sinhvien-sudungfaceid-diemdanh-thanhcong"); // Cập nhật URL API nếu cần
         if (Array.isArray(response.data)) {
-          const totalFaceIDCount = response.data.reduce((acc, curr) => acc + curr.totalStudentCount, 0); // Tính tổng số lượng sinh viên từ nhiều termID
+          const totalFaceIDCount = response.data.reduce((acc, curr) => acc + curr.totalAttendanceCount, 0); // Tính tổng số lượng sinh viên từ nhiều termID
           setTotalSuccessFaceIDStudents(totalFaceIDCount || 0);
         } else {
           console.error("Dữ liệu trả về không phải là một mảng:", response.data);
@@ -131,6 +126,27 @@ const Dashboard = () => {
 
     fetchRegisteredUsers();
   }, []);
+  
+  useEffect(() => {
+    const fetchTotalLoginFaceID = async () => {
+      try {
+        const response = await axios.get("/api/admin/get-count-faceid-login"); // Cập nhật URL API nếu cần
+        
+        // Kiểm tra response và cập nhật state một cách an toàn
+        if (response.data && typeof response.data.totalLoginFaceID === 'number') {
+          setTotalLoginFaceID(response.data.totalLoginFaceID);
+        } else {
+          console.warn("Dữ liệu trả về không hợp lệ:", response.data);
+          setTotalLoginFaceID(0);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy số lượt đăng nhập FaceID:", error);
+        setTotalLoginFaceID(0);
+      }
+    };
+  
+    fetchTotalLoginFaceID();
+}, []);
 
 
 
@@ -140,14 +156,14 @@ const Dashboard = () => {
         <div className="container-fluid">
           <div className="row mb-2">
             <div className="col-sm-6">
-              <h1>Tổng quan ITFace</h1>
+              <h1>Thống kê chung</h1>
             </div>
             <div className="col-sm-6">
               <ol className="breadcrumb float-sm-right">
                 <li className="breadcrumb-item">
                   <b><Link to='/admin/home' style={{color:'#6B63FF'}}>Trang chủ</Link></b>
                 </li>
-                <li className="breadcrumb-item active">Tổng quan ITFace</li>
+                <li className="breadcrumb-item active">Thống kê chung</li>
               </ol>
             </div>
           </div>
@@ -155,74 +171,101 @@ const Dashboard = () => {
       </section>
       <section className="content">
         <div className="card">
-          <div className="row" style={{ margin: "15px 5px 0 5px" }}>
-            <div className="col-12 col-sm-6 col-md-3">
-              <div className="info-box">
-                <span className="info-box-icon bg-info elevation-1"><i className="fas fa-user-graduate"></i></span>
-                <div className="info-box-content">
-                  <span className="info-box-text">Số lượng SV</span>
-                  <span className="info-box-number">{totalStudents} SV</span>
-                </div>
-              </div>
+          <div className="card-body">
+            <div className="row">
+            <div className="col-lg-3 col-6">
+                <div className="small-box bg-success">
+                  <div className="inner">
+                    <h3>{totalClassSections} Lớp<sup></sup></h3>
+                    <p>Số lượng LHP</p>
+                  </div>
+                  <div className="icon">
+                    <i className="fa fa-book"></i>
+                  </div>
+                             </div>
             </div>
-            <div className="col-12 col-sm-6 col-md-3">
-              <div className="info-box mb-3">
-                <span className="info-box-icon bg-danger elevation-1"><i className="fas fa-chalkboard-teacher"></i></span>
-                <div className="info-box-content">
-                  <span className="info-box-text">Số lượng GV</span>
-                  <span className="info-box-number">{totalLecturers} GV</span>
+              <div className="col-lg-3 col-6">
+                <div className="small-box bg-info">
+                  <div className="inner">
+                    <h3>{totalStudents} SV</h3>
+                    <p>Số lượng SV</p>
+                  </div>
+                  <div className="icon">
+                    <i className="fa fa-user-graduate"></i>
+                  </div>
                 </div>
               </div>
+              <div className="col-lg-3 col-6">
+                <div className="small-box bg-success">
+                  <div className="inner bg-primary">
+                    <h3>{totalRegisteredUsers} SV<sup></sup></h3>
+                    <p>Tổng FaceID đã đăng ký</p>
+                  </div>
+                  <div className="icon">
+                    <i className="fa fa-laugh-beam"></i>
+                  </div>
+                </div>
             </div>
-            <div className="col-12 col-sm-6 col-md-3">
-             <div className="info-box mb-3">
-               <span className="info-box-icon bg-dark elevation-1"><i className="fas fa-user-tie"></i></span>
-               <div className="info-box-content">
-                 <span className="info-box-text">Số lượng Admin & BCNK</span>
-                 <span className="info-box-number">{totalAdminAndBCNK} GV</span>
-               </div>
-             </div>
-           </div>
-            <div className="col-12 col-sm-6 col-md-3">
-              <div className="info-box mb-3">
-                <span className="info-box-icon bg-success elevation-1"><i className="fas fa-book"></i></span>
-                <div className="info-box-content">
-                  <span className="info-box-text">Số lượng LHP</span>
-                  <span className="info-box-number">{totalClassSections} Lớp</span>
+              <div className="col-lg-3 col-6" >
+                <div className="small-box bg-info" >
+                  <div className="inner bg-danger">
+                    <h3>{totalLecturers} GV</h3>
+                    <p>Số lượng GV</p>
+                  </div>
+                  <div className="icon">
+                    <i className="fa fa-chalkboard-teacher"></i>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="col-12 col-sm-6 col-md-3">
-              <div className="info-box mb-3">
-                <span className="info-box-icon bg-warning elevation-1"><i className="fas fa-clipboard-list"></i></span>
-                <div className="info-box-content">
-                  <span className="info-box-text">SLSV đã được điểm danh</span>
-                  <span className="info-box-number">{currentTermStudentCount} SV</span>
+              <div className="col-lg-3 col-6">
+                <div className="small-box bg-info">
+                  <div className="inner bg-dark">
+                    <h3>{totalAdminAndBCNK} tài khoản</h3>
+                    <p>Số lượng Admin & BCNK</p>
+                  </div>
+                  <div className="icon" style={{ color: 'gray' }}>
+                    <i className="fas fa-user-tie"></i>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="col-12 col-sm-6 col-md-3">
-              <div className="info-box mb-3">
-                <span className="info-box-icon bg-primary elevation-1">
-                  <img src={icon_face} alt="icon" style={{ width: "40px", height: "40px" }} />
-                </span>
-                <div className="info-box-content">
-                  <span className="info-box-text">Tổng FaceID đã đăng ký</span>
-                  <span className="info-box-number">{totalRegisteredUsers} SV</span>
+              
+            <div className="col-lg-3 col-6">
+                <div className="small-box bg-success">
+                  <div className="inner bg-warning">
+                    <h3>{currentTermStudentCount} SV<sup></sup></h3>
+                    <p>SLSV đã được điểm danh</p>
+                  </div>
+                  <div className="icon">
+                    <i className="fa fa-clipboard-list"></i>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="col-12 col-sm-6 col-md-3">
-              <div className="info-box mb-3">
-                <span className="info-box-icon bg-secondary elevation-1"><i className="fas fa-grin-wink"></i></span>
-                <div className="info-box-content">
-                  <span className="info-box-text">Số lượt dùng Faceid</span>
-                  <span className="info-box-number">{totalsuccessFaceIDStudents} SV</span>
-                </div>
-              </div>
             </div>
             
+            <div className="col-lg-3 col-6">
+                <div className="small-box bg-success">
+                  <div className="inner bg-secondary">
+                    <h3>{totalsuccessFaceIDStudents} lượt<sup></sup></h3>
+                    <p>Số lượt dùng Faceid</p>
+                  </div>
+                  <div className="icon">
+                    <i className="fa fa-grin-wink"></i>
+                  </div>
+                </div>
+            </div>
+            
+            <div className="col-lg-3 col-6">
+                <div className="small-box bg-success">
+                  <div className="inner" style={{ backgroundColor: '#ffbe98' }}>
+                    <h3>{totalLoginFaceID} lượt<sup></sup></h3>
+                    <p>Số lượt đăng nhập FaceID</p>
+                  </div>
+                  <div className="icon">
+                    <i className="far fa-grin-stars"></i>
+                  </div>
+                </div>
+            </div>
           </div>
+        </div>
         </div>
       <Test/>
 

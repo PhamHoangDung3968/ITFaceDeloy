@@ -428,7 +428,7 @@ const Classsection = ({ userRole }) => {
                             <>
                               <button
                                 className="icon-button edit far fa-edit"
-                                onClick={() => handleEditClick(section)}
+                                onClick={() => handleEditClick(section)} title='Sửa'
                               ></button>
                               {/* <button
                                 className="icon-button delete far fa-trash-alt"
@@ -436,7 +436,7 @@ const Classsection = ({ userRole }) => {
                               ></button> */}
                               <button
                                                 className="icon-button delete far fa-trash-alt"
-                                                onClick={() => handleDelete(section._id)}
+                                                onClick={() => handleDelete(section._id)} title='Xóa'
                                               ></button>
                             </>
                           )}

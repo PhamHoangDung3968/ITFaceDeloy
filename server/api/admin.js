@@ -16,6 +16,8 @@ const axios = require('axios');
 
 // utils
 const EmailUtil = require('../utils/EmailUtil');
+const EmailNoticeUtil = require('../utils/EmailNoticeUtil');
+
 // daos
 const RoleDAO = require('../models/RoleDAO'); 
 const UserDAO = require('../models/UserDAO'); 
@@ -31,19 +33,53 @@ const StatisticDAO = require('../models/StatisticDAO');
 
 
 //-----Xử lý Qr Code-----
+// const secretKey = 'dung123456'; // Khóa bí mật để mã hóa token
+// const validQrCodes = {}; // Giả lập cơ sở dữ liệu mã QR hợp lệ
+// const tokens = {}; // Định nghĩa biến tokens ở phạm vi toàn cục
+// //Sinh mã qr code lần đâu
+// router.post('/generate/:classcode/:day', (req, res) => {
+//   const classcode = req.params.classcode;
+//   const day = req.params.day;
+//   const { url } = req.body;
+//   const deviceUUID = uuidv4(); 
+
+//   const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
+//   // const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '5s' });
+//   tokens[token] = { classcode, used: false, deviceUUID, day };
+
+//   const qrData = `${url}/admin/?classcode=${classcode}&day=${day}&token=${token}`;
+//   qrcode.toDataURL(qrData, (err, qr) => {
+//     if (err) return res.status(500).json({ error: 'Error generating QR code' });
+
+//     res.json({
+//       token,
+//       qrCodeImage: qr,
+//       deviceUUID,
+//       day 
+//     });
+//   });
+// });
+
+const crypto = require('crypto');
 const secretKey = 'dung123456'; // Khóa bí mật để mã hóa token
 const validQrCodes = {}; // Giả lập cơ sở dữ liệu mã QR hợp lệ
 const tokens = {}; // Định nghĩa biến tokens ở phạm vi toàn cục
-//Sinh mã qr code lần đâu
+
+// Function to generate a short token
+function generateShortToken(token) {
+  return crypto.createHash('sha256').update(token).digest('hex').substring(0, 8);
+}
+
+//Sinh mã qr code lần đầu
 router.post('/generate/:classcode/:day', (req, res) => {
   const classcode = req.params.classcode;
   const day = req.params.day;
   const { url } = req.body;
-  const deviceUUID = uuidv4(); 
+  const deviceUUID = crypto.randomUUID();
 
-  const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
-  // const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '5s' });
-  tokens[token] = { classcode, used: false, deviceUUID, day };
+  const jwtToken = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
+  const token = generateShortToken(jwtToken);
+  tokens[token] = { classcode, used: false, deviceUUID, day, jwtToken };
 
   const qrData = `${url}/admin/?classcode=${classcode}&day=${day}&token=${token}`;
   qrcode.toDataURL(qrData, (err, qr) => {
@@ -53,7 +89,7 @@ router.post('/generate/:classcode/:day', (req, res) => {
       token,
       qrCodeImage: qr,
       deviceUUID,
-      day 
+      day
     });
   });
 });
@@ -61,12 +97,12 @@ router.post('/generate/:classcode/:day', (req, res) => {
 //Sinh mã qr code lần sau
 router.get('/generate/:classcode/:day/qr', (req, res) => {
   const classcode = req.params.classcode;
-  const day = req.params.day; 
+  const day = req.params.day;
   const { url } = req.query;
 
-  const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
-  // const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '5s' });
-  tokens[token] = { classcode, used: false, deviceUUID: uuidv4(), day }; 
+  const jwtToken = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
+  const token = generateShortToken(jwtToken);
+  tokens[token] = { classcode, used: false, deviceUUID: crypto.randomUUID(), day, jwtToken };
 
   const qrData = `${url}/admin/?classcode=${classcode}&day=${day}&token=${token}`;
   qrcode.toDataURL(qrData, (err, qr) => {
@@ -75,10 +111,33 @@ router.get('/generate/:classcode/:day/qr', (req, res) => {
     res.json({
       token,
       qrCodeImage: qr,
-      day // Trả về ngày tháng
+      day
     });
   });
 });
+
+
+//Sinh mã qr code lần sau
+// router.get('/generate/:classcode/:day/qr', (req, res) => {
+//   const classcode = req.params.classcode;
+//   const day = req.params.day; 
+//   const { url } = req.query;
+
+//   const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '10s' });
+//   // const token = jwt.sign({ classcode, day }, secretKey, { expiresIn: '5s' });
+//   tokens[token] = { classcode, used: false, deviceUUID: uuidv4(), day }; 
+
+//   const qrData = `${url}/admin/?c=${classcode}&d=${day}&t=${token}`;
+//   qrcode.toDataURL(qrData, (err, qr) => {
+//     if (err) return res.status(500).json({ error: 'Error generating QR code' });
+
+//     res.json({
+//       token,
+//       qrCodeImage: qr,
+//       day // Trả về ngày tháng
+//     });
+//   });
+// });
 
 //Quét test QR code
 router.post('/scan/:classcode/:day', (req, res) => {
@@ -109,20 +168,41 @@ router.post('/scan/:classcode/:day', (req, res) => {
 });
 
 //Xác thực QR code
+// router.post('/verify-token', (req, res) => {
+//   const token = req.headers['x-access-token'];
+
+//   if (!token) {
+//       return res.status(403).send('No token provided.');
+//   }
+//   try {
+//       jwt.verify(token, secretKey);
+//       res.sendStatus(200);
+//   } catch (error) {
+//       console.error('Token verification error:', error);
+//       res.status(400).send('Invalid or expired token.');
+//   }
+// });
 router.post('/verify-token', (req, res) => {
   const token = req.headers['x-access-token'];
 
   if (!token) {
-      return res.status(403).send('No token provided.');
+    return res.status(403).send('No token provided.');
   }
+
+  const tokenData = tokens[token];
+  if (!tokenData) {
+    return res.status(400).send('Invalid or expired token.');
+  }
+
   try {
-      jwt.verify(token, secretKey);
-      res.sendStatus(200);
+    jwt.verify(tokenData.jwtToken, secretKey);
+    res.sendStatus(200);
   } catch (error) {
-      console.error('Token verification error:', error);
-      res.status(400).send('Invalid or expired token.');
+    console.error('Token verification error:', error);
+    res.status(400).send('Invalid or expired token.');
   }
 });
+
 
 
 //-----Xử lý upload file-----
@@ -994,7 +1074,7 @@ router.get('/studentclass/allvalue/:classCode', async (req, res) => {
 router.get('/studentclass/allstudent/:classCode', async (req, res) => {
   try {
     const { classCode } = req.params;
-    const users = await studentClassDAO.getUsersByClassCode(classCode);
+    const users = await studentClassDAO.getUsersAndNotificationCountsByClassCode(classCode);
     res.json(users);
   } catch (error) {
     console.error('Error fetching users by classCode:', error);
@@ -1125,6 +1205,35 @@ router.post('/studentclass/dateattendancing/:classCode', async (req, res) => {
   }
 });
 
+
+router.post('/studentclass/dateattendancing/warning/:classCode', async (req, res) => {
+  try {
+    const { classCode } = req.params;
+    const { studentId } = req.body;
+
+    // Gọi hàm incrementNotificationCount
+    const noticeWarning = await studentClassDAO.incrementNotificationCount(studentId, classCode);
+    res.json(noticeWarning);
+  } catch (error) {
+    console.error('Error incrementing notification count:', error);
+    res.status(500).json({ message: 'Error incrementing notification count', error });
+  }
+});
+
+router.get('/studentclass/notificationcount/:classCode/:studentId', async (req, res) => {
+  try {
+    const { classCode, studentId } = req.params;
+
+    // Gọi hàm getNotificationCount
+    const count = await studentClassDAO.getNotificationCount(studentId, classCode);
+    res.json({ numberNotifications: count });
+  } catch (error) {
+    console.error('Error getting notification count:', error);
+    res.status(500).json({ message: 'Error getting notification count', error });
+  }
+});
+
+
 //Đổi status từ vắng có phép sang hỗ trợ và ngược lại
 router.post('/studentclass/changestatus/:classCode', async (req, res) => {
   try {
@@ -1174,34 +1283,12 @@ router.get('/export-attendance/:classCode', async (req, res) => {
   }
 });
 
-// router.get('/export-tk-teacher/:teacherID', async (req, res) => {
-//   try {
-//       const { teacherID } = req.params; // Corrected parameter name
-
-//       // Export the class sections to an Excel buffer
-//       const buffer = await StatisticDAO.exportTKClassSectionsToExcel(teacherID);
-
-//       // Create a readable stream from the buffer
-//       const stream = new Readable();
-//       stream.push(buffer);
-//       stream.push(null);
-
-//       // Set headers and send the file
-//       res.setHeader('Content-Disposition', `attachment; filename=attendance_${teacherID}.xlsx`);
-//       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-//       stream.pipe(res);
-//   } catch (error) {
-//       console.error('Error exporting attendance:', error);
-//       res.status(500).json({ message: 'Error exporting attendance', error });
-//   }
-// });
-
-router.get('/export-tk-teacher/:teacherID/:termID/:classCode/:totalNullTimes', async (req, res) => {
+router.get('/export-tk-teacher/:teacherID/:termID/:totalNullTimesStart/:totalNullTimesEnd', async (req, res) => {
   try {
-      const { teacherID, termID, classCode, totalNullTimes } = req.params;
+      const { teacherID, termID, totalNullTimesStart, totalNullTimesEnd } = req.params;
 
       // Export the class sections to an Excel buffer
-      const buffer = await StatisticDAO.exportTKClassSectionsToExcel(teacherID, termID, parseInt(totalNullTimes), classCode);
+      const buffer = await StatisticDAO.exportTKClassSectionsToExcel(teacherID, termID, parseInt(totalNullTimesStart), parseInt(totalNullTimesEnd));
 
       if (!buffer) {
           return res.status(404).json({ message: 'No data found for the given criteria' });
@@ -1222,53 +1309,12 @@ router.get('/export-tk-teacher/:teacherID/:termID/:classCode/:totalNullTimes', a
   }
 });
 
-// router.get('/export-tk-bcnk', async (req, res) => {
-//   try {
-//       // Export the class sections to an Excel buffer
-//       const buffer = await StatisticDAO.exportTKClassSectionsToExcelWithoutTeacherID();
-
-//       // Create a readable stream from the buffer
-//       const stream = new Readable();
-//       stream.push(buffer);
-//       stream.push(null);
-
-//       // Set headers and send the file
-//       res.setHeader('Content-Disposition', 'attachment; filename=statistic_attendance.xlsx');
-//       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-//       stream.pipe(res);
-//   } catch (error) {
-//       console.error('Error exporting attendance:', error);
-//       res.status(500).json({ message: 'Error exporting attendance', error });
-//   }
-// });
-
-//(Có thể sẽ bỏ)
-// router.get('/export-tk-average-participation', async (req, res) => {
-//   try {
-//       // Export the class sections to an Excel buffer
-//       const buffer = await StatisticDAO.exportTKAverageParticipationExcel();
-
-//       // Create a readable stream from the buffer
-//       const stream = new Readable();
-//       stream.push(buffer);
-//       stream.push(null);
-
-//       // Set headers and send the file
-//       res.setHeader('Content-Disposition', 'attachment; filename=class_sections.xlsx');
-//       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-//       stream.pipe(res);
-//   } catch (error) {
-//       console.error('Error exporting class sections:', error);
-//       res.status(500).json({ message: 'Error exporting class sections', error });
-//   }
-// });
-
-router.get('/export-tk-bcnk/:termID/:classCode/:totalNullTimes', async (req, res) => {
+router.get('/export-tk-bcnk/:termID/:totalNullTimesStart/:totalNullTimesEnd', async (req, res) => {
   try {
-      const { termID, classCode, totalNullTimes } = req.params;
+      const {termID, totalNullTimesStart, totalNullTimesEnd } = req.params;
 
       // Export the class sections to an Excel buffer
-      const buffer = await StatisticDAO.exportTKClassSectionsToExcelWithoutTeacherID(termID, parseInt(totalNullTimes), classCode);
+      const buffer = await StatisticDAO.exportTKClassSectionsToExcelWithoutTeacherID(termID, parseInt(totalNullTimesStart), parseInt(totalNullTimesEnd));
 
       if (!buffer) {
           return res.status(404).json({ message: 'No data found for the given criteria' });
@@ -1280,7 +1326,7 @@ router.get('/export-tk-bcnk/:termID/:classCode/:totalNullTimes', async (req, res
       stream.push(null);
 
       // Set headers and send the file
-      res.setHeader('Content-Disposition', `attachment; filename=statistic_attendance_${classCode}_buoi${totalNullTimes}.xlsx`);
+      res.setHeader('Content-Disposition', `attachment; filename=attendance_bcnk.xlsx`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       stream.pipe(res);
   } catch (error) {
@@ -1288,8 +1334,6 @@ router.get('/export-tk-bcnk/:termID/:classCode/:totalNullTimes', async (req, res
       res.status(500).json({ message: 'Error exporting attendance', error });
   }
 });
-
-
 
 router.get('/export-tk-average-absent', async (req, res) => {
   try {
@@ -1367,7 +1411,7 @@ router.post('/register_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user registration...');
-    const response = await axios.post('https://d63b-123-21-159-111.ngrok-free.app/api/register', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/register', { name, image });
 
     console.log('Received response from Python API:', response.data);
 
@@ -1410,7 +1454,7 @@ router.post('/re_register_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Gửi yêu cầu đến API Python để đăng ký lại người dùng...');
-    const response = await axios.post('https://d63b-123-21-159-111.ngrok-free.app/api/re_register', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/re_register', { name, image });
 
     console.log('Nhận phản hồi từ API Python:', response.data);
 
@@ -1476,7 +1520,7 @@ router.post('/login_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user login...');
-    const response = await axios.post('https://d63b-123-21-159-111.ngrok-free.app/api/login', { name, image });
+    const response = await axios.post('http://127.0.0.1:5000/api/login', { name, image });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1506,7 +1550,7 @@ router.post('/check_user', async (req, res) => {
     const { name } = req.body;
 
     console.log('Sending request to Python API to check user registration...');
-    const response = await axios.post('https://d63b-123-21-159-111.ngrok-free.app/api/check_user', { name });
+    const response = await axios.post('http://127.0.0.1:5000/api/check_user', { name });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1550,7 +1594,7 @@ router.post('/check_user_01/:studentID', async (req, res) => {
 router.get('/count_users_regist', async (req, res) => {
   try {
     console.log('Sending request to Python API to count pickle files...');
-    const response = await axios.get('https://d63b-123-21-159-111.ngrok-free.app/api/count-pickle-files');
+    const response = await axios.get('http://127.0.0.1:5000/api/count-pickle-files');
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1622,17 +1666,6 @@ router.get('/classsections/student/totalstudyday/:studentID', async (req, res) =
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-//Thống kê cho ban chủ nhiệm khoa (có thể sẽ bỏ)
-// router.get('/classsections/allstudent/totalstudyday', async (req, res) => {
-//   try {
-//     const result = await StatisticDAO.getAllClassSectionsAndTotalDates();
-//     res.status(200).json(result);
-//   } catch (error) {
-//     console.error('Error fetching class sections and total study days:', error);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// });
 
 //Thống kê cho giảng viên
 router.get('/classsections/teacher/totalteachday/:teacherID', async (req, res) => {
@@ -1734,6 +1767,27 @@ router.get('/thongke-top-vanghoc', async (req, res) => {
   }
 });
 
+//Thống kê bao nhiêu lần đăng nhập bằng FaceID
+router.get('/count-faceid-login', async (req, res) => {
+  try {
+    const result = await StatisticDAO.increaseLoginCount();
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error updating FaceID login count:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+//Thống kê bao nhiêu lần đăng nhập bằng FaceID
+router.get('/get-count-faceid-login', async (req, res) => {
+  try {
+    const result = await StatisticDAO.getTotalLoginFaceID();
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching total login FaceID count:', error); // Cập nhật thông báo lỗi
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 //Gửi email khi điểm danh thành công
 router.post('/send-email', (req, res) => {
@@ -1743,5 +1797,30 @@ router.post('/send-email', (req, res) => {
     .then(() => res.status(200).send('Email sent successfully'))
     .catch((err) => res.status(500).send(err.toString()));
 });
+
+//Gửi email cảnh cáo
+router.post('/send-email/warning', (req, res) => {
+  const { emails, classcode, subjectName } = req.body; // Nhận mảng emails
+
+  if (Array.isArray(emails)) {
+    EmailNoticeUtil.send(emails, classcode, subjectName)
+      .then(() => res.status(200).send('Emails sent successfully'))
+      .catch((err) => {
+        console.error('Error sending emails:', err);
+        res.status(500).send(err.toString());
+      });
+  } else if (typeof emails === 'string' || emails instanceof String) {
+    // Xử lý trường hợp chỉ có một email (cho tương thích ngược nếu cần)
+    EmailNoticeUtil.send([emails], classcode, subjectName)
+      .then(() => res.status(200).send('Email sent successfully'))
+      .catch((err) => {
+        console.error('Error sending email:', err);
+        res.status(500).send(err.toString());
+      });
+  } else {
+    res.status(400).send('Invalid email format in request body');
+  }
+});
+
 
 module.exports = router;

@@ -327,6 +327,7 @@ class TeacherAssignmentsDetail extends Component {
               name="file-tray-full-outline" 
               className="icon-button"
               onClick={() => this.handleViewUser(item)} 
+              title='Thông tin giảng viên'
               style={{ fontSize: '20px', height: '1em', width: '1.3em', padding: '1px 4px', color: '#009900' }}
             />            
           )}
@@ -505,7 +506,7 @@ const currentModalItems = combinedItems.slice(modalOffset, modalOffset + itemsPe
               <td title={section.subjecttermID.subjectID.subjectName}>{section.lesson.map(lesson => <div key={lesson}>{this.mapLesson(lesson)}</div>)}</td>
               <td>
               <div className="action-buttons" >
-              <Link to={`/admin/classsections/detail/${section.classCode}`} className="icon-button">
+              <Link to={`/admin/classsections/detail/${section.classCode}`} title='Thông tin lớp học phần'  className="icon-button">
           <span>
             <IonIcon name="people-outline" style={{ fontSize: '20px', height: '1em', width: '1.3em', padding: '1px 4px' }} />
           </span>
@@ -514,7 +515,7 @@ const currentModalItems = combinedItems.slice(modalOffset, modalOffset + itemsPe
                 <>
 <button
                   className="icon-button delete far fa-trash-alt"
-                  onClick={() => this.handleDeleteClassSection(selectedUser._id, section._id)}
+                  onClick={() => this.handleDeleteClassSection(selectedUser._id, section._id)} title='Xóa'
                 ></button>
                 </>
               )}

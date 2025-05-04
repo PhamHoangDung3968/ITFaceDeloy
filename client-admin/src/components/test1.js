@@ -82,34 +82,26 @@ const Test1 = () => {
               </div>
             </div>
           </div>
-          <div className="card-body">
-            <div className="row">
-              <div className="col-lg-3 col-6">
-                <div className="small-box bg-info">
-                  <div className="inner">
-                    <h3>{studentCount}</h3>
-                    <p>Số lượng SV đi học</p>
-                  </div>
-                  <div className="icon">
-                    <i className="fa fa-user-graduate"></i>
-                  </div>
+        <div className="row" style={{ margin: "15px 5px 0 5px" }}>
+            <div className="col-12 col-sm-6 col-md-3">
+              <div className="info-box">
+                <span className="info-box-icon bg-info elevation-1"><i className="fas fa-user-graduate"></i></span>
+                <div className="info-box-content">
+                  <span className="info-box-text">Số lượng SV</span>
+                  <span className="info-box-number">{studentCount} SV</span>
                 </div>
               </div>
-              <div className="col-lg-3 col-6">
-                <div className="small-box bg-success">
-                  <div className="inner">
-                    <h3>{classSectionCount}<sup></sup></h3>
-                    <p>Số lượng LHP</p>
-                  </div>
-                  <div className="icon">
-                    <i className="fa fa-book"></i>
-                  </div>
-                             </div>
-              
-              
+            </div>
+            <div className="col-12 col-sm-6 col-md-3">
+              <div className="info-box mb-3">
+                <span className="info-box-icon bg-success elevation-1"><i className="fas fa-book"></i></span>
+                <div className="info-box-content">
+                  <span className="info-box-text">Số lượng LHP</span>
+                  <span className="info-box-number">{classSectionCount} Lớp</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
         </div>
       </section>
     </div>

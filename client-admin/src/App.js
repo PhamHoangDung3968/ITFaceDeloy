@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-
+import PublicPage from './components/PublicPage';
 import { Routes, Route, BrowserRouter, Link, useLocation, Navigate } from 'react-router-dom';
 import logo from "./dist/img/logoIT.png"
 import sidebarback from "./dist/img/sidebarbackground.jpg"
@@ -48,8 +48,6 @@ import './dist/css/pagination.css'; // Import custom CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IonIcon from '@reacticons/ionicons';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-
 
 
 const App = () => {
@@ -91,6 +89,16 @@ const App = () => {
   const cancelLogout = () => {
     setShowLogoutModal(false); // Hide the logout confirmation modal
   };
+  const fetchUserV02 = async () => {
+    try {
+      const response = await axios.get('/user_v02');
+      console.log('User V02 data:', response.data);
+      setUser(response.data);
+    } catch (error) {
+      console.error('Error fetching user V02 data:', error);
+    }
+  };
+  
 
   useEffect(() => {
     axios.get('/user')
@@ -106,6 +114,7 @@ const App = () => {
     if (params.get('error') === 'login_failed') {
       setError('Tài khoản của bạn đã bị vô hiệu hóa hãy liên hệ với admin để đăng nhập');
     }
+  fetchUserV02();
   }, []);
 
   const toggleUserMenu = () => {
@@ -161,16 +170,15 @@ const App = () => {
       { path: '/admin/term', element: <Term userRole={user?.role}/> },
       { path: '/admin/major', element: <Major userRole={user?.role}/> },
       { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> },
-      { path: '/admin/attendance/:classCode', element: <Attendance /> },
+      { path: '/admin/attendance/:classCode', element: <Attendance userEmail={user?.microsoftData.mail}/> },
       // { path: '/admin/faceid_registration', element: <RegistFaceID userRole={user?.role} userID={user?._id} userCode={user?.userCode} /> },
       // { path: '/admin/test1', element: <ProtectedRoute element={Test1} /> }, // Sử dụng ProtectedRoute
-      // { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} /> }, // Sử dụng ProtectedRoute
+      // { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
+
       { path: '/admin/statistics-studenabsent', element: <TK_StudenAbsent/> }, 
       { path: '/admin/statistics-studenattendance', element: <TK_StudenAttendance/> }, 
       { path: '/admin/statistics-all-classes', element: <TK_StudentClassections userID={user?._id} userRole={user?.role} /> },
       { path: '/admin/dashboard', element: <Dashboard/> }, // Sử dụng ProtectedRoute
-      // { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
-
 
     ],
     'Giảng viên': [
@@ -186,11 +194,9 @@ const App = () => {
       { path: '/admin/major', element: <Major userRole={user?.role}/> },
       { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> },
       { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
-      { path: '/admin/attendance/:classCode', element: <Attendance /> },
+      { path: '/admin/attendance/:classCode', element: <Attendance userEmail={user?.microsoftData.mail} /> },
       { path: '/admin/statistics-all-classes', element: <TK_StudentClassections userID={user?._id} userRole={user?.role} /> },
       { path: '/admin/statistics-total-all-classes', element: <TK_LHPTotalStudent userID={user?._id}/> },
-      // { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
-
       // { path: '/admin/faceid_registration', element: <RegistFaceID userRole={user?.role} userID={user?._id} userCode={user?.userCode}/> },
 
 
@@ -204,19 +210,14 @@ const App = () => {
       { path: '/admin/attendance-student/:classCode', element: <AttendanceStudent userRole={user?.role} userID={user?._id}/> },
       { path: '/admin/classsections/:subjecttermID', element: <Classsection userRole={user?.role} /> },
       { path: '/admin/faceid_registration', element: <RegistFaceID userRole={user?.role} userID={user?._id} userCode={user?.userCode} /> },
-      { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
+      // { path: '/admin/', element: <ProtectedRoute element={DisplayInfo} userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
       // { path: '/admin/haha', element: <DisplayInfo userCode={user?.userCode} userID={user?._id} userEmail={user?.microsoftData.mail} /> }, // Sử dụng ProtectedRoute
       { path: '/admin/statistics-classsections-students-term', element: <TK_LHPStudents_Term userID={user?._id}/> }, 
       { path: '/admin/clause', element: <Clause/> }, 
       //nhớ xóa
       { path: '/admin/classsections/detail/:classCode', element: <ClassSectionDetail /> }, 
       { path: '/admin/assignmentlist', element: <TeacherAssignmentsDetail userRole={user?.role}/> },
-      { path: '/admin/attendance/:classCode', element: <Attendance /> },
-
-
-
-
-
+      { path: '/admin/attendance/:classCode', element: <Attendance userEmail={user?.microsoftData.mail} /> },
     ],
   };
   const showToast = () => {
@@ -226,468 +227,18 @@ const App = () => {
   };
   //Scanner
   const codeReaderRef = useRef(null);
-  // const startScanner = () => {
-  //   const codeReader = new BrowserMultiFormatReader();
-  //   codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-  //     if (result) {
-  //       handleScan(result);
-  //     }
-  //     if (err) {
-  //       handleError(err);
-  //     }
-  //   });
-  //   codeReaderRef.current = codeReader;
-  // };
-//   const startScanner = async () => {
-//     const codeReader = new BrowserMultiFormatReader();
-  
-//     try {
-//         const devices = await navigator.mediaDevices.enumerateDevices();
-//         const videoInputDevices = devices.filter(device => device.kind === "videoinput");
-
-//         if (videoInputDevices.length === 0) {
-//             throw new Error("Không tìm thấy camera nào!");
-//         }
-
-//         // Lấy thông tin từ camera đầu tiên
-//         const constraints = { video: { deviceId: { exact: videoInputDevices[0].deviceId } } };
-//         const stream = await navigator.mediaDevices.getUserMedia(constraints);
-//         const videoTrack = stream.getVideoTracks()[0];
-//         const capabilities = videoTrack.getCapabilities();
-
-//         // Ưu tiên độ phân giải 4K nếu khả dụng
-//         let videoConstraints = {};
-//         if (capabilities.width && capabilities.height) {
-//             videoConstraints = {
-//                 width: { ideal: 3840, max: capabilities.width.max }, // Độ phân giải 4K hoặc tối đa
-//                 height: { ideal: 2160, max: capabilities.height.max },
-//                 facingMode: "environment"
-//             };
-//         } else {
-//             // Thiết bị không hỗ trợ 4K, fallback xuống tiêu chuẩn thấp hơn
-//             videoConstraints = {
-//                 width: { ideal: 1280 },
-//                 height: { ideal: 720 },
-//                 facingMode: "environment"
-//             };
-//         }
-
-//         // Reset stream với ràng buộc mới
-//         const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
-//         const videoElement = document.getElementById("video");
-//         videoElement.srcObject = optimizedStream;
-//         videoElement.play();
-
-//         // Áp dụng bộ lọc để cải thiện chất lượng
-//         applyFilter(videoElement);
-
-//         codeReader.decodeFromVideoElement(videoElement, (result, err) => {
-//             if (result) {
-//                 handleScan(result);
-//             }
-//             if (err) {
-//                 handleError(err);
-//             }
-//         });
-
-//         codeReaderRef.current = codeReader;
-//     } catch (err) {
-//         console.error("Lỗi khi truy cập camera: ", err);
-//         handleError(err);
-//     }
-// };
-
-// const applyFilter = (videoElement) => {
-//   const canvas = document.createElement("canvas");
-//   const ctx = canvas.getContext("2d");
-//   const container = document.getElementById("canvas-container");
-
-//   if (!container) {
-//       const newContainer = document.createElement("div");
-//       newContainer.id = "canvas-container";
-//       document.body.appendChild(newContainer);
-//       newContainer.appendChild(canvas);
-//   } else {
-//       container.appendChild(canvas);
-//   }
-
-//   const sharpenKernel = [
-//         -1, -1, -1,
-//         -1,  9, -1,
-//         -1, -1, -1
-//     ]; // Kernel mạnh hơn để làm nét hình ảnh
-
-
-//   const updateFrame = () => {
-//       canvas.width = videoElement.videoWidth;
-//       canvas.height = videoElement.videoHeight;
-
-//       // Vẽ khung hình từ video
-//       ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-//       // Lấy dữ liệu hình ảnh từ canvas
-//       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-//       // Áp dụng bộ lọc làm nét
-//       const filteredData = applySharpen(imageData, sharpenKernel);
-//       ctx.putImageData(filteredData, 0, 0);
-
-//       requestAnimationFrame(updateFrame); // Vẽ lại mỗi khung hình
-//   };
-
-//   updateFrame(); // Bắt đầu xử lý
-// };
-
-// const applySharpen = (imageData, kernel) => {
-//   const { width, height, data } = imageData;
-//   const result = new Uint8ClampedArray(data); // Lưu kết quả
-
-//   // Áp dụng bộ lọc kernel (matrix convolution)
-//   const kernelSize = Math.sqrt(kernel.length);
-//   const half = Math.floor(kernelSize / 2);
-
-//   for (let y = half; y < height - half; y++) {
-//       for (let x = half; x < width - half; x++) {
-//           let r = 0, g = 0, b = 0;
-//           for (let ky = -half; ky <= half; ky++) {
-//               for (let kx = -half; kx <= half; kx++) {
-//                   const pixelIndex = ((y + ky) * width + (x + kx)) * 4;
-//                   const weight = kernel[(ky + half) * kernelSize + (kx + half)];
-//                   r += data[pixelIndex] * weight;
-//                   g += data[pixelIndex + 1] * weight;
-//                   b += data[pixelIndex + 2] * weight;
-//               }
-//           }
-
-//           const index = (y * width + x) * 4;
-//           result[index] = Math.min(Math.max(r, 0), 255);
-//           result[index + 1] = Math.min(Math.max(g, 0), 255);
-//           result[index + 2] = Math.min(Math.max(b, 0), 255);
-//       }
-//   }
-
-//   return new ImageData(result, width, height);
-// };
-
-// const startScanner = async () => {
-//   const codeReader = new BrowserMultiFormatReader();
-
-//   try {
-//       const devices = await navigator.mediaDevices.enumerateDevices();
-//       const videoInputDevices = devices.filter(device => device.kind === "videoinput");
-
-//       if (videoInputDevices.length === 0) {
-//           throw new Error("Không tìm thấy camera nào!");
-//       }
-
-//       // Lấy thông tin từ camera đầu tiên
-//       const constraints = { 
-//           video: { 
-//               deviceId: { exact: videoInputDevices[0].deviceId } 
-//           } 
-//       };
-
-//       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-//       const videoTrack = stream.getVideoTracks()[0];
-//       const capabilities = videoTrack.getCapabilities();
-
-//       // Xác định độ phân giải và chế độ lấy nét
-//       let videoConstraints = {};
-//       if (capabilities.width && capabilities.height) {
-//           const maxWidth = capabilities.width.max || 3840;
-//           const maxHeight = capabilities.height.max || 2160;
-//           const idealWidth = Math.min(maxWidth, 3840);
-//           const idealHeight = Math.min(maxHeight, 2160);
-
-//           videoConstraints = {
-//               width: { ideal: idealWidth, max: maxWidth },
-//               height: { ideal: idealHeight, max: maxHeight },
-//               facingMode: "environment"
-//           };
-//       } else {
-//           videoConstraints = {
-//               width: { ideal: 1920 },
-//               height: { ideal: 1080 },
-//               facingMode: "environment"
-//           };
-//       }
-
-//       // Kích hoạt lấy nét hoặc zoom nếu hỗ trợ
-//       if (capabilities.focusMode && capabilities.focusMode.includes("continuous")) {
-//           console.log("Camera hỗ trợ lấy nét liên tục");
-//           videoTrack.applyConstraints({
-//               advanced: [{ focusMode: "continuous" }]
-//           });
-//       } else if (capabilities.focusMode && capabilities.focusMode.includes("manual")) {
-//           console.log("Camera hỗ trợ lấy nét thủ công");
-//           videoTrack.applyConstraints({
-//               advanced: [{ focusMode: "manual", focusDistance: 10 }] // Khoảng cách lấy nét tùy chỉnh
-//           });
-//       } else {
-//           console.warn("Camera không hỗ trợ lấy nét liên tục hoặc thủ công");
-//       }
-
-//       if (capabilities.zoom) {
-//           console.log(`Camera hỗ trợ zoom, giá trị tối đa: ${capabilities.zoom.max}`);
-//           videoTrack.applyConstraints({
-//               advanced: [{ zoom: Math.min(capabilities.zoom.max, 2) }] // Tăng zoom (tối đa x2 hoặc giá trị khả dụng)
-//           });
-//       }
-
-//       // Áp dụng stream với cấu hình tối ưu
-//       const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
-//       const videoElement = document.getElementById("video");
-//       videoElement.srcObject = optimizedStream;
-//       videoElement.play();
-
-//       // Tăng chất lượng hình ảnh với bộ lọc
-//       const canvas = document.createElement("canvas");
-//       const ctx = canvas.getContext("2d");
-//       const container = document.getElementById("canvas-container");
-//       if (!container) {
-//           const newContainer = document.createElement("div");
-//           newContainer.id = "canvas-container";
-//           document.body.appendChild(newContainer);
-//           newContainer.appendChild(canvas);
-//       } else {
-//           container.appendChild(canvas);
-//       }
-
-//       videoElement.addEventListener("play", () => {
-//           const updateFrame = () => {
-//               canvas.width = videoElement.videoWidth;
-//               canvas.height = videoElement.videoHeight;
-
-//               ctx.filter = "contrast(1.5) brightness(1.2) saturate(1.3)";
-//               ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-//               requestAnimationFrame(updateFrame);
-//           };
-//           updateFrame();
-//       });
-
-//       // Quét mã QR
-//       codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-//           if (result) {
-//               console.log("Quét thành công:", result.text);
-//               handleScan(result);
-//           }
-//           if (err) {
-//               console.warn("Lỗi khi quét mã:", err);
-//               handleError(err);
-//           }
-//       });
-
-//       codeReaderRef.current = codeReader;
-
-//       // Ghi log thông tin độ phân giải
-//       videoElement.onloadedmetadata = () => {
-//           alert(`Độ phân giải camera: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-//       };
-//   } catch (err) {
-//       console.error("Lỗi khi truy cập camera hoặc quét mã:", err);
-//       handleError(err);
-//   }
-// };
-
-
-
-
-
-// const startScanner = async () => {
-//   const codeReader = new BrowserMultiFormatReader();
-
-//   try {
-//       const devices = await navigator.mediaDevices.enumerateDevices();
-//       const videoInputDevices = devices.filter(device => device.kind === "videoinput");
-
-//       if (videoInputDevices.length === 0) {
-//           throw new Error("Không tìm thấy camera nào!");
-//       }
-
-//       // Lấy thông tin từ camera đầu tiên
-//       const constraints = { 
-//           video: { 
-//               deviceId: { exact: videoInputDevices[0].deviceId } 
-//           } 
-//       };
-
-//       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-//       const videoTrack = stream.getVideoTracks()[0];
-//       const capabilities = videoTrack.getCapabilities();
-
-//       // Tăng độ phân giải tối đa dựa vào khả năng thiết bị
-//       let videoConstraints = {};
-//       if (capabilities.width && capabilities.height) {
-//           const maxWidth = capabilities.width.max || 7680; // Dùng độ phân giải tối đa (8K) nếu có
-//           const maxHeight = capabilities.height.max || 4320;
-//           const idealWidth = Math.min(maxWidth, 7680); // Giới hạn 8K
-//           const idealHeight = Math.min(maxHeight, 4320);
-
-//           videoConstraints = {
-//               width: { ideal: idealWidth, max: maxWidth },
-//               height: { ideal: idealHeight, max: maxHeight },
-//               facingMode: "environment" // Camera sau
-//           };
-//       } else {
-//           // Fallback xuống độ phân giải tiêu chuẩn
-//           videoConstraints = {
-//               width: { ideal: 3840 },
-//               height: { ideal: 2160 },
-//               facingMode: "environment"
-//           };
-//       }
-
-//       // Áp dụng stream với cấu hình tối ưu
-//       const optimizedStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
-//       const videoElement = document.getElementById("video");
-//       videoElement.srcObject = optimizedStream;
-//       videoElement.play();
-
-//       // Tiến hành quét mã QR sau khi camera đã khởi động
-//       codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-//           if (result) {
-//               console.log("Quét thành công:", result.text);
-//               handleScan(result);
-//           }
-//           if (err) {
-//               console.warn("Lỗi khi quét mã:", err);
-//               handleError(err);
-//           }
-//       });
-
-//       codeReaderRef.current = codeReader;
-
-//       // Ghi log thông tin độ phân giải
-//       videoElement.onloadedmetadata = () => {
-//           alert(`Độ phân giải camera: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-//       };
-//   } catch (err) {
-//       console.error("Lỗi khi truy cập camera hoặc quét mã:", err);
-//       handleError(err);
-//   }
-// };
-
-
-
-const startScanner = async () => {
-  const codeReader = new BrowserMultiFormatReader();
-  let videoInputDevices = []; // Khai báo ở ngoài khối try
-  // const desiredWidth = 1920; // Độ phân giải mong muốn
-  // const desiredHeight = 1080;
-  const desiredWidth = 2560; // Thử QHD
-const desiredHeight = 1440;
-
-  try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      videoInputDevices = devices.filter(device => device.kind === "videoinput");
-
-      if (videoInputDevices.length === 0) {
-          throw new Error("Không tìm thấy camera nào!");
+  const startScanner = () => {
+    const codeReader = new BrowserMultiFormatReader();
+    codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+      if (result) {
+        handleScan(result);
       }
-
-      const deviceId = videoInputDevices[0].deviceId;
-
-      // Cố gắng đặt độ phân giải chính xác
-      const videoConstraints = {
-          width: { exact: desiredWidth },
-          height: { exact: desiredHeight },
-          facingMode: "environment"
-      };
-
-      const constraints = {
-          video: {
-              deviceId: { exact: deviceId },
-              ...videoConstraints
-          }
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      const videoElement = document.getElementById("video");
-      if (videoElement) {
-          videoElement.srcObject = stream;
-
-          videoElement.onloadedmetadata = () => {
-              console.log(`Độ phân giải camera (yêu cầu): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-          };
-
-          videoElement.play().then(() => {
-              alert(`Độ phân giải camera đang phát (thực tế): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-              // Tiến hành quét mã QR sau khi camera đã khởi động và metadata đã được tải
-              codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-                  if (result) {
-                      console.log("Quét thành công:", result.text);
-                      handleScan(result);
-                  }
-                  if (err) {
-                      console.warn("Lỗi khi quét mã:", err);
-                      handleError(err);
-                  }
-              });
-              codeReaderRef.current = codeReader;
-          }).catch(error => {
-              console.error("Lỗi khi phát video:", error);
-              handleError(error);
-          });
-      } else {
-          console.error("Không tìm thấy phần tử video với id 'video'");
+      if (err) {
+        handleError(err);
       }
-
-  } catch (error) {
-      console.error(`Không thể lấy luồng với độ phân giải ${desiredWidth}x${desiredHeight}:`, error);
-      alert(`Không thể thiết lập camera ở độ phân giải ${desiredWidth}x${desiredHeight}. Trình duyệt sẽ cố gắng sử dụng độ phân giải mặc định.`);
-
-      // Thử lại mà không có ràng buộc độ phân giải chính xác
-      const fallbackConstraints = {
-          video: {
-              deviceId: videoInputDevices.length > 0 ? { exact: videoInputDevices[0].deviceId } : undefined,
-              width: { ideal: 1920, max: 3840 },
-              height: { ideal: 1080, max: 2160 },
-              facingMode: "environment"
-          }
-      };
-
-      if (fallbackConstraints.video.deviceId) {
-          try {
-              const fallbackStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
-              const videoElement = document.getElementById("video");
-              if (videoElement) {
-                  videoElement.srcObject = fallbackStream;
-                  videoElement.onloadedmetadata = () => {
-                      console.log(`Độ phân giải camera (fallback): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-                  };
-                  videoElement.play().then(() => {
-                      console.log(`Độ phân giải camera đang phát (fallback): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-                      codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-                          if (result) {
-                              console.log("Quét thành công (fallback):", result.text);
-                              handleScan(result);
-                          }
-                          if (err) {
-                              console.warn("Lỗi khi quét mã (fallback):", err);
-                              handleError(err);
-                          }
-                      });
-                      codeReaderRef.current = codeReader;
-                  }).catch(fallbackError => {
-                      console.error("Lỗi khi phát video (fallback):", fallbackError);
-                      handleError(fallbackError);
-                  });
-              } else {
-                  console.error("Không tìm thấy phần tử video với id 'video' trong fallback");
-              }
-          } catch (fallbackError) {
-              console.error("Lỗi khi truy cập camera (fallback):", fallbackError);
-              handleError(fallbackError);
-              alert("Không thể khởi động camera. Vui lòng kiểm tra quyền truy cập.");
-          }
-      } else {
-          console.error("Không có camera nào được tìm thấy để fallback.");
-          alert("Không thể khởi động camera. Vui lòng kiểm tra quyền truy cập.");
-          handleError(error);
-      }
-  }
-};
+    });
+    codeReaderRef.current = codeReader;
+  };
   
   const stopScanner = () => {
     if (codeReaderRef.current) {
@@ -724,41 +275,58 @@ const desiredHeight = 1440;
   
   return (
     <BrowserRouter>
-      <AppContent
-        user={user}
-        error={error}
-        isUserMenuOpen={isUserMenuOpen}
-        isTKBMenuOpen={isTKBMenuOpen}
-        isSidebarVisible={isSidebarVisible}
-        isNotificationOpen={isNotificationOpen}
-        isCourseMenuOpen={isCourseMenuOpen}
-        isTermMajorMenuOpen={isTermMajorMenuOpen}
-        isUserManagementMenuOpen={isUserManagementMenuOpen}
-        isStatisticMenuOpen={isStatisticMenuOpen}
-        handleLogin={handleLogin}
-        handleLogout={handleLogout}
-        confirmLogout={confirmLogout} // Pass confirmLogout to AppContent
-        cancelLogout={cancelLogout} // Pass cancelLogout to AppContent
-        toggleUserMenu={toggleUserMenu}
-        toggleSidebar={toggleSidebar}
-        toggleNotification={toggleNotification}
-        toggleCourseMenu={toggleCourseMenu}
-        toggleTKBMenu={toggleTKBMenu}
-        toggleTermMajorMenu={toggleTermMajorMenu}
-        toggleUserManagementMenu={toggleUserManagementMenu}
-        toggleStatisticMenu={toggleStatisticMenu}
-        sidebarTextStyle={sidebarTextStyle}
-        activeLinkStyle={activeLinkStyle}
-        roleRoutes={roleRoutes}
-        showLogoutModal={showLogoutModal} // Pass showLogoutModal to AppContent
-        showToast={showToast} // Pass showToast to AppContent
-        //Scanner
-        showScanner={showScanner}
-        showModal1={showModal1}
-        scanResult={scanResult}
-        toggleScanner={toggleScanner}
-        handleCloseModal={handleCloseModal}
-      />
+      <Routes>
+        {/* <Route path="/public" element={<PublicPage />} /> */}
+        <Route 
+          path="/admin/" 
+          element={
+            <ProtectedRoute 
+              element={DisplayInfo} 
+              userCode={user?.userCode} 
+              userID={user?._id} 
+              userEmail={user?.microsoftData.mail} 
+            />
+          } 
+        />
+        {/* <Route path="/" element={<DisplayInfo />} /> */}
+
+
+        <Route path="/*" element={<AppContent
+          user={user}
+          error={error}
+          isUserMenuOpen={isUserMenuOpen}
+          isTKBMenuOpen={isTKBMenuOpen}
+          isSidebarVisible={isSidebarVisible}
+          isNotificationOpen={isNotificationOpen}
+          isCourseMenuOpen={isCourseMenuOpen}
+          isTermMajorMenuOpen={isTermMajorMenuOpen}
+          isUserManagementMenuOpen={isUserManagementMenuOpen}
+          isStatisticMenuOpen={isStatisticMenuOpen}
+          handleLogin={handleLogin}
+          handleLogout={handleLogout}
+          confirmLogout={confirmLogout}
+          cancelLogout={cancelLogout}
+          toggleUserMenu={toggleUserMenu}
+          toggleSidebar={toggleSidebar}
+          toggleNotification={toggleNotification}
+          toggleCourseMenu={toggleCourseMenu}
+          toggleTKBMenu={toggleTKBMenu}
+          toggleTermMajorMenu={toggleTermMajorMenu}
+          toggleUserManagementMenu={toggleUserManagementMenu}
+          toggleStatisticMenu={toggleStatisticMenu}
+          sidebarTextStyle={sidebarTextStyle}
+          activeLinkStyle={activeLinkStyle}
+          roleRoutes={roleRoutes}
+          showLogoutModal={showLogoutModal}
+          showToast={showToast}
+          showScanner={showScanner}
+          showModal1={showModal1}
+          scanResult={scanResult}
+          toggleScanner={toggleScanner}
+          handleCloseModal={handleCloseModal}
+        />} />
+        <Route path="/" element={<Navigate to="/public" />} />
+      </Routes>
       <ToastContainer />
     </BrowserRouter>
   );
@@ -826,8 +394,8 @@ const AppContent = ({
               {/* Scanner */}
             <li className="nav-item" style={{ position: 'relative' }}>
               <a onClick={toggleScanner} className="nav-link" role="button" title='Quét QR Code' style={{ color: '#000' }}>
-              <IonIcon name="scan-outline" style={{ fontSize: '30px',position: 'absolute', top: '-5px', left: '-2px' }} />
-              <IonIcon name="qr-code-outline" style={{ fontSize: '16px', position: 'absolute', top: '6px', left: '5px' }} />
+                <IonIcon name="scan-outline" style={{ fontSize: '30px',position: 'absolute', top: '-5px', left: '-2px' }} />
+                <IonIcon name="qr-code-outline" style={{ fontSize: '16px', position: 'absolute', top: '6px', left: '5px' }} />
               </a>
             </li>
               <li className="nav-item">
@@ -1191,7 +759,7 @@ const AppContent = ({
         </div>
       )}
       {/* Scanner */}
-      {showModal1 && (
+    {showModal1 && (
       <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.7)' }}>
         <div className="modal-dialog">
           <div className="modal-content">
@@ -1203,19 +771,10 @@ const AppContent = ({
             </div>
             <div className="modal-body">
               {showScanner && (
-                <TransformWrapper
-                  defaultScale={1}
-                  defaultPositionX={0}
-                  defaultPositionY={0}
-                  wheel={{ disabled: false }}
-                  pinch={{ disabled: false }}
-                >
-                  <TransformComponent>
-                    <video id="video" width="100%" height="auto"></video>
-                  </TransformComponent>
-                </TransformWrapper>
+                <div>
+                  <video id="video" width="100%" height="100%"></video>
+                </div>
               )}
-              <p>Hãy zoom lên khi bạn ngồi quá xa!</p>
               {scanResult && (
                 <div>
                   <p>Kết quả quét: <a href={scanResult} target="_blank" rel="noopener noreferrer">{scanResult}</a></p>
