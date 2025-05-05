@@ -174,7 +174,7 @@ app.post('/login_v02_user', async (req, res) => {
     const { image } = req.body;
 
     console.log('Sending request to Python API for user login...');
-    const response = await axios.post('www.itface.fun/api/login_v02', { image });
+    const response = await axios.post('https://www.itface.fun/api/login_v02', { image });
 
     console.log('Received response from Python API:', response.data);
 
