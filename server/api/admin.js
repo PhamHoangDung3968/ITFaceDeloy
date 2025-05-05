@@ -1411,7 +1411,7 @@ router.post('/register_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user registration...');
-    const response = await axios.post('http://127.0.0.1:5000/api/register', { name, image });
+    const response = await axios.post('www.itface.fun/api/register', { name, image });
 
     console.log('Received response from Python API:', response.data);
 
@@ -1454,7 +1454,7 @@ router.post('/re_register_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Gửi yêu cầu đến API Python để đăng ký lại người dùng...');
-    const response = await axios.post('http://127.0.0.1:5000/api/re_register', { name, image });
+    const response = await axios.post('www.itface.fun/api/re_register', { name, image });
 
     console.log('Nhận phản hồi từ API Python:', response.data);
 
@@ -1520,7 +1520,7 @@ router.post('/login_user', async (req, res) => {
     const { name, image } = req.body;
 
     console.log('Sending request to Python API for user login...');
-    const response = await axios.post('http://127.0.0.1:5000/api/login', { name, image });
+    const response = await axios.post('www.itface.fun/api/login', { name, image });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1550,7 +1550,7 @@ router.post('/check_user', async (req, res) => {
     const { name } = req.body;
 
     console.log('Sending request to Python API to check user registration...');
-    const response = await axios.post('http://127.0.0.1:5000/api/check_user', { name });
+    const response = await axios.post('www.itface.fun/api/check_user', { name });
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
@@ -1594,7 +1594,7 @@ router.post('/check_user_01/:studentID', async (req, res) => {
 router.get('/count_users_regist', async (req, res) => {
   try {
     console.log('Sending request to Python API to count pickle files...');
-    const response = await axios.get('http://127.0.0.1:5000/api/count-pickle-files');
+    const response = await axios.get('www.itface.fun/api/count-pickle-files');
 
     console.log('Received response from Python API:', response.data);
     res.json(response.data);
