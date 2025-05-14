@@ -1351,13 +1351,13 @@ const StatisticDAO = {
             worksheet.addRow([null]);
             
             // === TIÊU ĐỀ THỐNG KÊ ===
-            worksheet.mergeCells('A7:H7');
+            worksheet.mergeCells('A7:E7');
             worksheet.getCell('A7').value = 'THỐNG KÊ SỐ LƯỢNG SINH VIÊN THAM GIA';
             worksheet.getCell('A7').font = { bold: true, size: 14 };
             worksheet.getCell('A7').alignment = { vertical: 'middle', horizontal: 'center' };
             
             // === HỌC KỲ ===
-            worksheet.mergeCells('A8:H8');
+            worksheet.mergeCells('A8:E8');
             worksheet.getCell('A8').value = `Học kỳ: ${term.term}`;
             worksheet.getCell('A8').font = { bold: true, size: 12 };
             worksheet.getCell('A8').alignment = { vertical: 'middle', horizontal: 'center' };
