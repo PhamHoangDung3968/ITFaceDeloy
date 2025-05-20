@@ -855,7 +855,7 @@ class User extends Component {
             />
         </div >
         <div className="modal-body">
-            <h6>Tải file mẫu import GV: <a href="/ExampleFile/GV_Template.xlsx" download>Tải mẫu</a></h6>
+            <h6>Tải file mẫu import GV: <a href="https://docs.google.com/spreadsheets/d/1zLQrh0OXcT7ZH95lUlRSLkcYIwPTva3F/export?format=xlsx" download>Tải mẫu</a></h6>
         </div >
         <div className="modal-footer">
           <button type="button" className="btn btn-secondary" onClick={this.cancelImport}>Hủy</button>

@@ -783,7 +783,7 @@ return (
        onClick={() => requestSort('attendance')}
        style={{
          position: 'sticky',
-         left: '430px',
+         left: '360px',
          background: 'white',
          zIndex: 2,
          textAlign: 'center',
@@ -798,7 +798,7 @@ return (
          </span>
        )}
      </th>
-      <th style={{ position: 'sticky', left: '540px', background: 'white', zIndex: 2, textAlign: 'center', width: '150px' }}>Số buổi  <br/>VCP</th>
+      <th style={{ position: 'sticky', left: '390px', background: 'white', zIndex: 2, textAlign: 'center', width: '150px' }}>Số buổi  <br/>VCP</th>
 
 
         {attendanceDates.map((date, index) => (
@@ -831,11 +831,11 @@ return (
           <td style={{ position: 'sticky', left: '200px', background: 'white', zIndex: 1, textAlign: 'center' }}>
             {section.fullName || section.displayName || 'Chưa cập nhật'}
           </td>
-          <td style={{ textAlign: 'center', minWidth: '120px',position: 'sticky', background: 'white', zIndex: 1,left: '430px' }}>
+          <td style={{ textAlign: 'center', minWidth: '120px',position: 'sticky', background: 'white', zIndex: 1,left: '360px' }}>
                   {countAttendanceForStudent(section._id)}/{countTotalDateColumns()}
                 </td>
                 
-                <td style={{ textAlign: 'center', minWidth: '120px',position: 'sticky', background: 'white', zIndex: 1,left: '540px'  }}>
+                <td style={{ textAlign: 'center', minWidth: '120px',position: 'sticky', background: 'white', zIndex: 1,left: '390px'  }}>
                   {countExcusedAbsencesForStudent(section._id)}
                 </td>
 

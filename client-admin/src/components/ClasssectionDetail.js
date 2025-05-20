@@ -581,7 +581,7 @@ return `${hours}:${minutes}:${seconds}`;
           />
         </div>
         <div className="modal-body">
-          <h6>Tải file mẫu import GV: <a href="/ExampleFile/ImportSV_Template.xlsx" download>Tải mẫu</a></h6>
+          <h6>Tải file mẫu import GV: <a href="https://docs.google.com/spreadsheets/d/1AqSbLsWqCGZIX1iEoJUy-YLvhyDjJmc5/export?format=xlsx" download>Tải mẫu</a></h6>
         </div>
         {/* {runtime && (
           <div className="modal-body">

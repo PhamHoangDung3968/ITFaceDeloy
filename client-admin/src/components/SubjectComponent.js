@@ -1398,7 +1398,7 @@ class Subject extends Component {
             />
         </div>
         <div className="modal-body">
-        <h6>Tải file mẫu import lớp HP và môn học: <a href="/ExampleFile/TKB_Template.xlsx" download>Tải mẫu</a></h6>
+        <h6>Tải file mẫu import lớp HP và môn học: <a href="https://docs.google.com/spreadsheets/d/1Yhgx3WBa8sLrfoHfQLspa3FVs8vKKPBo/export?format=xlsx" download>Tải mẫu</a></h6>
         </div>
         {/* {this.state.runtime && (
   <div className="modal-body">
