@@ -151,7 +151,6 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
             status: 'Có mặt'
         });
 
-        showToast('Điểm danh thành công!');
 
         // Gửi email xác nhận
         await axios.post('/api/admin/send-email', {
@@ -163,6 +162,7 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
         });
         
     setTimeout(() => {
+        showToast('Điểm danh thành công!');
         navigate(`/admin/attendance-student/${classcode}`);
         window.location.reload();
     }, 7000);
