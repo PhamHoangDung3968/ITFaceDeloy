@@ -161,8 +161,12 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
             time: currentTime,
             image: image.split(',')[1]
         });
+        
+    setTimeout(() => {
         navigate(`/admin/attendance-student/${classcode}`);
         window.location.reload();
+    }, 7000);
+
     } catch (error) {
         console.error('Lỗi trong quá trình điểm danh:', error);
         showErrorToast('Đã xảy ra lỗi trong quá trình điểm danh');
