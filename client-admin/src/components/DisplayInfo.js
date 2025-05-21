@@ -116,64 +116,52 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
     // };
 
     const handleLoginUser2 = async () => {
-    if (isProcessing) return;
-    setIsProcessing(true);
-    try {
-        if (!videoRef.current) {
+        if (isProcessing) return;
+        setIsProcessing(true);
+        try {
+            if (!videoRef.current) {
+                setIsProcessing(false);
+                return;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            const image = canvas.toDataURL('image/jpeg');
+            setWebcamImage(image);
+            
+                const userResponse = await axios.get('/user');
+                const userData = userResponse.data;
+                const userID = userData._id;
+                const userEmail = userData.microsoftData?.email;
+                const today = new Date();
+                const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+                const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
+                await axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
+                    studentId: userID,
+                    date: formattedDay,
+                    status: 'Có mặt' // hoặc bất kỳ trạng thái nào bạn muốn đặt
+                })
+                await axios.post('/api/admin/send-email', {
+                    classcode: classcode,
+                    email: userEmail, // Thay thế bằng địa chỉ email thực tế
+                    date: formattedToday,
+                    time: currentTime,
+                    image: image.split(',')[1] // Loại bỏ tiền tố data URL
+                });
+                setTimeout(() => {
+                    showToast('Điểm danh thành công!');
+                    navigate(`/admin/attendance-student/${classcode}`);
+                    window.location.reload();
+                }, 7000);
+        } catch (error) {
+            console.error('Lỗi trong quá trình đăng nhập hoặc điểm danh:', error);
+            showErrorToast('Đã xảy ra lỗi trong quá trình đăng nhập hoặc điểm danh');
+        } finally {
             setIsProcessing(false);
-            return;
         }
-
-        // Chụp ảnh từ webcam
-        const canvas = document.createElement('canvas');
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        const context = canvas.getContext('2d');
-        context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        const image = canvas.toDataURL('image/jpeg');
-        setWebcamImage(image);
-
-        // Lấy thông tin người dùng
-        const userResponse = await axios.get('/user');
-        const userData = userResponse.data;
-        const userID = userData._id;
-        const userEmail = userData.microsoftData?.email;
-
-        // Định dạng ngày và giờ hiện tại
-        const today = new Date();
-        const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
-        const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
-
-       
-        await axios.post(`/api/admin/studentclass/dateattendancing/${classcode}`, {
-            studentId: userID,
-            date: formattedToday,
-            status: 'Có mặt'
-        });
-
-
-        // Gửi email xác nhận
-        await axios.post('/api/admin/send-email', {
-            classcode: classcode,
-            email: userEmail,
-            date: formattedToday,
-            time: currentTime,
-            image: image.split(',')[1]
-        });
-        
-    setTimeout(() => {
-        showToast('Điểm danh thành công!');
-        navigate(`/admin/attendance-student/${classcode}`);
-        window.location.reload();
-    }, 7000);
-
-    } catch (error) {
-        console.error('Lỗi trong quá trình điểm danh:', error);
-        showErrorToast('Đã xảy ra lỗi trong quá trình điểm danh');
-    } finally {
-        setIsProcessing(false);
-    }
-};
+    };
 
     const showToast = (message) => {
         toast.success(message, { position: "top-right" });
