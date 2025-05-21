@@ -123,16 +123,16 @@ class RegistFaceID extends Component {
       });
   };
 
-  checkUserRegistration = () => {
-    axios.post('/api/admin/check_user', { name: this.props.userCode })
-      .then(response => {
-        this.setState({ isUserRegistered: response.data.status === 'success' });
-      })
-      .catch(error => {
-        console.error('Error checking user registration:', error);
-        this.setState({ isUserRegistered: false });
-      });
-  };
+  // checkUserRegistration = () => {
+  //   axios.post('/api/admin/check_user', { name: this.props.userCode })
+  //     .then(response => {
+  //       this.setState({ isUserRegistered: response.data.status === 'success' });
+  //     })
+  //     .catch(error => {
+  //       console.error('Error checking user registration:', error);
+  //       this.setState({ isUserRegistered: false });
+  //     });
+  // };
   //end using AI
 
   //using API 
@@ -173,18 +173,18 @@ class RegistFaceID extends Component {
 //   };
 
 
-// checkUserRegistration = () => {
-//     const { userID } = this.props;
+checkUserRegistration = () => {
+    const { userID } = this.props;
 
-//     axios.post(`/api/admin/check_user_01/${userID}`)
-//       .then(response => {
-//         this.setState({ isUserRegistered: response.data.hasImage });
-//       })
-//       .catch(error => {
-//         console.error('Error checking user registration:', error);
-//         this.setState({ isUserRegistered: false });
-//       });
-// };
+    axios.post(`/api/admin/check_user_01/${userID}`)
+      .then(response => {
+        this.setState({ isUserRegistered: response.data.hasImage });
+      })
+      .catch(error => {
+        console.error('Error checking user registration:', error);
+        this.setState({ isUserRegistered: false });
+      });
+};
 
 
 // handleReRegisterUser = () => {
