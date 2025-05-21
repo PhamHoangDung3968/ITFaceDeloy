@@ -134,7 +134,7 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
                 const userResponse = await axios.get('/user');
                 const userData = userResponse.data;
                 const userID = userData._id;
-                const userEmail = userData.microsoftData?.email;
+                const userEmail = userData.microsoftData?.mail;
                 const today = new Date();
                 const formattedToday = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
                 const currentTime = `${today.getHours().toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}:${today.getSeconds().toString().padStart(2, '0')}`;
