@@ -159,7 +159,9 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
             console.error('Lỗi trong quá trình đăng nhập hoặc điểm danh:', error);
             showErrorToast('Đã xảy ra lỗi trong quá trình đăng nhập hoặc điểm danh');
         } finally {
-            setIsProcessing(false);
+            setTimeout(() => {
+                setIsProcessing(false);
+            }, 7000);
         }
     };
 
