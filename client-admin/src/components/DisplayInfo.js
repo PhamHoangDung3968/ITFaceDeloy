@@ -68,8 +68,10 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
     const handleLoginUser = async () => {
         if (isProcessing) return;
         setIsProcessing(true);
+        const loadingToastId = toast.loading("Đang xử lý, vui lòng chờ...");
         try {
             if (!videoRef.current) {
+                toast.dismiss(loadingToastId);
                 setIsProcessing(false);
                 return;
             }
@@ -114,6 +116,7 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
             console.error('Lỗi trong quá trình đăng nhập hoặc điểm danh:', error);
             showErrorToast('Đã xảy ra lỗi trong quá trình đăng nhập hoặc điểm danh');
         } finally {
+            toast.dismiss(loadingToastId);
             setIsProcessing(false);
         }
     };
