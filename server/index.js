@@ -169,32 +169,90 @@ app.get('/user', async (req, res) => {
   }
 });
 // Endpoint để đăng nhập và lấy userCode
+// app.post('/login_v02_user', async (req, res) => {
+//   try {
+//     const { image } = req.body;
+
+//     console.log('Sending request to Python API for user login...');
+//     const response = await axios.post('https://www.itface.fun/api/login_v02', { image });
+
+//     console.log('Received response from Python API:', response.data);
+
+//     if (response.data.status === 'success') {
+//       const userCode = response.data.message;
+
+//       // Lưu userCode vào session hoặc một biến toàn cục
+//       req.session.userCode = userCode;
+
+//       return res.json({ message: 'Login successful', userCode });
+//     } else {
+//       return res.status(401).json({ message: 'Login failed' });
+//     }
+//   } catch (error) {
+//     console.error('Error calling Python API:', error);
+
+//     if (error.response) {
+//       console.log('Error status:', error.response.status);
+//       console.log('Error response data:', error.response.data);
+
+//       if (error.response.status === 403) {
+//         res.status(403).json({ message: 'Vui lòng trung thực!' });
+//       } else if (error.response.status === 401) {
+//         res.status(401).json({ message: 'Vui lòng đăng nhập bằng tài khoản Microsoft để đăng ký FaceID và trải nghiệm tốt hơn lần sau!' });
+//       } else {
+//         res.status(error.response.status).json({ message: 'Error calling Python API', error: error.response.data });
+//       }
+//     } else {
+//       res.status(500).json({ message: 'Error calling Python API', error });
+//     }
+//   }
+// });
+
 app.post('/login_v02_user', async (req, res) => {
   try {
     const { image } = req.body;
+    console.time('Login Execution Time'); // Bắt đầu đo thời gian
 
-    console.log('Sending request to Python API for user login...');
-    const response = await axios.post('https://www.itface.fun/api/login_v02', { image });
+    const loginResponse = await axios.post('https://www.itface.fun/api/login_v02', { image });
 
-    console.log('Received response from Python API:', response.data);
+    const request_id = loginResponse.data.request_id; // Lấy request_id từ Python API
 
-    if (response.data.status === 'success') {
-      const userCode = response.data.message;
+    if (!request_id) {
+      return res.status(500).json({ message: 'Failed to generate request_id' });
+    }
 
-      // Lưu userCode vào session hoặc một biến toàn cục
+    console.log(`Checking login result for request_id: ${request_id}`);
+
+    let loginResult;
+    let attempts = 10;
+
+    while (attempts > 0) {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 1 giây trước khi kiểm tra
+
+      loginResult = await axios.get(`https://www.itface.fun/api/login_result/${request_id}`);
+
+      if (loginResult.data.status !== 'pending') {
+        break;
+      }
+
+      attempts--;
+    }
+
+    console.timeEnd('Login Execution Time'); // Kết thúc đo thời gian
+    console.log('Received final result from Python API:', loginResult.data);
+
+    if (loginResult.data.status === 'success') {
+      const userCode = loginResult.data.message;
       req.session.userCode = userCode;
-
       return res.json({ message: 'Login successful', userCode });
     } else {
-      return res.status(401).json({ message: 'Login failed' });
+      return res.status(401).json({ message: loginResult.data.message });
     }
+
   } catch (error) {
-    console.error('Error calling Python API:', error);
+    console.timeEnd('Login Execution Time');
 
     if (error.response) {
-      console.log('Error status:', error.response.status);
-      console.log('Error response data:', error.response.data);
-
       if (error.response.status === 403) {
         res.status(403).json({ message: 'Vui lòng trung thực!' });
       } else if (error.response.status === 401) {
@@ -207,7 +265,6 @@ app.post('/login_v02_user', async (req, res) => {
     }
   }
 });
-
 // Endpoint để lấy thông tin người dùng dựa trên userCode
 app.get('/user_v02', async (req, res) => {
   try {

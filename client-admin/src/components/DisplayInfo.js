@@ -232,7 +232,7 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
                                         </button>
 
                                         <button 
-                                            onClick={handleLoginUser2}
+                                            onClick={handleLoginUser}
                                             disabled={isProcessing}
                                             style={{ 
                                               display: isProcessing ? 'none' : 'block',
