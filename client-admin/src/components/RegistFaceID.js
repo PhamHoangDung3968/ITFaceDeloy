@@ -314,7 +314,9 @@ checkUserRegistration = () => {
                     Đăng ký
                   </button>
                 )} */}
-                {this.state.isUserRegistered ? (
+                
+              {this.state.isWebcamOpen && (
+                this.state.isUserRegistered ? (
                       <button 
                       onClick={this.handleReRegisterUser}
                       style={{ 
@@ -350,6 +352,7 @@ checkUserRegistration = () => {
                       >
                         Đăng ký
                       </button>
+                    )
                     )}
 
                 <button 
@@ -358,6 +361,7 @@ checkUserRegistration = () => {
                 >
                   Lịch sử
                 </button>
+                
               </div>
               
             </div>
