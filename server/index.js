@@ -39,8 +39,8 @@ app.use((req, res, next) => {
 
 // Passport configuration
 passport.use(new MicrosoftStrategy({
-  clientID: 'b124aa58-71a9-43fd-9962-6c81b6281dc8',
-  clientSecret: 'Nqj8Q~aPxN8YZCT_GMkAp5whzcQMAMf5b2m6raXn',
+  clientID: '2de1e60c-1f59-4103-a83d-0b5e4e54a273',
+  clientSecret: 'EP28Q~IBQ7nZ_kAyWI1x~9uBW4mDQ6n0EQYihcdl',
   callbackURL: 'https://itface.onrender.com/api/auth/callback',
   scope: ['user.read'],
   tenant: '3011a54b-0a5d-4929-bf02-a00787877c6a',
