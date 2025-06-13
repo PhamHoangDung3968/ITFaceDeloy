@@ -8,6 +8,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const User = require('./models/User'); // Import mô hình User
 const Role = require('./models/Role'); // Import mô hình Role
+const LoginQueue = require('./models/Loginqueue');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -266,28 +267,36 @@ app.get('/user', async (req, res) => {
 //   }
 // });
 
-let activeRequests = 0; // Theo dõi số lượng request đang xử lý
-const MAX_REQUESTS = 10; // Giới hạn số request có thể xử lý cùng lúc
-const requestQueue = []; // Hàng đợi lưu các request đến sau khi đã đủ giới hạn
+let activeRequests = 0;
+const MAX_REQUESTS = 10;
 
+// Xử lý request từ MongoDB theo thứ tự
 async function processNextRequest() {
-  if (activeRequests >= MAX_REQUESTS || requestQueue.length === 0) {
-    return; // Nếu đã đủ số request xử lý hoặc không có request trong hàng đợi, thoát
+  if (activeRequests >= MAX_REQUESTS) {
+    return; // Đã đủ số request xử lý, không lấy thêm
   }
 
-  const { req, res } = requestQueue.shift(); // Lấy request từ hàng đợi
+  const nextRequest = await LoginQueue.findOneAndUpdate(
+    { status: 'pending' },
+    { status: 'processing' },
+    { sort: { createdAt: 1 }, new: true }
+  );
+
+  if (!nextRequest) {
+    return; // Không có request pending nào, thoát
+  }
+
   activeRequests++; // Tăng số lượng request đang xử lý
 
   try {
-    const { image } = req.body;
     console.time('Login Execution Time');
 
-    // Gửi request đến API nếu chưa vượt quá giới hạn
-    const loginResponse = await axios.post('https://www.itface.fun/api/login_v02', { image });
+    const loginResponse = await axios.post('https://www.itface.fun/api/login_v02', { image: nextRequest.image });
     const request_id = loginResponse.data.request_id;
 
     if (!request_id) {
-      res.status(500).json({ message: 'Failed to generate request_id' });
+      console.log(`Lỗi tạo request_id cho ${nextRequest._id}`);
+      await LoginQueue.deleteOne({ _id: nextRequest._id }); // Xóa request sau khi xử lý lỗi
       return;
     }
 
@@ -297,58 +306,64 @@ async function processNextRequest() {
     let attempts = 10;
 
     while (attempts > 0) {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 1 giây trước khi kiểm tra kết quả
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       loginResult = await axios.get(`https://www.itface.fun/api/login_result/${request_id}`);
 
       if (loginResult.data.status !== 'pending') {
-        break; // Nếu không còn trạng thái "pending", kết thúc vòng lặp
+        break;
       }
 
       attempts--;
     }
 
     console.timeEnd('Login Execution Time');
-    console.log('Received final result from Python API:', loginResult.data);
 
     if (loginResult.data.status === 'success') {
-      const userCode = loginResult.data.message;
-      req.session.userCode = userCode;
-      res.json({ message: 'Login successful', userCode });
+      console.log('Login thành công:', loginResult.data.message);
     } else {
-      res.status(401).json({ message: loginResult.data.message });
+      console.log('Login thất bại:', loginResult.data.message);
     }
+
+    await LoginQueue.deleteOne({ _id: nextRequest._id }); // Xóa request sau khi xử lý xong
   } catch (error) {
-    console.timeEnd('Login Execution Time');
+    console.error('Lỗi xử lý request:', error);
 
     if (error.response) {
       if (error.response.status === 403) {
-        res.status(403).json({ message: 'Vui lòng trung thực!' });
+        console.log('Vui lòng trung thực!');
       } else if (error.response.status === 401) {
-        res.status(401).json({ message: 'Vui lòng đăng nhập bằng tài khoản Microsoft để đăng ký FaceID và trải nghiệm tốt hơn lần sau!' });
+        console.log('Vui lòng đăng nhập bằng tài khoản Microsoft để đăng ký FaceID và trải nghiệm tốt hơn lần sau!');
       } else {
-        res.status(error.response.status).json({ message: 'Error calling Python API', error: error.response.data });
+        console.log('Lỗi gọi API Python:', error.response.data);
       }
     } else {
-      res.status(500).json({ message: 'Error calling Python API', error });
+      console.log('Lỗi gọi API Python:', error);
     }
+
+    await LoginQueue.deleteOne({ _id: nextRequest._id }); // Xóa request nếu có lỗi
   } finally {
     activeRequests--; // Giảm số lượng request đang xử lý
-    processNextRequest(); // Gọi xử lý request tiếp theo từ hàng đợi
+    processNextRequest(); // Tiếp tục xử lý request tiếp theo
   }
 }
 
-// Tiếp nhận request mới
-app.post('/login_v02_user', (req, res) => {
-  if (activeRequests >= MAX_REQUESTS) {
-    requestQueue.push({ req, res }); // Thêm request vào hàng đợi nếu quá tải
-    console.log(`Request queued, current queue size: ${requestQueue.length}`);
-    return;
+// Nhận request mới và lưu vào MongoDB
+app.post('/login_v02_user', async (req, res) => {
+  const requestCount = await LoginQueue.countDocuments({ status: 'pending' });
+
+  if (requestCount >= MAX_REQUESTS) {
+    return res.status(429).json({ message: 'Hệ thống đang xử lý tối đa 10 request, vui lòng chờ!' });
   }
 
-  requestQueue.push({ req, res });
-  processNextRequest(); // Nếu chưa đạt giới hạn, xử lý request ngay
+  const newRequest = new LoginQueue({ image: req.body.image });
+  await newRequest.save();
+
+  processNextRequest(); // Kích hoạt xử lý hàng đợi
+
+  res.json({ message: 'Request được lưu vào hàng đợi' });
 });
+
 
 // Endpoint để lấy thông tin người dùng dựa trên userCode
 app.get('/user_v02', async (req, res) => {
