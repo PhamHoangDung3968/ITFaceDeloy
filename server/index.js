@@ -208,17 +208,87 @@ app.get('/user', async (req, res) => {
 //   }
 // });
 
-app.post('/login_v02_user', async (req, res) => {
+// app.post('/login_v02_user', async (req, res) => {
+//   try {
+//     const { image } = req.body;
+//     console.time('Login Execution Time'); // Bắt đầu đo thời gian
+
+//     const loginResponse = await axios.post('https://www.itface.fun/api/login_v02', { image });
+
+//     const request_id = loginResponse.data.request_id; // Lấy request_id từ Python API
+
+//     if (!request_id) {
+//       return res.status(500).json({ message: 'Failed to generate request_id' });
+//     }
+
+//     console.log(`Checking login result for request_id: ${request_id}`);
+
+//     let loginResult;
+//     let attempts = 10;
+
+//     while (attempts > 0) {
+//       await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 1 giây trước khi kiểm tra
+
+//       loginResult = await axios.get(`https://www.itface.fun/api/login_result/${request_id}`);
+
+//       if (loginResult.data.status !== 'pending') {
+//         break;
+//       }
+
+//       attempts--;
+//     }
+
+//     console.timeEnd('Login Execution Time'); // Kết thúc đo thời gian
+//     console.log('Received final result from Python API:', loginResult.data);
+
+//     if (loginResult.data.status === 'success') {
+//       const userCode = loginResult.data.message;
+//       req.session.userCode = userCode;
+//       return res.json({ message: 'Login successful', userCode });
+//     } else {
+//       return res.status(401).json({ message: loginResult.data.message });
+//     }
+
+//   } catch (error) {
+//     console.timeEnd('Login Execution Time');
+
+//     if (error.response) {
+//       if (error.response.status === 403) {
+//         res.status(403).json({ message: 'Vui lòng trung thực!' });
+//       } else if (error.response.status === 401) {
+//         res.status(401).json({ message: 'Vui lòng đăng nhập bằng tài khoản Microsoft để đăng ký FaceID và trải nghiệm tốt hơn lần sau!' });
+//       } else {
+//         res.status(error.response.status).json({ message: 'Error calling Python API', error: error.response.data });
+//       }
+//     } else {
+//       res.status(500).json({ message: 'Error calling Python API', error });
+//     }
+//   }
+// });
+
+let activeRequests = 0; // Theo dõi số lượng request đang xử lý
+const MAX_REQUESTS = 10; // Giới hạn số request có thể xử lý cùng lúc
+const requestQueue = []; // Hàng đợi lưu các request đến sau khi đã đủ giới hạn
+
+async function processNextRequest() {
+  if (activeRequests >= MAX_REQUESTS || requestQueue.length === 0) {
+    return; // Nếu đã đủ số request xử lý hoặc không có request trong hàng đợi, thoát
+  }
+
+  const { req, res } = requestQueue.shift(); // Lấy request từ hàng đợi
+  activeRequests++; // Tăng số lượng request đang xử lý
+
   try {
     const { image } = req.body;
-    console.time('Login Execution Time'); // Bắt đầu đo thời gian
+    console.time('Login Execution Time');
 
+    // Gửi request đến API nếu chưa vượt quá giới hạn
     const loginResponse = await axios.post('https://www.itface.fun/api/login_v02', { image });
-
-    const request_id = loginResponse.data.request_id; // Lấy request_id từ Python API
+    const request_id = loginResponse.data.request_id;
 
     if (!request_id) {
-      return res.status(500).json({ message: 'Failed to generate request_id' });
+      res.status(500).json({ message: 'Failed to generate request_id' });
+      return;
     }
 
     console.log(`Checking login result for request_id: ${request_id}`);
@@ -227,28 +297,27 @@ app.post('/login_v02_user', async (req, res) => {
     let attempts = 10;
 
     while (attempts > 0) {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 1 giây trước khi kiểm tra
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 1 giây trước khi kiểm tra kết quả
 
       loginResult = await axios.get(`https://www.itface.fun/api/login_result/${request_id}`);
 
       if (loginResult.data.status !== 'pending') {
-        break;
+        break; // Nếu không còn trạng thái "pending", kết thúc vòng lặp
       }
 
       attempts--;
     }
 
-    console.timeEnd('Login Execution Time'); // Kết thúc đo thời gian
+    console.timeEnd('Login Execution Time');
     console.log('Received final result from Python API:', loginResult.data);
 
     if (loginResult.data.status === 'success') {
       const userCode = loginResult.data.message;
       req.session.userCode = userCode;
-      return res.json({ message: 'Login successful', userCode });
+      res.json({ message: 'Login successful', userCode });
     } else {
-      return res.status(401).json({ message: loginResult.data.message });
+      res.status(401).json({ message: loginResult.data.message });
     }
-
   } catch (error) {
     console.timeEnd('Login Execution Time');
 
@@ -263,8 +332,24 @@ app.post('/login_v02_user', async (req, res) => {
     } else {
       res.status(500).json({ message: 'Error calling Python API', error });
     }
+  } finally {
+    activeRequests--; // Giảm số lượng request đang xử lý
+    processNextRequest(); // Gọi xử lý request tiếp theo từ hàng đợi
   }
+}
+
+// Tiếp nhận request mới
+app.post('/login_v02_user', (req, res) => {
+  if (activeRequests >= MAX_REQUESTS) {
+    requestQueue.push({ req, res }); // Thêm request vào hàng đợi nếu quá tải
+    console.log(`Request queued, current queue size: ${requestQueue.length}`);
+    return;
+  }
+
+  requestQueue.push({ req, res });
+  processNextRequest(); // Nếu chưa đạt giới hạn, xử lý request ngay
 });
+
 // Endpoint để lấy thông tin người dùng dựa trên userCode
 app.get('/user_v02', async (req, res) => {
   try {
