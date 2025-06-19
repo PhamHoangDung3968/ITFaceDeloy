@@ -8,5 +8,6 @@ const MyConstants = {
   EMAIL_PASS : 'niuj jquw gpdb xmlv',
   JWT_SECRET : 'dung123456',
   JWT_EXPIRES : 60 * 60 * 1000, // in milliseconds
+  ENCRYPTION_SECRET: 'mySuperSecretKey123!@#',
   };
 module.exports = MyConstants ;
