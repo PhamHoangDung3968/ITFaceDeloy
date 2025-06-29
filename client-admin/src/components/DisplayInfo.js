@@ -114,7 +114,14 @@ const DisplayInfo = ({ userCode, userID, userEmail }) => {
             }
         } catch (error) {
             console.error('Lỗi trong quá trình đăng nhập hoặc điểm danh:', error);
-            showErrorToast('Đã xảy ra lỗi trong quá trình đăng nhập hoặc điểm danh');
+
+            if (error.response?.status === 403) {
+                showErrorToast('Vui lòng trung thực!');
+            } else if (error.response?.status === 401) {
+                showErrorToast('Vui lòng đăng nhập bằng tài khoản Microsoft để đăng ký FaceID!');
+            } else {
+                showErrorToast('Đã xảy ra lỗi trong quá trình đăng nhập hoặc điểm danh');
+            }
         } finally {
             toast.dismiss(loadingToastId);
             setIsProcessing(false);
